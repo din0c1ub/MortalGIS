@@ -53,7 +53,7 @@ export default function GisMap({
     const map = L.map(mapContainerRef.current, {
       center: [37.760, -122.435],
       zoom: 13,
-      minZoom: 11,
+      minZoom: 3,
       maxZoom: 15, // ETHICAL SAFEGUARD: Prevent zooming in to identify individual houses
       zoomControl: true,
       scrollWheelZoom: true,
@@ -150,29 +150,13 @@ export default function GisMap({
         finalLat = Math.round(lat / gridLatSize) * gridLatSize;
         finalLng = Math.round(lng / gridLngSize) * gridLngSize;
       } else if (spatialAggregationLevel === 'zip_centroid') {
-        // Mock zipcode centroid grouping map-wide helper offsets
-        const zipOffsets: Record<string, [number, number]> = {
-          'rec-001': [37.750, -122.420], 
-          'rec-002': [37.765, -122.422],
-          'rec-003': [37.760, -122.435],
-          'rec-004': [37.780, -122.400],
-          'rec-005': [37.750, -122.480]
-        };
-        const offset = zipOffsets[record.id];
-        if (offset) {
-          finalLat = offset[0];
-          finalLng = offset[1];
-        }
+        // Generic high-fidelity ZIP code centroid grouping: snap to 1.1km grid cells (0.01 deg)
+        finalLat = Math.round(lat * 100) / 100;
+        finalLng = Math.round(lng * 100) / 100;
       } else if (spatialAggregationLevel === 'neighborhood') {
-        // Shift records together into a single cluster point to represent community aggregates
-        if (record.id === 'rec-001' || record.id === 'rec-002') {
-          // Mission / SOMA split
-          finalLat = 37.758;
-          finalLng = -122.421;
-        } else if (record.id === 'rec-005') {
-          finalLat = 37.755;
-          finalLng = -122.465;
-        }
+        // Generic neighborhood/municipal grouping: snap to 5.5km grid cells (0.05 deg)
+        finalLat = Math.round(lat * 20) / 20;
+        finalLng = Math.round(lng * 20) / 20;
       }
 
       const marker = L.marker([finalLat, finalLng], { icon: customIcon })
@@ -208,7 +192,33 @@ export default function GisMap({
       markersRef.current.push(marker);
     });
 
-  }, [records, selectedRecordId, spatialAggregationLevel, onSelectRecord]);
+    // Auto-fit to bounds if records span a wide geographic area and we don't have a single selected record
+    if (records.length > 0 && !selectedRecordId && !mapCenterOverride) {
+      const lats = records.map(r => r.location.lat);
+      const lngs = records.map(r => r.location.lng);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+
+      // If the spread is large (i.e. spans more than simple San Francisco city boundaries)
+      if (maxLat - minLat > 1.0 || maxLng - minLng > 1.0) {
+        try {
+          map.fitBounds([
+            [minLat, minLng],
+            [maxLat, maxLng]
+          ], {
+            padding: [40, 40],
+            maxZoom: 6, // Don't zoom in too close for national/statewide view
+            animate: true
+          });
+        } catch (e) {
+          console.warn("Bounds fitting failed", e);
+        }
+      }
+    }
+
+  }, [records, selectedRecordId, spatialAggregationLevel, onSelectRecord, mapCenterOverride]);
 
   // Handle zooming / panning to selected record
   useEffect(() => {
@@ -228,26 +238,11 @@ export default function GisMap({
       targetLat = Math.round(record.location.lat / gridLatSize) * gridLatSize;
       targetLng = Math.round(record.location.lng / gridLngSize) * gridLngSize;
     } else if (spatialAggregationLevel === 'zip_centroid') {
-      const zipOffsets: Record<string, [number, number]> = {
-        'rec-001': [37.750, -122.420], 
-        'rec-002': [37.765, -122.422],
-        'rec-003': [37.760, -122.435],
-        'rec-004': [37.780, -122.400],
-        'rec-005': [37.750, -122.480]
-      };
-      const offset = zipOffsets[record.id];
-      if (offset) {
-        targetLat = offset[0];
-        targetLng = offset[1];
-      }
+      targetLat = Math.round(record.location.lat * 100) / 100;
+      targetLng = Math.round(record.location.lng * 100) / 100;
     } else if (spatialAggregationLevel === 'neighborhood') {
-      if (record.id === 'rec-001' || record.id === 'rec-002') {
-        targetLat = 37.758;
-        targetLng = -122.421;
-      } else if (record.id === 'rec-005') {
-        targetLat = 37.755;
-        targetLng = -122.465;
-      }
+      targetLat = Math.round(record.location.lat * 20) / 20;
+      targetLng = Math.round(record.location.lng * 20) / 20;
     }
 
     map.setView([targetLat, targetLng], 14, {
