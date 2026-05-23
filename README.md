@@ -2,7 +2,7 @@
 title: MortalGIS - Ethical Spatial Anonymization & Mortality Data Sandbox
 emoji: 🛡️
 colorFrom: red
-colorTo: zinc
+colorTo: gray
 sdk: static
 pinned: false
 ---
