@@ -8,13 +8,15 @@ interface GisMapProps {
   selectedRecordId: string | null;
   onSelectRecord: (id: string | null) => void;
   spatialAggregationLevel: 'grid_80m' | 'intersection' | 'zip_centroid' | 'neighborhood';
+  mapCenterOverride?: [number, number] | null;
 }
 
 export default function GisMap({
   records,
   selectedRecordId,
   onSelectRecord,
-  spatialAggregationLevel
+  spatialAggregationLevel,
+  mapCenterOverride
 }: GisMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -259,6 +261,17 @@ export default function GisMap({
       markersRef.current[index].openPopup();
     }
   }, [selectedRecordId, records, spatialAggregationLevel]);
+
+  // Handle center override (e.g., zip code search centering)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapCenterOverride) return;
+
+    map.setView(mapCenterOverride, 13, {
+      animate: true,
+      duration: 0.8
+    });
+  }, [mapCenterOverride]);
 
   return (
     <div className="relative w-full h-[540px] rounded-2xl overflow-hidden border border-zinc-850 shadow-2xl bg-zinc-950" id="gis-map-component">

@@ -19,9 +19,47 @@ import {
   Calendar,
   ChevronRight,
   TrendingUp,
-  Activity
+  Activity,
+  Search,
+  MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+// Common San Francisco ZIP Codes and Centroids
+const SF_ZIP_CENTROIDS: Record<string, [number, number]> = {
+  '94110': [37.750, -122.415], // Mission District
+  '94114': [37.758, -122.435], // Castro
+  '94103': [37.772, -122.410], // SOMA / Civic Center
+  '94107': [37.765, -122.398], // Potrero Hill
+  '94112': [37.721, -122.441], // Balboa Park
+  '94116': [37.742, -122.480], // West Portal / Sunset
+  '94118': [37.780, -122.464], // Inner Richmond
+  '94115': [37.786, -122.438], // Western Addition
+  '94122': [37.759, -122.484], // Sunset District
+  '94123': [37.800, -122.436], // Marina District
+  '94102': [37.778, -122.418]  // Hayes Valley / Tenderloin
+};
+
+export const getRecordZip = (rec: AnonymizedMortalityRecord): string => {
+  const addr = (rec.location.originalAddress || '').toLowerCase();
+  const entity = (rec.location.extractedEntity || '').toLowerCase();
+  
+  if (addr.includes('valencia') || entity.includes('valencia')) {
+    return addr.includes('320') ? '94103' : '94110';
+  }
+  if (addr.includes('guerrero') || entity.includes('guerrero')) return '94110';
+  if (addr.includes('castro') || entity.includes('castro')) return '94114';
+  if (addr.includes('harrison') || entity.includes('harrison')) {
+    return addr.includes('2340') ? '94110' : '94107';
+  }
+  if (addr.includes('howard') || entity.includes('howard')) return '94103';
+  if (addr.includes('19th ave') || entity.includes('19th ave') || addr.includes('19th avenue') || entity.includes('sunset')) return '94116';
+  if (addr.includes('market') || entity.includes('market')) return '94102';
+  if (addr.includes('marina') || entity.includes('marina')) return '94123';
+  if (addr.includes('washington') || entity.includes('washington') || entity.includes('presidio')) return '94115';
+  
+  return '94103'; // default fallback
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'map' | 'pipeline' | 'postgis' | 'ethics'>('map');
@@ -31,6 +69,8 @@ export default function App() {
   const [filterManner, setFilterManner] = useState<string>('All');
   const [filterAge, setFilterAge] = useState<string>('All');
   const [filterDecade, setFilterDecade] = useState<string>('All');
+  const [zipSearch, setZipSearch] = useState<string>('');
+  const [mapCenterOverride, setMapCenterOverride] = useState<[number, number] | null>(null);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [aggregationLevel, setAggregationLevel] = useState<'grid_80m' | 'intersection' | 'zip_centroid' | 'neighborhood'>('grid_80m');
 
@@ -56,6 +96,14 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Synchronise centering to matched ZIP centroid
+  useEffect(() => {
+    const trimmed = zipSearch.trim();
+    if (SF_ZIP_CENTROIDS[trimmed]) {
+      setMapCenterOverride(SF_ZIP_CENTROIDS[trimmed]);
+    }
+  }, [zipSearch]);
+
   // Filtered and Sorted Records based on user sidebar inputs
   const filteredRecords = records
     .filter(rec => {
@@ -66,7 +114,10 @@ export default function App() {
       const decade = `${Math.floor(year / 10) * 10}s`;
       const decadeMatch = filterDecade === 'All' || decade === filterDecade;
       
-      return mannerMatch && ageMatch && decadeMatch;
+      const trimmedZip = zipSearch.trim();
+      const zipMatch = !trimmedZip || getRecordZip(rec).includes(trimmedZip);
+      
+      return mannerMatch && ageMatch && decadeMatch && zipMatch;
     })
     .sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime();
@@ -221,6 +272,55 @@ export default function App() {
                 </div>
 
                 <div className="space-y-4">
+                  {/* ZIP Code Search & Zoom */}
+                  <div>
+                    <label className="block text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                      <Search className="w-3.5 h-3.5 text-rose-500" />
+                      Search by SF ZIP Code
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="zip-search-input"
+                        type="text"
+                        placeholder="Type any ZIP (e.g. 94110)..."
+                        value={zipSearch}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 5); // Allow only digits, max 5 chars
+                          setZipSearch(val);
+                        }}
+                        className="w-full text-xs bg-zinc-900 border border-zinc-850 hover:border-zinc-700 rounded-xl p-2.5 pl-9 transition-all focus:bg-zinc-900 focus:border-rose-500/50 focus:outline-hidden text-zinc-100 font-medium placeholder-zinc-600"
+                      />
+                      <MapPin className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      {zipSearch && (
+                        <button 
+                          onClick={() => setZipSearch('')} 
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-rose-500 hover:text-rose-400 cursor-pointer"
+                        >
+                          CLEAR
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Quick Badge Helpers */}
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {['94110', '94114', '94103', '94116'].map(zip => (
+                        <button
+                          key={zip}
+                          onClick={() => setZipSearch(zip)}
+                          className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-bold cursor-pointer transition-all ${
+                            zipSearch === zip 
+                              ? 'bg-rose-950/40 text-rose-300 border border-rose-900/60 shadow-[0_0_6px_rgba(225,29,72,0.15)]' 
+                              : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300 border border-transparent'
+                          }`}
+                        >
+                          {zip === '94110' ? '94110 (Mission)' : 
+                           zip === '94114' ? '94114 (Castro)' : 
+                           zip === '94103' ? '94103 (SOMA)' : '94116 (Sunset)'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Manner of Death Filter */}
                   <div>
                     <label className="block text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-1.5">
@@ -433,6 +533,7 @@ export default function App() {
                 selectedRecordId={selectedRecordId}
                 onSelectRecord={setSelectedRecordId}
                 spatialAggregationLevel={aggregationLevel}
+                mapCenterOverride={mapCenterOverride}
               />
 
               {/* Selected point metadata expander */}
