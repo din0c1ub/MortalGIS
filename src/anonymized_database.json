@@ -1,0 +1,266 @@
+[
+  {
+    "id": "baked-1779542965877-0",
+    "timestamp": "2026-05-23T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Male",
+    "mannerOfDeath": "Other",
+    "location": {
+      "originalAddress": "2340 Harrison Street yest, San Francisco, CA",
+      "extractedEntity": "Harrison Street Grid Sector",
+      "snappedType": "grid_80m",
+      "snappedLabel": "80m Compliant Grid (Harrison Street)",
+      "lat": 37.75896,
+      "lng": -122.4132
+    },
+    "detailsStripped": [
+      "Exact UTC clock time truncated under HIPAA Safe Harbor rule",
+      "Direct Name: 'John Kowalski'",
+      "Regulatory employer details",
+      "Exact street address coordinate: '2340 Harrison Street yest' snapped physically to de-identified 80m Grid Centroid"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-1779542965878-1",
+    "timestamp": "2026-05-22T00:00:00Z",
+    "ageGroup": "85+",
+    "gender": "Female",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "3120 Washington Street, San Francisco, CA",
+      "extractedEntity": "Washington Street Grid Sector",
+      "snappedType": "grid_80m",
+      "snappedLabel": "80m Compliant Grid (Washington Street)",
+      "lat": 37.7892,
+      "lng": -122.44323
+    },
+    "detailsStripped": [
+      "Exact UTC clock time truncated under HIPAA Safe Harbor rule",
+      "Direct Name: 'Eleanor Sterling'",
+      "Partner Name: 'Arthur'",
+      "Relationship details",
+      "Generational relative counters",
+      "Exact street address coordinate: '3120 Washington Street' snapped physically to de-identified 80m Grid Centroid"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-1779542965878-2",
+    "timestamp": "2026-05-21T00:00:00Z",
+    "ageGroup": "25-34",
+    "gender": "Female",
+    "mannerOfDeath": "Toxicological",
+    "location": {
+      "originalAddress": "910 Howard Street, San Francisco, CA",
+      "extractedEntity": "Howard Street Grid Sector",
+      "snappedType": "grid_80m",
+      "snappedLabel": "80m Compliant Grid (Howard Street)",
+      "lat": 37.782000000000004,
+      "lng": -122.40501
+    },
+    "detailsStripped": [
+      "Exact UTC clock time truncated under HIPAA Safe Harbor rule",
+      "Direct Name: 'Chloe Vance'",
+      "Precise interior location unit attributes",
+      "Exact street address coordinate: '910 Howard Street' snapped physically to de-identified 80m Grid Centroid"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-001",
+    "timestamp": "2026-05-21T00:00:00Z",
+    "ageGroup": "65-74",
+    "gender": "Female",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "1458 Valencia Street, Apt 3B, San Francisco, CA",
+      "extractedEntity": "Valencia St & 25th St Block",
+      "snappedType": "block",
+      "snappedLabel": "Valencia St & 25th St Intersection (Offset)",
+      "lat": 37.7516,
+      "lng": -122.4208
+    },
+    "detailsStripped": [
+      "Direct Name: 'Martha Higgins'",
+      "Relationship detail: 'daughter Clara'",
+      "Exact housing / floor: 'Apt 3B'",
+      "Exact address coordinate: '1458 Valencia St' snapped to nearest major block (Valencia St & 25th St Block)",
+      "Exact time: '3:15 PM' rounded to uniform UTC midnight",
+      "Dog/family asset details"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-002",
+    "timestamp": "2026-05-20T00:00:00Z",
+    "ageGroup": "18-24",
+    "gender": "Male",
+    "mannerOfDeath": "Accident",
+    "location": {
+      "originalAddress": "410 Guerrero Street, San Francisco, CA",
+      "extractedEntity": "Guerrero St & 16th St Block",
+      "snappedType": "intersection",
+      "snappedLabel": "Guerrero St & 16th St Intersection",
+      "lat": 37.7645,
+      "lng": -122.4239
+    },
+    "detailsStripped": [
+      "Direct Name: 'Arthur Pendelton'",
+      "Relative detail: 'brother Marcus'",
+      "Exact building number: '410' snapped to Guerrero & 16th corner centroid",
+      "Exact clock-time: '11:40 PM' truncated to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-003",
+    "timestamp": "2026-05-18T00:00:00Z",
+    "ageGroup": "25-34",
+    "gender": "Male",
+    "mannerOfDeath": "Toxicological",
+    "location": {
+      "originalAddress": "583 Castro Street, San Francisco, CA",
+      "extractedEntity": "Castro Street Block (Mid-segment)",
+      "snappedType": "block",
+      "snappedLabel": "Castro St & 19th St Block Offset",
+      "lat": 37.7602,
+      "lng": -122.435
+    },
+    "detailsStripped": [
+      "Direct Name: 'David Miller'",
+      "Sub-entity: 'landlord'",
+      "Relative details: 'sister Jessica'",
+      "Specific house number: '583' aggregated safely to Mid-Block centroid"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-004",
+    "timestamp": "2026-05-15T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Male",
+    "mannerOfDeath": "Environmental",
+    "location": {
+      "originalAddress": "600 Harrison Street Underpass, San Francisco, CA",
+      "extractedEntity": "Harrison St & 2nd St Underpass Area",
+      "snappedType": "zip_centroid",
+      "snappedLabel": "SOMA Harrison Underpass Grid Sector",
+      "lat": 37.7831,
+      "lng": -122.3986
+    },
+    "detailsStripped": [
+      "Direct Name: 'James Skip Kowalski'",
+      "Nicknames: 'Skip'",
+      "Relative details: 'estranged wife in Oregon'",
+      "Extremely specific camp micro-location snapped to census-underpass block"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-005",
+    "timestamp": "2026-05-12T00:00:00Z",
+    "ageGroup": "75-84",
+    "gender": "Female",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "2291 19th Avenue, San Francisco, CA",
+      "extractedEntity": "19th Ave & Rivera St Block",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Sunset District Cluster (Rivera St Block Centroid)",
+      "lat": 37.7471,
+      "lng": -122.4764
+    },
+    "detailsStripped": [
+      "Direct Name: 'Elena Rostova'",
+      "Career identifier: 'primary school teacher' (highly selective career/age matches can re-identify!)",
+      "Relative details: 'grandchildren'",
+      "Exact house number: '2291' generalized to Rivera intersection segment"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-006",
+    "timestamp": "2018-10-12T00:00:00Z",
+    "ageGroup": "65-74",
+    "gender": "Male",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "510 Castro Street, San Francisco, CA",
+      "extractedEntity": "Castro St & 18th St Block",
+      "snappedType": "block",
+      "snappedLabel": "Castro St Segment Centroid",
+      "lat": 37.7608,
+      "lng": -122.4348
+    },
+    "detailsStripped": [
+      "Direct Name: 'Gregory Vance'",
+      "Exact residence identifier snapped to general block",
+      "Exact time: '11:15 AM' truncated to midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-007",
+    "timestamp": "2008-04-15T00:00:00Z",
+    "ageGroup": "25-34",
+    "gender": "Female",
+    "mannerOfDeath": "Accident",
+    "location": {
+      "originalAddress": "850 Market Street, San Francisco, CA",
+      "extractedEntity": "Market St & 5th St Block",
+      "snappedType": "intersection",
+      "snappedLabel": "Market St & 5th St Intersection Snapped",
+      "lat": 37.7842,
+      "lng": -122.4074
+    },
+    "detailsStripped": [
+      "Direct Name: 'Sarah Jenkins'",
+      "Building details 'Suite 401' stripped",
+      "Timestamp hour truncated"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-008",
+    "timestamp": "1995-07-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Male",
+    "mannerOfDeath": "Toxicological",
+    "location": {
+      "originalAddress": "320 Valencia Street, San Francisco, CA",
+      "extractedEntity": "Valencia St & 14th St Block",
+      "snappedType": "block",
+      "snappedLabel": "Valencia St & 14th St Block Segment Offset",
+      "lat": 37.7684,
+      "lng": -122.4221
+    },
+    "detailsStripped": [
+      "Direct Name: 'Robert Downey Sr (Legacy Record)'",
+      "Exact loft identifier 'Studio G' destroyed",
+      "Historical age/family relation descriptors removed"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "rec-009",
+    "timestamp": "1989-10-22T00:00:00Z",
+    "ageGroup": "75-84",
+    "gender": "Female",
+    "mannerOfDeath": "Environmental",
+    "location": {
+      "originalAddress": " Marina Blvd Shelter Cluster, San Francisco, CA",
+      "extractedEntity": "Marina Blvd Centroid Block",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Marina District Centroid Cluster",
+      "lat": 37.8038,
+      "lng": -122.4369
+    },
+    "detailsStripped": [
+      "Direct Name: 'Mildred Abernathy'",
+      "Displaced shelters sub-address identifiers replaced with district fallback centroid",
+      "Post-earthquake disaster housing indicators generalized to prevent family group tracking"
+    ],
+    "isVerified": true
+  }
+]

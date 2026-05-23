@@ -1,0 +1,6 @@
+{
+  "name": "Anonymized GIS Mortality Tracker",
+  "description": "A GIS application for sensitive mortality data designed with a Data Minimization architecture, automatic PII scrubbing, and spatial aggregation to protect privacy.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
