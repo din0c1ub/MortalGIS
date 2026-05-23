@@ -50,8 +50,29 @@ jobs:
           HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }} # Your Hugging Face Space name
           HF_TOKEN: ${{ secrets.HF_TOKEN }}           # Write-access Hugging Face user access token
         run: |
+          # Guard and validate secrets before executing git operations
+          if [ -z "$HF_TOKEN" ]; then
+            echo "❌ CRITICAL ERROR: Secret 'HF_TOKEN' is empty or missing!"
+            echo "Please go to your GitHub repository -> Settings -> Secrets and variables -> Actions -> 'New repository secret', add 'HF_TOKEN' with a Hugging Face 'Write' access token."
+            exit 1
+          fi
+
+          if [ -z "$HF_USERNAME" ]; then
+            echo "❌ CRITICAL ERROR: Secret 'HF_USERNAME' is empty or missing!"
+            echo "Please add 'HF_USERNAME' (your Hugging Face account name) in your GitHub Repository Secrets."
+            exit 1
+          fi
+
+          if [ -z "$HF_SPACE_NAME" ]; then
+            echo "❌ CRITICAL ERROR: Secret 'HF_SPACE_NAME' is empty or missing!"
+            echo "Please add 'HF_SPACE_NAME' (the exact name of your Space) in your GitHub Repository Secrets."
+            exit 1
+          fi
+
+          echo "🚀 Validated secrets successfully! Attempting connection to Hugging Face spaces..."
+
           # Clone the Hugging Face space repository into a local subfolder with token
-          git clone https://oauth2:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
+          git clone "https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME" hf_space
           
           # Force copy compiled assets and metadata files
           cp -rf dist/* hf_space/
@@ -64,7 +85,7 @@ jobs:
           git add .
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "deploy: automated static build of scraped mortality GIS"
-            git push https://oauth2:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
+            git push "https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME" main
             echo "🚀 Space deployed successfully!"
           else
             echo "💤 Space is already up to date."
