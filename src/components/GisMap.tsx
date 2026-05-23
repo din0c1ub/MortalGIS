@@ -20,7 +20,7 @@ export default function GisMap({
 }: GisMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const markersRef = useRef<any[]>([]);
   const lastFittedRecordsIdRef = useRef<string>('');
   const [activeLayer, setActiveLayer] = useState<'standard' | 'grayscale'>('grayscale');
 
@@ -60,6 +60,7 @@ export default function GisMap({
       zoom: 13,
       minZoom: 3,
       maxZoom: 15, // ETHICAL SAFEGUARD: Prevent zooming in to identify individual houses
+      preferCanvas: true, // Hardware-accelerated Canvas layer for vector vectors
       zoomControl: true,
       scrollWheelZoom: true,
     });
@@ -116,33 +117,7 @@ export default function GisMap({
     records.forEach((record) => {
       const { lat, lng } = record.location;
       const color = getMannerOfColor(record.mannerOfDeath);
-
-      // Create a beautiful, custom HTML Marker leveraging L.divIcon
-      // This circumvents Leaflet default asset URL loading issues in Vite and gives us gorgeous styling
       const isSelected = record.id === selectedRecordId;
-      const markerHtml = `
-        <div class="relative flex items-center justify-center">
-          <!-- Pulsing Background if selected -->
-          ${isSelected ? `
-            <span class="absolute inline-flex h-8 w-8 animate-ping rounded-full opacity-60" style="background-color: ${color}"></span>
-          ` : ''}
-          
-          <!-- Outer circle -->
-          <div class="h-6 w-6 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-125 duration-150 ${isSelected ? 'scale-110 ring-2 ring-white border-2' : ''}" 
-               style="background-color: ${color}; border: 2px solid white">
-            <!-- Inner dot -->
-            <div class="h-2 w-2 rounded-full bg-white"></div>
-          </div>
-        </div>
-      `;
-
-      const customIcon = L.divIcon({
-        html: markerHtml,
-        className: 'custom-leaflet-marker', // Reset default styling
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -10]
-      });
 
       // Spatial shifting simulator depending on the sidebar selection
       // This visualizes how snapping changes the positions physically
@@ -164,11 +139,18 @@ export default function GisMap({
         finalLng = Math.round(lng * 20) / 20;
       }
 
-      const marker = L.marker([finalLat, finalLng], { icon: customIcon })
-        .addTo(map)
-        .on('click', () => {
-          onSelectRecord(record.id);
-        });
+      // Render as a high-performance CircleMarker on Leaflet's Canvas overlay
+      const marker = L.circleMarker([finalLat, finalLng], {
+        radius: isSelected ? 8 : 4.5,
+        fillColor: color,
+        color: isSelected ? '#ffffff' : '#1e1b4b', // Cosmic blue borders
+        weight: isSelected ? 3 : 1.2,
+        fillOpacity: isSelected ? 1.0 : 0.85
+      })
+      .addTo(map)
+      .on('click', () => {
+        onSelectRecord(record.id);
+      });
 
       // Add a customized, non-identifying tooltip popup
       const popupContent = `
@@ -180,7 +162,6 @@ export default function GisMap({
           <div class="text-[11px] text-gray-500 uppercase font-mono tracking-wider space-y-0.5">
             <div>Age Group: ${record.ageGroup}</div>
             <div>Gender: ${record.gender}</div>
-            <div>Registered: ${new Date(record.timestamp).toLocaleDateString('en-US', {month: 'short', year: 'numeric'})}</div>
             <div class="text-indigo-600 mt-1 font-semibold normal-case">${record.location.extractedEntity}</div>
           </div>
           <div class="mt-1.5 pt-1 border-t border-gray-100 text-[10px] text-emerald-600 font-medium flex items-center gap-1">
