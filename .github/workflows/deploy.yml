@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grants write access to commit the updated JSON file back to the repo
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
@@ -17,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Base Dependencies
@@ -48,8 +50,8 @@ jobs:
           HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }} # Your Hugging Face Space name
           HF_TOKEN: ${{ secrets.HF_TOKEN }}           # Write-access Hugging Face user access token
         run: |
-          # Clone the Hugging Face space repository into a local subfolder
-          git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
+          # Clone the Hugging Face space repository into a local subfolder with token
+          git clone https://oauth2:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
           
           # Force copy compiled assets and metadata files
           cp -rf dist/* hf_space/
@@ -62,7 +64,7 @@ jobs:
           git add .
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "deploy: automated static build of scraped mortality GIS"
-            git push https://x-access-token:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
+            git push https://oauth2:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
             echo "🚀 Space deployed successfully!"
           else
             echo "💤 Space is already up to date."
