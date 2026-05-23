@@ -5,6 +5,7 @@ import GisMap from './components/GisMap';
 import DataPipeline from './components/DataPipeline';
 import PostGisSandbox from './components/PostGisSandbox';
 import EthicsCenter from './components/EthicsCenter';
+import PublicScrapers from './components/PublicScrapers';
 import { 
   Map, 
   Cpu, 
@@ -21,7 +22,9 @@ import {
   TrendingUp,
   Activity,
   Search,
-  MapPin
+  MapPin,
+  Globe,
+  Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -104,8 +107,8 @@ export const getRecordZip = (rec: AnonymizedMortalityRecord): string => {
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'map' | 'pipeline' | 'postgis' | 'ethics'>('map');
-  const [viewMode, setViewMode] = useState<'public' | 'admin'>('public');
+  const [activeTab, setActiveTab] = useState<'map' | 'ethics' | 'scrapers'>('map');
+  const viewMode: 'public' | 'admin' = 'public';
   const [records, setRecords] = useState<AnonymizedMortalityRecord[]>(ANONYMIZED_RECORDS);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [filterManner, setFilterManner] = useState<string>('All');
@@ -121,15 +124,10 @@ export default function App() {
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [aggregationLevel, setAggregationLevel] = useState<'grid_80m' | 'intersection' | 'zip_centroid' | 'neighborhood'>('grid_80m');
 
-  // Enforce 80m Grid Snapping for public users and reset active restricted tabs
+  // Enforce 80m Grid Snapping for public users
   useEffect(() => {
-    if (viewMode === "public") {
-      setAggregationLevel("grid_80m");
-      if (activeTab === "pipeline" || activeTab === "postgis") {
-        setActiveTab("map");
-      }
-    }
-  }, [viewMode, activeTab]);
+    setAggregationLevel("grid_80m");
+  }, []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [utcTime, setUtcTime] = useState<string>('2026-05-23 11:22:36 UTC');
 
@@ -137,7 +135,6 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
-      setSelectedRecordId(null); // Clear selected record on filters split
       setUtcTime(now.toUTCString().replace('GMT', 'UTC'));
     }, 10000);
     return () => clearInterval(interval);
@@ -152,7 +149,7 @@ export default function App() {
     if (hasExisting) return;
 
     const syntheticRecords: AnonymizedMortalityRecord[] = [];
-    const manners: Array<'Natural' | 'Accident' | 'Toxicological' | 'Environmental'> = ['Natural', 'Accident', 'Toxicological', 'Environmental'];
+    const manners: Array<'Natural' | 'Accident' | 'Toxicological' | 'Environmental' | 'Homicide' | 'Suicide'> = ['Natural', 'Accident', 'Toxicological', 'Environmental', 'Homicide', 'Suicide'];
     const ageGroups = ['18-24', '25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '85+'];
     const genders: Array<'Male' | 'Female'> = ['Male', 'Female'];
     const streetsSuffixes = ['Main St', 'Broadway', 'Oak Ave', 'Pine St', 'Maple Rd', 'Elm Blvd'];
@@ -312,31 +309,7 @@ export default function App() {
           </h1>
         </div>
 
-        {/* View Mode Selector */}
-        <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-0.5 rounded-lg text-[10px] font-mono">
-          <button
-            id="view-mode-public-btn"
-            onClick={() => setViewMode("public")}
-            className={`px-2.5 py-1 font-bold rounded-md transition-all cursor-pointer ${
-              viewMode === "public"
-                ? "bg-rose-950/40 text-rose-300 border border-rose-900/40"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            PUBLIC PORTAL
-          </button>
-          <button
-            id="view-mode-admin-btn"
-            onClick={() => setViewMode("admin")}
-            className={`px-2.5 py-1 font-bold rounded-md transition-all cursor-pointer ${
-              viewMode === "admin"
-                ? "bg-zinc-800 text-amber-500 border border-zinc-700"
-                : "text-zinc-550 hover:text-zinc-350"
-            }`}
-          >
-            ADMIN CONSOLE
-          </button>
-        </div>
+        {/* Public-only portal mode */}
 
         {/* System Telemetry Badges */}
         <div className="flex items-center gap-6 text-xs">
@@ -370,36 +343,6 @@ export default function App() {
           GIS MAP SYSTEM
         </button>
 
-        {viewMode === "admin" && (
-          <>
-            <button
-              id="tab-pipeline-view"
-              onClick={() => setActiveTab("pipeline")}
-              className={`py-4 px-4 text-xs font-mono tracking-wider font-bold transition-all relative flex items-center gap-2 border-b-2 cursor-pointer ${
-                activeTab === "pipeline" 
-                  ? "border-rose-500 text-rose-400 font-extrabold" 
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              <Cpu className="w-4 h-4" />
-              AUTOMATED SCRAPER DAEMON
-            </button>
-
-            <button
-              id="tab-postgis-view"
-              onClick={() => setActiveTab("postgis")}
-              className={`py-4 px-4 text-xs font-mono tracking-wider font-bold transition-all relative flex items-center gap-2 border-b-2 cursor-pointer ${
-                activeTab === "postgis" 
-                  ? "border-rose-500 text-rose-400 font-extrabold" 
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              <Database className="w-4 h-4" />
-              POSTGIS SQL SHELL
-            </button>
-          </>
-        )}
-
         <button
           id="tab-ethics-view"
           onClick={() => setActiveTab("ethics")}
@@ -411,6 +354,19 @@ export default function App() {
         >
           <Scale className="w-4 h-4" />
           ETHICS & COMPLIANCE SCORE
+        </button>
+
+        <button
+          id="tab-scrapers-view"
+          onClick={() => setActiveTab("scrapers")}
+          className={`py-4 px-4 text-xs font-mono tracking-wider font-bold transition-all relative flex items-center gap-2 border-b-2 cursor-pointer ${
+            activeTab === "scrapers" 
+              ? "border-rose-500 text-rose-400 font-extrabold" 
+              : "border-transparent text-zinc-500 hover:text-zinc-300"
+          }`}
+        >
+          <Globe className="w-4 h-4" />
+          PUBLIC RESEARCH SCRAPERS
         </button>
       </nav>
 
@@ -517,32 +473,6 @@ export default function App() {
                     <div className="flex flex-col gap-2 mt-3">
                       <div>
                         <span className="text-[9px] font-mono font-bold text-zinc-600 uppercase tracking-widest block mb-1">
-                          San Francisco Regions:
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {['94110', '94114', '94103', '94116'].map(zip => (
-                            <button
-                              key={zip}
-                              onClick={() => {
-                                setZipInput(zip);
-                                handleSearchZip(zip);
-                              }}
-                              className={`px-2 py-1 rounded-md text-[9px] font-mono font-bold cursor-pointer transition-all ${
-                                zipSearch === zip 
-                                  ? 'bg-rose-950/40 text-rose-300 border border-rose-900/60 shadow-[0_0_6px_rgba(225,29,72,0.15)]' 
-                                  : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300 border border-transparent'
-                              }`}
-                            >
-                              {zip === '94110' ? '94110 (Mission)' : 
-                               zip === '94114' ? '94114 (Castro)' : 
-                               zip === '94103' ? '94103 (SOMA)' : '94116 (Sunset)'}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[9px] font-mono font-bold text-zinc-600 uppercase tracking-widest block mb-1">
                           Other United States Regions (Auto-Seeded):
                         </span>
                         <div className="flex flex-wrap gap-1">
@@ -588,6 +518,8 @@ export default function App() {
                       <option value="Accident">Accident</option>
                       <option value="Toxicological">Toxicological</option>
                       <option value="Environmental">Environmental</option>
+                      <option value="Homicide">Homicide</option>
+                      <option value="Suicide">Suicide</option>
                     </select>
                   </div>
 
@@ -752,10 +684,13 @@ export default function App() {
                           <span className={`w-2 h-2 rounded-full shrink-0 ${
                             item.mannerOfDeath === 'Natural' ? 'bg-emerald-500' :
                             item.mannerOfDeath === 'Accident' ? 'bg-blue-500' :
-                            item.mannerOfDeath === 'Toxicological' ? 'bg-rose-500' : 'bg-amber-500'
+                            item.mannerOfDeath === 'Toxicological' ? 'bg-rose-500' :
+                            item.mannerOfDeath === 'Environmental' ? 'bg-amber-500' :
+                            item.mannerOfDeath === 'Homicide' ? 'bg-pink-500' :
+                            item.mannerOfDeath === 'Suicide' ? 'bg-purple-500' : 'bg-zinc-500'
                           }`} />
                           <span className="font-mono text-[9px] text-zinc-500 bg-zinc-950 rounded px-1 selection:bg-none border border-zinc-800/80">
-                            {item.id.startsWith('custom') ? 'SCRAPE' : 'BASE'}
+                            { (item.id.startsWith('custom') || item.id.startsWith('nibrs') || item.id.startsWith('ap-mass') || item.id.startsWith('afsp-suicide')) ? 'SCRAPE' : 'BASE' }
                           </span>
                           <span className="font-mono text-[9px] bg-rose-950/40 text-rose-300 rounded px-1 border border-rose-900/40 shrink-0 font-bold">
                             {new Date(item.timestamp).getFullYear()}
@@ -840,27 +775,33 @@ export default function App() {
                             </div>
                           </div>
 
-                          {/* Right meta - direct scrubbing metrics */}
+                          {/* Right meta - compliance information */}
                           <div className="md:col-span-7 flex flex-col justify-between">
                             <div>
-                              <span className="text-[9px] font-mono text-rose-500 uppercase tracking-wider mb-2 font-black flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-heartbeat"></span> 
-                                Physical PII Stripping Diagnostics
+                              <span className="text-[9px] font-mono text-emerald-500 uppercase tracking-wider mb-2 font-black flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> 
+                                Privacy Compliance Statement
                               </span>
                               <p className="text-[11px] text-zinc-400 leading-normal mb-3">
-                                The following sensitive elements were intercepted and permanently purged from server memory at transaction boundary.
+                                Under HIPAA and Safe Harbor directives, this dataset is fully de-identified. All direct personal identifiers (PII), exact address blocks, unit numbers, names, and precise times of the reports have been completely stripped and purged from server memory prior to visualization.
                               </p>
-
-                              <div className="flex flex-wrap gap-1.5 max-h-[84px] overflow-y-auto">
-                                {rec.detailsStripped.map((item, index) => (
-                                  <span key={index} className="px-2 py-0.5 bg-rose-950/20 border border-rose-900/40 rounded-md text-[9.5px] font-mono text-rose-300 block">
-                                    ✕ {item}
-                                  </span>
-                                ))}
+                              <div className="p-3 bg-zinc-900/80 border border-zinc-900 rounded-xl space-y-1.5 text-[11px] text-zinc-300">
+                                <div className="flex items-start gap-1.5">
+                                  <span className="text-emerald-500 mt-0.5">✓</span>
+                                  <span>De-identified cohort classification (no individual naming)</span>
+                                </div>
+                                <div className="flex items-start gap-1.5">
+                                  <span className="text-emerald-500 mt-0.5">✓</span>
+                                  <span>Spatial snapping algorithm applied to prevent residential tracing</span>
+                                </div>
+                                <div className="flex items-start gap-1.5">
+                                  <span className="text-emerald-500 mt-0.5">✓</span>
+                                  <span>Coarse temporal mapping (exact times fully truncated)</span>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 bg-emerald-950/15 p-2.5 rounded-xl border border-emerald-900/35 mt-3">
+                            <div className="flex items-center gap-2 bg-emerald-950/15 p-2.5 rounded-xl border border-emerald-900/30 mt-3 animate-fade-in">
                               <Info className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                               <span className="text-[10px] text-zinc-400 leading-tight">
                                 Aggregated under spatial coordinates: <strong>Lat {rec.location.lat.toFixed(4)}, Lng {rec.location.lng.toFixed(4)}</strong> ({rec.location.extractedEntity}).
@@ -907,7 +848,12 @@ export default function App() {
 
         {/* Tab 4: Ethical Compliance Scores */}
         {activeTab === 'ethics' && (
-          <EthicsCenter isEditable={viewMode === 'admin'} />
+          <EthicsCenter isEditable={false} />
+        )}
+
+        {/* Tab 5: Public Research Scrapers */}
+        {activeTab === 'scrapers' && (
+          <PublicScrapers onProcessCustomRecord={handleAddNewRecord} />
         )}
 
       </main>

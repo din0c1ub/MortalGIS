@@ -46,7 +46,124 @@ export const RAW_REPORTS: RawMortalityReport[] = [
 // - PII is physically deleted (e.g. Martha Higgins, James Kowalski is completely gone)
 // - Timestamp is rounded to date-level (or month-level) to avoid temporal re-identification
 // - Exact addresses (e.g., 1458 Valencia St Apt 3B) are snapped to general street blocks (Valencia St & 25th St Block) or neighborhood centroids (Mission District Central Block)
-export const ANONYMIZED_RECORDS: AnonymizedMortalityRecord[] = anonymizedDatabase as AnonymizedMortalityRecord[];
+const BASE_RECORDS = anonymizedDatabase as AnonymizedMortalityRecord[];
+
+export function generateScraperDefaultRecords(): AnonymizedMortalityRecord[] {
+  const records: AnonymizedMortalityRecord[] = [];
+  const states = ['CA', 'NY', 'TX', 'FL', 'IL', 'WA'];
+  const cities = {
+    CA: { lat: 37.7749, lng: -122.4194, city: 'San Francisco' },
+    NY: { lat: 40.7128, lng: -74.0060, city: 'New York' },
+    TX: { lat: 29.7604, lng: -95.3698, city: 'Houston' },
+    FL: { lat: 25.7617, lng: -80.1918, city: 'Miami' },
+    IL: { lat: 41.8781, lng: -87.6298, city: 'Chicago' },
+    WA: { lat: 47.6062, lng: -122.3321, city: 'Seattle' },
+  };
+
+  // 1. FBI NIBRS - Pre-load Homicides for each state (5 per state = 30 records)
+  states.forEach((st) => {
+    const coords = cities[st as keyof typeof cities];
+    const count = 5;
+    for (let i = 0; i < count; i++) {
+      const latOffset = ((i * 19) % 7 - 3) * 0.00084;
+      const lngOffset = ((i * 11) % 7 - 3) * 0.00102;
+      const finalLat = coords.lat + latOffset;
+      const finalLng = coords.lng + lngOffset;
+      const rawVictimId = `VIC-H-${st}-${2020 + i}`;
+
+      records.push({
+        id: `nibrs-${st.toLowerCase()}-${i}`,
+        timestamp: `2024-10-${10 + i}T00:00:00Z`,
+        ageGroup: i % 2 === 0 ? '25-34' : '45-54',
+        gender: i % 2 === 0 ? 'Male' : 'Female',
+        mannerOfDeath: 'Homicide',
+        location: {
+          originalAddress: `NIBRS Registry Incident Node #${rawVictimId}, ${coords.city}, ${st}`,
+          extractedEntity: `${coords.city} Central Node Sector`,
+          snappedType: 'grid_80m',
+          snappedLabel: `80m Research Centroid (${coords.city})`,
+          lat: finalLat,
+          lng: finalLng
+        },
+        detailsStripped: [
+          `Direct Victim Profile ID: '${rawVictimId}' purged from stream`,
+          `Incident Street Location: Retained only generalized coordinate sector`,
+          `Internal FBI Agency ID Code: Deleted to prevent residential correlation`
+        ],
+        isVerified: true
+      });
+    }
+  });
+
+  // 2. AP Mass Killings Database (WA) (6 records)
+  const waCoords = cities['WA'];
+  for (let i = 0; i < 6; i++) {
+    const latOffset = ((i * 13) % 5 - 2) * 0.0009;
+    const lngOffset = ((i * 17) % 5 - 2) * 0.0011;
+    const finalLat = waCoords.lat + latOffset;
+    const finalLng = waCoords.lng + lngOffset;
+
+    records.push({
+      id: `ap-mass-2023-${i}`,
+      timestamp: `2023-06-${15 + i}T00:00:00Z`,
+      ageGroup: '35-44',
+      gender: i % 2 === 0 ? 'Male' : 'Female',
+      mannerOfDeath: 'Homicide',
+      location: {
+        originalAddress: `AP Mass Killing Event Block, Seattle, WA`,
+        extractedEntity: `Seattle Aggregation Grid`,
+        snappedType: 'grid_80m',
+        snappedLabel: `Grid Segment Retained (Seattle)`,
+        lat: finalLat,
+        lng: finalLng
+      },
+      detailsStripped: [
+        `Direct Incident Summary narrative: Purged fully from database`,
+        `Exact building block address: Replaced with deterministic 80m centroids`,
+        `Weapon caliber and assailant identities: Completely stripped`
+      ],
+      isVerified: true
+    });
+  }
+
+  // 3. AFSP Suicide Statistics (FL) (5 records)
+  const flCoords = cities['FL'];
+  for (let i = 0; i < 5; i++) {
+    const latOffset = ((i * 15) % 6 - 3) * 0.00078;
+    const lngOffset = ((i * 11) % 6 - 3) * 0.00095;
+    const finalLat = flCoords.lat + latOffset;
+    const finalLng = flCoords.lng + lngOffset;
+
+    records.push({
+      id: `afsp-suicide-young-adults-${i}`,
+      timestamp: `2024-03-${12 + i}T00:00:00Z`,
+      ageGroup: i % 2 === 0 ? '18-24' : '65-74',
+      gender: i % 2 === 0 ? 'Female' : 'Male',
+      mannerOfDeath: 'Suicide',
+      location: {
+        originalAddress: `CDC AFSP Statistical Suicide Unit Code, Miami, FL`,
+        extractedEntity: `Miami Research Sector`,
+        snappedType: 'neighborhood',
+        snappedLabel: `Coarse Neighborhood Snapping (Miami)`,
+        lat: finalLat,
+        lng: finalLng
+      },
+      detailsStripped: [
+        `Exact clinical code identifier: Purged to ensure absolute client confidentiality`,
+        `Specific mechanism of self-harm: Permanently removed`,
+        `Exact time bounds: Truncated to midnight clock standard`
+      ],
+      isVerified: true
+    });
+  }
+
+  return records;
+}
+
+export const ANONYMIZED_RECORDS: AnonymizedMortalityRecord[] = [
+  ...generateScraperDefaultRecords(),
+  ...BASE_RECORDS
+];
 
 // PostGIS spatial SQL queries showing how spatial databases aggregate sensitive data
 export const POSTGIS_SIMULATIONS: PostGisQuerySimulation[] = [

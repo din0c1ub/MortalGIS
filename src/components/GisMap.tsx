@@ -21,6 +21,7 @@ export default function GisMap({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const lastFittedRecordsIdRef = useRef<string>('');
   const [activeLayer, setActiveLayer] = useState<'standard' | 'grayscale'>('grayscale');
 
   // Helper to get color code based on manner of death
@@ -30,7 +31,9 @@ export default function GisMap({
       case 'Accident': return '#3b82f6'; // Blue
       case 'Toxicological': return '#ef4444'; // Red
       case 'Environmental': return '#f59e0b'; // Amber
-      default: return '#8b5cf6'; // Violet
+      case 'Homicide': return '#ec4899'; // Pink
+      case 'Suicide': return '#a855f7'; // Purple
+      default: return '#6b7280'; // Gray
     }
   };
 
@@ -41,7 +44,9 @@ export default function GisMap({
       case 'Accident': return 'bg-blue-500 border border-blue-600 shadow-blue-500/20';
       case 'Toxicological': return 'bg-rose-500 border border-rose-600 shadow-rose-500/20';
       case 'Environmental': return 'bg-amber-500 border border-amber-600 shadow-amber-500/20';
-      default: return 'bg-violet-500 border border-violet-600 shadow-violet-500/20';
+      case 'Homicide': return 'bg-pink-500 border border-pink-600 shadow-pink-500/20';
+      case 'Suicide': return 'bg-purple-500 border border-purple-600 shadow-purple-500/20';
+      default: return 'bg-zinc-500 border border-zinc-600 shadow-zinc-500/20';
     }
   };
 
@@ -193,7 +198,8 @@ export default function GisMap({
     });
 
     // Auto-fit to bounds if records span a wide geographic area and we don't have a single selected record
-    if (records.length > 0 && !selectedRecordId && !mapCenterOverride) {
+    const recordIdsStr = records.map(r => r.id).sort().join(',');
+    if (records.length > 0 && !selectedRecordId && !mapCenterOverride && lastFittedRecordsIdRef.current !== recordIdsStr) {
       const lats = records.map(r => r.location.lat);
       const lngs = records.map(r => r.location.lng);
       const minLat = Math.min(...lats);
@@ -212,6 +218,7 @@ export default function GisMap({
             maxZoom: 6, // Don't zoom in too close for national/statewide view
             animate: true
           });
+          lastFittedRecordsIdRef.current = recordIdsStr;
         } catch (e) {
           console.warn("Bounds fitting failed", e);
         }
