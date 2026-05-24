@@ -9,7 +9,7 @@ import PublicScrapers from './components/PublicScrapers';
 import { 
   Map, 
   Cpu, 
-  Database, 
+  Database,
   Scale, 
   Clock, 
   Filter, 
@@ -112,8 +112,8 @@ export default function App() {
   const [records, setRecords] = useState<AnonymizedMortalityRecord[]>(ANONYMIZED_RECORDS);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [filterManner, setFilterManner] = useState<string>('All');
-  const [filterAge, setFilterAge] = useState<string>('2020s');
-  const [filterDecade, setFilterDecade] = useState<string>('All');
+  const [filterAge, setFilterAge] = useState<string>('All');
+  const [filterDecade, setFilterDecade] = useState<string>('2020s');
   const [zipSearch, setZipSearch] = useState<string>('');
   const [zipInput, setZipInput] = useState<string>('');
   const [isGeocoding, setIsGeocoding] = useState<boolean>(false);
