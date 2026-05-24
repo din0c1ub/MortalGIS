@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Execute De-Identification Scraper Pipeline
-        run: npm run seed && npm run scrape
+        run: npm run scrape && npm run seed
 
       - name: Save Aggregated Data & Commit to Main Branch
         run: |
