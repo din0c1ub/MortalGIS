@@ -121,6 +121,7 @@ export default function App() {
   const [geocodingSuccess, setGeocodingSuccess] = useState<string | null>(null);
   const [seededZips, setSeededZips] = useState<Record<string, boolean>>({});
   const [mapCenterOverride, setMapCenterOverride] = useState<[number, number] | null>(null);
+  const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [aggregationLevel, setAggregationLevel] = useState<'grid_80m' | 'intersection' | 'zip_centroid' | 'neighborhood'>('grid_80m');
 
@@ -276,7 +277,14 @@ export default function App() {
       const trimmedZip = zipSearch.trim();
       const zipMatch = !trimmedZip || getRecordZip(rec).includes(trimmedZip);
       
-      return mannerMatch && ageMatch && decadeMatch && zipMatch;
+      // Viewport live-filter: if the user has panned the map, only show records inside the current bounds
+      const boundsMatch = !mapBounds || (
+        rec.location.lat <= mapBounds.north &&
+        rec.location.lat >= mapBounds.south &&
+        rec.location.lng <= mapBounds.east &&
+        rec.location.lng >= mapBounds.west
+      );
+      return mannerMatch && ageMatch && decadeMatch && zipMatch && boundsMatch;
     })
     .sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime();
@@ -720,6 +728,7 @@ export default function App() {
                 onSelectRecord={setSelectedRecordId}
                 spatialAggregationLevel={aggregationLevel}
                 mapCenterOverride={mapCenterOverride}
+                onBoundsChange={setMapBounds}
               />
 
               {/* Selected point metadata expander */}
