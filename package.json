@@ -9,6 +9,7 @@
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
     "scrape": "tsx scripts/scrape_and_bake.ts",
+    "seed": "tsx scripts/seed_us_records.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
