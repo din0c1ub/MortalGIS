@@ -585,7 +585,7 @@ async function main() {
 
   // Preserve original 5 de-identified San Francisco records (rec-*) and custom records
   const coreUnredacted = currentRecords.filter(r => 
-    r.id.startsWith('rec-') || r.id.startsWith('custom-') || r.id.startsWith('baked-' || r.id.startsWith('seeded-'))
+    r.id.startsWith('rec-') || r.id.startsWith('custom-') || r.id.startsWith('baked-')
   );
 
   // 1. Fetch live CDC WONDER / Socrata dataset
