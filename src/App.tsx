@@ -278,11 +278,12 @@ export default function App() {
       const zipMatch = !trimmedZip || getRecordZip(rec).includes(trimmedZip);
       
       // Viewport live-filter: if the user has panned the map, only show records inside the current bounds
-      const boundsMatch = !mapBounds || (
-        rec.location.lat <= mapBounds.north &&
-        rec.location.lat >= mapBounds.south &&
-        rec.location.lng <= mapBounds.east &&
-        rec.location.lng >= mapBounds.west
+      const boundsMatch =
+      !mapBounds ||
+      (rec.location.lat <= mapBounds.north &&
+      rec.location.lat >= mapBounds.south &&
+      rec.location.lng <= mapBounds.east &&
+      rec.location.lng >= mapBounds.west)
       );
       return mannerMatch && ageMatch && decadeMatch && zipMatch && boundsMatch;
     })
