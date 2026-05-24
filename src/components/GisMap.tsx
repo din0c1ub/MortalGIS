@@ -9,6 +9,7 @@ interface GisMapProps {
   onSelectRecord: (id: string | null) => void;
   spatialAggregationLevel: 'grid_80m' | 'intersection' | 'zip_centroid' | 'neighborhood';
   mapCenterOverride?: [number, number] | null;
+  onBoundsChange?: (bounds: { north: number; south: number; east: number; west: number }) => void;
 }
 
 export default function GisMap({
@@ -16,6 +17,7 @@ export default function GisMap({
   selectedRecordId,
   onSelectRecord,
   spatialAggregationLevel,
+  onBoundsChange,
   mapCenterOverride
 }: GisMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -74,13 +76,32 @@ export default function GisMap({
 
     mapInstanceRef.current = map;
 
+    // ── Live viewport filter ─────────────────────────────────────────────────
+    // Fire onBoundsChange whenever the user pans or zooms so the parent can
+    // filter records to only those visible inside the current map viewport.
+    const fireBounds = () => {
+      if (!onBoundsChange) return;
+      const b = map.getBounds();
+      onBoundsChange({
+        north: b.getNorth(),
+        south: b.getSouth(),
+        east:  b.getEast(),
+        west:  b.getWest(),
+      });
+    };
+    map.on('moveend', fireBounds);
+    map.on('zoomend', fireBounds);
+    // Fire once on mount so the initial viewport is registered
+    fireBounds();
+
+
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [onBoundsChange]);
 
   // Update Tile Layer if grayscale is toggled
   useEffect(() => {
