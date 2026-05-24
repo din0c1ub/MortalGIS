@@ -36,15 +36,15 @@ const STATE_COORDINATES: Record<string, { lat: number; lng: number; cap: string;
   "Alaska": { lat: 58.3019, lng: -134.4197, cap: "Juneau", zip: "99801", abbr: "AK" },
   "Arizona": { lat: 33.4484, lng: -112.0740, cap: "Phoenix", zip: "85003", abbr: "AZ" },
   "Arkansas": { lat: 34.7465, lng: -92.2896, cap: "Little Rock", zip: "72201", abbr: "AR" },
-  "California": { lat: 38.5816, lng: -121.4944, cap: "Sacramento", zip: "95814", abbr: "CA" },
+  "California": { lat: 34.0522, lng: -118.2437, cap: "Los Angeles", zip: "90012", abbr: "CA" },
   "Colorado": { lat: 39.7392, lng: -104.9903, cap: "Denver", zip: "80202", abbr: "CO" },
-  "Connecticut": { lat: 41.7637, lng: -72.6851, cap: "Hartford", zip: "06103", abbr: "CT" },
+  "Connecticut": { lat: 41.1865, lng: -73.1952, cap: "Bridgeport", zip: "06604", abbr: "CT" },
   "Delaware": { lat: 39.1582, lng: -75.5244, cap: "Dover", zip: "19901", abbr: "DE" },
-  "Florida": { lat: 30.4383, lng: -84.2807, cap: "Tallahassee", zip: "32301", abbr: "FL" },
+  "Florida": { lat: 25.7617, lng: -80.1918, cap: "Miami", zip: "33101", abbr: "FL" },
   "Georgia": { lat: 33.7490, lng: -84.3880, cap: "Atlanta", zip: "30303", abbr: "GA" },
   "Hawaii": { lat: 21.3069, lng: -157.8583, cap: "Honolulu", zip: "96813", abbr: "HI" },
   "Idaho": { lat: 43.6150, lng: -116.2023, cap: "Boise", zip: "83702", abbr: "ID" },
-  "Illinois": { lat: 39.7817, lng: -89.6501, cap: "Springfield", zip: "62701", abbr: "IL" },
+  "Illinois": { lat: 41.8781, lng: -87.6298, cap: "Chicago", zip: "60601", abbr: "IL" },
   "Indiana": { lat: 39.7684, lng: -86.1581, cap: "Indianapolis", zip: "46204", abbr: "IN" },
   "Iowa": { lat: 41.5868, lng: -93.6250, cap: "Des Moines", zip: "50309", abbr: "IA" },
   "Kansas": { lat: 39.0473, lng: -95.6752, cap: "Topeka", zip: "66603", abbr: "KS" },
@@ -53,35 +53,35 @@ const STATE_COORDINATES: Record<string, { lat: number; lng: number; cap: string;
   "Maine": { lat: 44.3106, lng: -69.7795, cap: "Augusta", zip: "04330", abbr: "ME" },
   "Maryland": { lat: 38.9784, lng: -76.4922, cap: "Annapolis", zip: "21401", abbr: "MD" },
   "Massachusetts": { lat: 42.3581, lng: -71.0636, cap: "Boston", zip: "02108", abbr: "MA" },
-  "Michigan": { lat: 42.7325, lng: -84.5555, cap: "Lansing", zip: "48933", abbr: "MI" },
-  "Minnesota": { lat: 44.9537, lng: -93.0900, cap: "St. Paul", zip: "55101", abbr: "MN" },
+  "Michigan": { lat: 42.3314, lng: -83.0458, cap: "Detroit", zip: "48226", abbr: "MI" },
+  "Minnesota": { lat: 44.9778, lng: -93.265, cap: "Minneapolis", zip: "55401", abbr: "MN" },
   "Mississippi": { lat: 32.2988, lng: -90.1848, cap: "Jackson", zip: "39201", abbr: "MS" },
-  "Missouri": { lat: 38.5767, lng: -92.1735, cap: "Jefferson City", zip: "65101", abbr: "MO" },
+  "Missouri": { lat: 39.0997, lng: -94.5786, cap: "Kansas City", zip: "64106", abbr: "MO" },
   "Montana": { lat: 46.5891, lng: -112.0391, cap: "Helena", zip: "59601", abbr: "MT" },
   "Nebraska": { lat: 40.8136, lng: -96.7026, cap: "Lincoln", zip: "68508", abbr: "NE" },
-  "Nevada": { lat: 39.1638, lng: -119.7674, cap: "Carson City", zip: "89701", abbr: "NV" },
+  "Nevada": { lat: 36.1699, lng: -115.1398, cap: "Las Vegas", zip: "89101", abbr: "NV" },
   "New Hampshire": { lat: 43.2081, lng: -71.5375, cap: "Concord", zip: "03301", abbr: "NH" },
-  "New Jersey": { lat: 40.2170, lng: -74.7429, cap: "Trenton", zip: "08608", abbr: "NJ" },
+  "New Jersey": { lat: 40.7357, lng: -74.1724, cap: "Newark", zip: "07102", abbr: "NJ" },
   "New Mexico": { lat: 35.6870, lng: -105.9378, cap: "Santa Fe", zip: "87501", abbr: "NM" },
-  "New York": { lat: 42.6526, lng: -73.7562, cap: "Albany", zip: "12207", abbr: "NY" },
+  "New York": { lat: 40.7128, lng: -74.006, cap: "New York City", zip: "10001", abbr: "NY" },
   "North Carolina": { lat: 35.7796, lng: -78.6382, cap: "Raleigh", zip: "27601", abbr: "NC" },
   "North Dakota": { lat: 46.8083, lng: -100.7837, cap: "Bismarck", zip: "58501", abbr: "ND" },
   "Ohio": { lat: 39.9612, lng: -82.9988, cap: "Columbus", zip: "43215", abbr: "OH" },
   "Oklahoma": { lat: 35.4676, lng: -97.5164, cap: "Oklahoma City", zip: "73102", abbr: "OK" },
-  "Oregon": { lat: 44.9429, lng: -123.0351, cap: "Salem", zip: "97301", abbr: "OR" },
-  "Pennsylvania": { lat: 40.2732, lng: -76.8867, cap: "Harrisburg", zip: "17101", abbr: "PA" },
+  "Oregon": { lat: 45.5051, lng: -122.675, cap: "Portland", zip: "97201", abbr: "OR" },
+  "Pennsylvania": { lat: 39.9526, lng: -75.1652, cap: "Philadelphia", zip: "19107", abbr: "PA" },
   "Rhode Island": { lat: 41.8240, lng: -71.4128, cap: "Providence", zip: "02903", abbr: "RI" },
   "South Carolina": { lat: 34.0007, lng: -81.0348, cap: "Columbia", zip: "29201", abbr: "SC" },
   "South Dakota": { lat: 44.3683, lng: -100.3510, cap: "Pierre", zip: "57501", abbr: "SD" },
   "Tennessee": { lat: 36.1627, lng: -86.7816, cap: "Nashville", zip: "37203", abbr: "TN" },
-  "Texas": { lat: 30.2672, lng: -97.7431, cap: "Austin", zip: "78701", abbr: "TX" },
+  "Texas": { lat: 29.7604, lng: -95.3698, cap: "Houston", zip: "77002", abbr: "TX" },
   "Utah": { lat: 40.7608, lng: -111.8910, cap: "Salt Lake City", zip: "84111", abbr: "UT" },
   "Vermont": { lat: 44.2601, lng: -72.5754, cap: "Montpelier", zip: "05602", abbr: "VT" },
   "Virginia": { lat: 37.5407, lng: -77.4360, cap: "Richmond", zip: "23219", abbr: "VA" },
-  "Washington": { lat: 47.0379, lng: -122.9007, cap: "Olympia", zip: "98501", abbr: "WA" },
+  "Washington": { lat: 47.6062, lng: -122.3321, cap: "Seattle", zip: "98101", abbr: "WA" },
   "Washington D.C.": { lat: 38.9072, lng: -77.0369, cap: "Washington", zip: "20001", abbr: "DC" },
   "West Virginia": { lat: 38.3498, lng: -81.6326, cap: "Charleston", zip: "25301", abbr: "WV" },
-  "Wisconsin": { lat: 43.0731, lng: -89.4012, cap: "Madison", zip: "53703", abbr: "WI" },
+  "Wisconsin": { lat: 43.0389, lng: -87.9065, cap: "Milwaukee", zip: "53202", abbr: "WI" },
   "Wyoming": { lat: 41.1400, lng: -104.8203, cap: "Cheyenne", zip: "82001", abbr: "WY" }
 };
 
@@ -90,7 +90,7 @@ const STATE_COORDINATES: Record<string, { lat: number; lng: number; cap: string;
 // ----------------------------------------------------------------------------
 async function scrapeCDCMmwrFeed(): Promise<IncomingRawReport[]> {
   try {
-    console.log("🌐 Fetching live CDC Morbidity and Mortality Weekly Report (MMWR) RSS Feed...");
+    console.log("ð Fetching live CDC Morbidity and Mortality Weekly Report (MMWR) RSS Feed...");
     const res = await fetch("https://www.cdc.gov/mmwr/rss/mmwr.xml");
     if (!res.ok) {
       throw new Error(`HTTP status ${res.status}`);
@@ -125,10 +125,10 @@ async function scrapeCDCMmwrFeed(): Promise<IncomingRawReport[]> {
       });
     }
 
-    console.log(`📡 Harvested ${parsedReports.length} articles from CDC MMWR Feed!`);
+    console.log(`ð¡ Harvested ${parsedReports.length} articles from CDC MMWR Feed!`);
     return parsedReports;
   } catch (error) {
-    console.warn("⚠️ CDC MMWR Live Feed unreachable. Falling back to local RSS backup buffer.", error);
+    console.warn("â ï¸ CDC MMWR Live Feed unreachable. Falling back to local RSS backup buffer.", error);
     return [];
   }
 }
@@ -138,7 +138,7 @@ async function scrapeCDCMmwrFeed(): Promise<IncomingRawReport[]> {
 // ----------------------------------------------------------------------------
 async function scrapeCdcSocrataLedger(): Promise<AnonymizedMortalityRecord[]> {
   try {
-    console.log("🌐 Authenticating & Pulling Socrata Open Data (https://data.cdc.gov/resource/bi63-giiy.json)...");
+    console.log("ð Authenticating & Pulling Socrata Open Data (https://data.cdc.gov/resource/bi63-giiy.json)...");
     
     // Pull the top 350 rows (provides a robust cross-section of states, causes, and decades)
     const res = await fetch("https://data.cdc.gov/resource/bi63-giiy.json?$limit=350");
@@ -207,10 +207,10 @@ async function scrapeCdcSocrataLedger(): Promise<AnonymizedMortalityRecord[]> {
       });
     });
 
-    console.log(`✅ Normalized ${normalRecords.length} de-identified historical records from CDC Socrata!`);
+    console.log(`â Normalized ${normalRecords.length} de-identified historical records from CDC Socrata!`);
     return normalRecords;
   } catch (error) {
-    console.warn("⚠️ Socrata API query failed or was throttled. Creating high-fidelity historical backing fallback.", error);
+    console.warn("â ï¸ Socrata API query failed or was throttled. Creating high-fidelity historical backing fallback.", error);
     return [];
   }
 }
@@ -372,13 +372,13 @@ async function scrapeFarsCrashes(): Promise<AnonymizedMortalityRecord[]> {
   const yearsToFetch = [currentYear - 1, currentYear - 2];
   for (const yr of yearsToFetch) {
     try {
-      console.log(`🌐 Fetching NHTSA FARS crash fatalities for ${yr}...`);
+      console.log(`ð Fetching NHTSA FARS crash fatalities for ${yr}...`);
       const res = await fetch(
-        `https://apibroken.nhtsa.dot.gov/api/crashes/crash?year=${yr}&format=json`,
+        `https://api.nhtsa.gov/api/crashes/crash?year=${yr}&format=json`,
         { signal: AbortSignal.timeout(12000) }
       );
       if (!res.ok) {
-        console.warn(`⚠️ FARS ${yr} returned HTTP ${res.status} – skipping.`);
+        console.warn(`â ï¸ FARS ${yr} returned HTTP ${res.status} â skipping.`);
         continue;
       }
       const json = await res.json();
@@ -423,23 +423,23 @@ async function scrapeFarsCrashes(): Promise<AnonymizedMortalityRecord[]> {
           isVerified: true,
         });
       });
-      console.log(`✅ FARS ${yr}: ingested ${results.length} de-identified crash fatalities.`);
+      console.log(`â FARS ${yr}: ingested ${results.length} de-identified crash fatalities.`);
     } catch (err) {
-      console.warn(`⚠️ FARS ${yr} fetch error – skipping.`, err);
+      console.warn(`â ï¸ FARS ${yr} fetch error â skipping.`, err);
     }
   }
   return results;
 }
 
 // ----------------------------------------------------------------------------
-// 5b. NETWORK API: NCHS Drug Overdose Deaths (Socrata – data.cdc.gov)
-//     Dataset: vsrr-2ujm – Provisional Drug Overdose Death Counts by state/month
-//     This is a different Socrata endpoint from the leading-causes table in §3.
+// 5b. NETWORK API: NCHS Drug Overdose Deaths (Socrata â data.cdc.gov)
+//     Dataset: vsrr-2ujm â Provisional Drug Overdose Death Counts by state/month
+//     This is a different Socrata endpoint from the leading-causes table in Â§3.
 // ----------------------------------------------------------------------------
 async function scrapeNchsOverdoseData(): Promise<AnonymizedMortalityRecord[]> {
   const results: AnonymizedMortalityRecord[] = [];
   try {
-    console.log('🌐 Fetching NCHS Provisional Drug Overdose data (data.cdc.gov/resource/xkb8-kh2a.json)...');
+    console.log('ð Fetching NCHS Provisional Drug Overdose data (data.cdc.gov/resource/xkb8-kh2a.json)...');
     const res = await fetch(
       'https://data.cdc.gov/resource/xkb8-kh2a.json?$limit=400&$order=year DESC,month DESC',
       { signal: AbortSignal.timeout(12000) }
@@ -484,9 +484,9 @@ async function scrapeNchsOverdoseData(): Promise<AnonymizedMortalityRecord[]> {
         isVerified: true,
       });
     });
-    console.log(`✅ NCHS Overdose: ingested ${results.length} de-identified records.`);
+    console.log(`â NCHS Overdose: ingested ${results.length} de-identified records.`);
   } catch (err) {
-    console.warn('⚠️ NCHS Overdose fetch error – skipping.', err);
+    console.warn('â ï¸ NCHS Overdose fetch error â skipping.', err);
   }
   return results;
 }
@@ -495,7 +495,7 @@ async function scrapeNchsOverdoseData(): Promise<AnonymizedMortalityRecord[]> {
 // Generates a robust historical record deep backlog to power the Era timeline
 // ----------------------------------------------------------------------------
 function generateHistoricalBacklog(existingSize: number): AnonymizedMortalityRecord[] {
-  console.log("⏳ Building robust multi-decade state-wide historical backing database (1980s - 2020s)...");
+  console.log("â³ Building robust multi-decade state-wide historical backing database (1980s - 2020s)...");
   
   const backloggedRecords: AnonymizedMortalityRecord[] = [];
   const eras = ['1980s', '1990s', '2000s', '2010s', '2020s'];
@@ -567,7 +567,7 @@ function generateHistoricalBacklog(existingSize: number): AnonymizedMortalityRec
 // 7. MAIN COORDINATOR: Load, Fetch, Generate, Deduplicate, Commit
 // ----------------------------------------------------------------------------
 async function main() {
-  console.log("🚀 Starting MortalGIS Real-World Database Integration Pipeline...");
+  console.log("ð Starting MortalGIS Real-World Database Integration Pipeline...");
 
   const dataPath = path.join(process.cwd(), 'src', 'anonymized_database.json');
   let currentRecords: AnonymizedMortalityRecord[] = [];
@@ -577,15 +577,15 @@ async function main() {
     try {
       const raw = fs.readFileSync(dataPath, 'utf8');
       currentRecords = JSON.parse(raw);
-      console.log(`📊 Loaded ${currentRecords.length} existing de-identified records from cache.`);
+      console.log(`ð Loaded ${currentRecords.length} existing de-identified records from cache.`);
     } catch {
-      console.warn("⚠️ Database file unreadable or empty. Creating new ledger.");
+      console.warn("â ï¸ Database file unreadable or empty. Creating new ledger.");
     }
   }
 
   // Preserve original 5 de-identified San Francisco records (rec-*) and custom records
   const coreUnredacted = currentRecords.filter(r => 
-    r.id.startsWith('rec-') || r.id.startsWith('custom-') || r.id.startsWith('baked-')
+    r.id.startsWith('rec-') || r.id.startsWith('custom-') || r.id.startsWith('baked-') || r.id.startsWith('seeded-')
   );
 
   // 1. Fetch live CDC WONDER / Socrata dataset
@@ -605,7 +605,7 @@ async function main() {
     const anonymized = await processUnstructuredFeed(report, i);
     if (anonymized) {
       processedMmwrAlerts.push(anonymized);
-      console.log(`✅ Normalized & Geocoded feed item: "${report.title.substring(0, 45)}..."`);
+      console.log(`â Normalized & Geocoded feed item: "${report.title.substring(0, 45)}..."`);
     }
   }
 
@@ -639,13 +639,13 @@ async function main() {
 
   // Write file out
   fs.writeFileSync(dataPath, JSON.stringify(finalDatabase, null, 2), 'utf8');
-  console.log(`✨ DONE! Database successfully scaled and unified!`);
-  console.log(`📈 New database size: ${finalDatabase.length} records.`);
-  console.log(`🌍 Geography cover: Fully scales 50 states + DC across 5 historical eras (1980s - 2020s).`);
-  console.log(`🆕 New sources: NHTSA FARS crash fatalities (${farsRecords.length} records) + NCHS drug overdose (${overdoseRecords.length} records).`);
+  console.log(`â¨ DONE! Database successfully scaled and unified!`);
+  console.log(`ð New database size: ${finalDatabase.length} records.`);
+  console.log(`ð Geography cover: Fully scales 50 states + DC across 5 historical eras (1980s - 2020s).`);
+  console.log(`ð New sources: NHTSA FARS crash fatalities (${farsRecords.length} records) + NCHS drug overdose (${overdoseRecords.length} records).`);
 }
 
 main().catch(error => {
-  console.error("❌ Pipeline execution aborted!", error);
+  console.error("â Pipeline execution aborted!", error);
   process.exit(1);
 });
