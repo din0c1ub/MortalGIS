@@ -90,7 +90,7 @@ To have GitHub automatically harvest public logs, de-identify them, and redeploy
 1. Create a repository on GitHub and push this project codebase.
 2. In your GitHub repo settings, go to **Settings** -> **Secrets and variables** -> **Actions** -> **Repository Secrets**.
 3. Create three secrets:
-   - `HF_USERNAME`: Your Hugging Face user profile handle (e.g. `joelrakowski`).
+   - `HF_USERNAME`: Your Hugging Face user profile handle (e.g. `johnsmith`).
    - `HF_SPACE_NAME`: The Exact name of the Static Space you set up (e.g. `mortalgis`).
    - `HF_TOKEN`: A Hugging Face **User Access Token** with `write` permissions (Generate one at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)).
 4. Commit the pipeline definition `.github/workflows/deploy.yml`. 
