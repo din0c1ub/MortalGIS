@@ -139,8 +139,8 @@ function generateUSDatabase() {
       // Spread records evenly across the full state (~±2.5° lat/lng ≈ 275km)
       // Uses a low-discrepancy two-prime sequence so points tile the state
       // rather than clustering around the city anchor.
-      const latSpread = ((i * 7 + idx * 13) % 100 / 100 - 0.5) * 5.0;
-      const lngSpread = ((i * 11 + idx * 17) % 100 / 100 - 0.5) * 6.0;
+      const latSpread = ((i * 7 + cityIdx * 13) % 100 / 100 - 0.5) * 5.0;
+      const lngSpread = ((i * 11 + cityIdx * 17) % 100 / 100 - 0.5) * 6.0;
       const finalLat = anchor.lat + latSpread;
       const finalLng = anchor.lng + lngSpread;
 
