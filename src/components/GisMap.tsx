@@ -201,7 +201,7 @@ export default function GisMap({
 
     // Auto-fit to bounds if records span a wide geographic area and we don't have a single selected record
     const recordIdsStr = records.map(r => r.id).sort().join(',');
-    if (records.length > 0 && !selectedRecordId && !mapCenterOverride && lastFittedRecordsIdRef.current !== recordIdsStr) {
+    if (records.length > 0 && !selectedRecordId && !mapCenterOverride && !lastFittedRecordsIdRef.current) {
       const lats = records.map(r => r.location.lat);
       const lngs = records.map(r => r.location.lng);
       const minLat = Math.min(...lats);
@@ -279,18 +279,7 @@ export default function GisMap({
 
   return (
     <div className="relative w-full h-[540px] rounded-2xl overflow-hidden border border-zinc-850 shadow-2xl bg-zinc-950" id="gis-map-component">
-      {/* Absolute Header Overlay */}
-      <div className="absolute top-3 left-3 z-[1000] bg-zinc-950/90 backdrop-blur-md py-1.5 px-3 rounded-lg shadow-sm border border-zinc-800 flex items-center gap-2">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
-        </span>
-        <span className="text-[10px] font-mono font-bold text-zinc-300 tracking-wider select-none uppercase">
-          GIS ENGINE: ACTIVE (OSM VOYAGER)
-        </span>
-      </div>
-
-      {/* Map style toggles (Top-Right) */}
+            {/* Map style toggles (Top-Right) */}
       <div className="absolute top-3 right-3 z-[1000] flex bg-zinc-950/90 backdrop-blur-md rounded-lg shadow-sm border border-zinc-800 p-0.5">
         <button
           id="map-style-standard"
