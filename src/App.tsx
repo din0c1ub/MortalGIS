@@ -284,7 +284,7 @@ export default function App() {
       rec.location.lat >= mapBounds.south &&
       rec.location.lng <= mapBounds.east &&
       rec.location.lng >= mapBounds.west)
-      );
+
       return mannerMatch && ageMatch && decadeMatch && zipMatch && boundsMatch;
     })
     .sort((a, b) => {
