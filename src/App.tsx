@@ -112,7 +112,7 @@ export default function App() {
   const [records, setRecords] = useState<AnonymizedMortalityRecord[]>(ANONYMIZED_RECORDS);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [filterManner, setFilterManner] = useState<string>('All');
-  const [filterAge, setFilterAge] = useState<string>('All');
+  const [filterAge, setFilterAge] = useState<string>('2020s');
   const [filterDecade, setFilterDecade] = useState<string>('All');
   const [zipSearch, setZipSearch] = useState<string>('');
   const [zipInput, setZipInput] = useState<string>('');
