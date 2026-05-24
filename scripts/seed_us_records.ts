@@ -136,9 +136,13 @@ function generateUSDatabase() {
       
       // Deterministic offsets distributes markers nicely inside a 5-15km circle around each metropolis
       const angle = (i * 12 * Math.PI) / 180;
-      const radiusOffset = 0.0035 + ((i * 17) % 11) * 0.0038;
-      const finalLat = anchor.lat + Math.sin(angle) * radiusOffset;
-      const finalLng = anchor.lng + Math.cos(angle) * radiusOffset;
+      // Spread records evenly across the full state (~±2.5° lat/lng ≈ 275km)
+      // Uses a low-discrepancy two-prime sequence so points tile the state
+      // rather than clustering around the city anchor.
+      const latSpread = ((i * 7 + idx * 13) % 100 / 100 - 0.5) * 5.0;
+      const lngSpread = ((i * 11 + idx * 17) % 100 / 100 - 0.5) * 6.0;
+      const finalLat = anchor.lat + latSpread;
+      const finalLng = anchor.lng + lngSpread;
 
       // Deterministic mapping of parameters so builds generate consistently
       // Let's bias some records specifically towards Homicide and Suicide to match FBI and CDC trends
