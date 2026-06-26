@@ -496202,6 +496202,1175 @@
     "isVerified": true
   },
   {
+    "id": "baked-alert-1782446378567-0",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Outbreaks Associated with Untreated Recreational Water — United States, 2000–2014, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378569-1",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "Geographic Variation in Pediatric Cancer Incidence — United States, 2003–2014, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378571-2",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Richmond, VA 23219",
+      "extractedEntity": "Virginia Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Virginia Administrative Sector (NEIGHBORHOOD)",
+      "lat": 37.5407,
+      "lng": -77.436
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Richmond, VA) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378572-3",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Los Angeles, CA 90012",
+      "extractedEntity": "California Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "California Administrative Sector (NEIGHBORHOOD)",
+      "lat": 34.0522,
+      "lng": -118.2437
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Los Angeles, CA) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378573-4",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Update of Recommendations for Use of Once-Weekly Isoniazid-Rifapentine Regimen to Treat Latent Mycobacterium tuberculosis Infection, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378574-5",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Indianapolis, IN 46204",
+      "extractedEntity": "Indiana Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Indiana Administrative Sector (NEIGHBORHOOD)",
+      "lat": 39.7684,
+      "lng": -86.1581
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Indianapolis, IN) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378574-6",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Suicide",
+    "location": {
+      "originalAddress": "Notice to Readers: Ongoing Reanalysis of Suicide Rates Data by Occupational Group from Results Reported in MMWR, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378575-7",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "QuickStats: Percentage of Residential Care Communities That Use Electronic Health Records, by Census Region — United States, 2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378576-8",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "National HIV Testing Day — June 27, 2018, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378576-9",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Interval Since Last HIV Test for Men and Women with Recent Risk for HIV Infection — United States, 2006–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378577-10",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Self-Reported Concussions from Playing a Sport or Being Physically Active Among High School Students — United States, 2017, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378578-11",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Smoke-Free and Tobacco-Free Policies in Colleges and Universities ― United States and Territories, 2017, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378578-12",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Strategic Response to an Outbreak of Circulating Vaccine-Derived Poliovirus Type 2 — Syria, 2017–2018, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378580-13",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Erratum: Vol 67, No 18, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378581-14",
+    "timestamp": "2018-06-21T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "QuickStats: Changes in Late Preterm Birth Rates, by State — National Vital Statistics System, United States, 2014 and 2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378581-15",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Obesity Prevalence Among Adults Living in Metropolitan and Nonmetropolitan Counties — United States, 2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378582-16",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Phoenix, AZ 85003",
+      "extractedEntity": "Arizona Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Arizona Administrative Sector (NEIGHBORHOOD)",
+      "lat": 33.4484,
+      "lng": -112.074
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Phoenix, AZ) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378583-17",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Peer-Delivered Linkage Case Management and Same-Day ART Initiation for Men and Young Persons with HIV Infection — Eswatini, 2015–2017, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378583-18",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Notes from the Field: Carbapenemase-Producing Carbapenem-Resistant Enterobacteriaceae from Less Common Enterobacteriaceae Genera — United States, 2014–2017, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378584-19",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Raleigh, NC 27601",
+      "extractedEntity": "North Carolina Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "North Carolina Administrative Sector (NEIGHBORHOOD)",
+      "lat": 35.7796,
+      "lng": -78.6382
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Raleigh, NC) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378585-20",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "18-24",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "QuickStats: Percentage of Adults Aged ≥18 Years With or Without Psychological Distress Who Were Current Smokers, by Age Group and Level of Distress — National Health Interview Survey, 2014–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378585-21",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Suicide",
+    "location": {
+      "originalAddress": "Vital Signs: Trends in State Suicide Rates — United States, 1999–2016 and Circumstances Contributing to Suicide — 27 States, 2015, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378586-22",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Invasive Methicillin-Resistant Staphylococcus aureus Infections Among Persons Who Inject Drugs — Six Sites, 2005–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378587-23",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Tobacco Product Use Among Middle and High School Students — United States, 2011–2017, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378587-24",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Update: Influenza Activity in the United States During the 2017–18 Season and Composition of the 2018–19 Influenza Vaccine, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378588-25",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Update: ACIP Recommendations for the Use of Quadrivalent Live Attenuated Influenza Vaccine (LAIV4) — United States, 2018–19 Influenza Season, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378588-26",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Notes from the Field: Crimean-Congo Hemorrhagic Fever Outbreak — Central Uganda, August–September 2017, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378589-27",
+    "timestamp": "2018-06-07T00:00:00Z",
+    "ageGroup": "Under 18",
+    "gender": "Unknown",
+    "mannerOfDeath": "Homicide",
+    "location": {
+      "originalAddress": "QuickStats: Homicide and Suicide Death Rates for Persons Aged 15–19 Years — National Vital Statistics System, United States, 1999–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378590-28",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "18-24",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Health Insurance Coverage by Occupation Among Adults Aged 18–64 Years — 17 States, 2013–2014, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378590-29",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Miami, FL 33101",
+      "extractedEntity": "Florida Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Florida Administrative Sector (NEIGHBORHOOD)",
+      "lat": 25.7617,
+      "lng": -80.1918
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Miami, FL) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378591-30",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Progress Toward Rubella and Congenital Rubella Syndrome Control — South-East Asia Region, 2000–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378591-31",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Chicago, IL 60601",
+      "extractedEntity": "Illinois Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Illinois Administrative Sector (NEIGHBORHOOD)",
+      "lat": 41.8781,
+      "lng": -87.6298
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Chicago, IL) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378592-32",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Houston, TX 77002",
+      "extractedEntity": "Texas Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Texas Administrative Sector (NEIGHBORHOOD)",
+      "lat": 29.7604,
+      "lng": -95.3698
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Houston, TX) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378593-33",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Miami, FL 33101",
+      "extractedEntity": "Florida Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Florida Administrative Sector (NEIGHBORHOOD)",
+      "lat": 25.7617,
+      "lng": -80.1918
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Miami, FL) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378594-34",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Erratum: Vol. 67, No. 16, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378595-35",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "QuickStats: Breast Cancer Death Rates Among Women Aged 50–74 Years, by Race/Ethnicity — National Vital Statistics System, United States, 2006 and 2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378595-36",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Environmental",
+    "location": {
+      "originalAddress": "HIV Preexposure Prophylaxis in the U.S. Military Services — 2014–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378596-37",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Natural",
+    "location": {
+      "originalAddress": "Use of Outpatient Rehabilitation Among Adult Stroke Survivors — 20 States and the District of Columbia, 2013, and Four States, 2015, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378596-38",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "Under 18",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Vaccination Coverage Among Children Aged 2 Years — U.S. Affiliated Pacific Islands, April–October, 2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378597-39",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Notes from the Field: Vaccine Administration Errors Involving Recombinant Zoster Vaccine — United States, 2017–2018, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378598-40",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Salt Lake City, UT 84111",
+      "extractedEntity": "Utah Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Utah Administrative Sector (NEIGHBORHOOD)",
+      "lat": 40.7608,
+      "lng": -111.891
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Salt Lake City, UT) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378599-41",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Erratum: Vol. 67, No. 16, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378600-42",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "18-24",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "QuickStats: Percentage of Adults Aged 18–64 Years with Current Asthma, by State —National Health Interview Survey, 2014–2016, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378600-43",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SURVEILLANCE SUMMARIES: Surveillance for Certain Health Behaviors and Conditions Among States and Selected Local Areas — Behavioral Risk Factor Surveillance System, United States, 2015, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378601-44",
+    "timestamp": "2018-04-26T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "RECOMMENDATIONS AND REPORTS: Prevention of Pertussis, Tetanus, and Diphtheria with Vaccines in the United States: Recommendations of the Advisory Committee on Immunization Practices (ACIP), SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378601-45",
+    "timestamp": "2017-08-10T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Summary of Notifiable Infectious Diseases and Conditions &#8212; United States, 2015, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378602-46",
+    "timestamp": "2017-08-10T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "Summary of Notifiable Noninfectious Conditions and Disease Outbreaks: Surveillance Data Published Between April 1, 2016 and January 31, 2017 — United States, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378604-47",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Foreword, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378604-48",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Overview, Control Strategies, and Lessons Learned in the CDC Response to the 2014–2016 Ebola Epidemic, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378605-49",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: CDC’s Response to the 2014–2016 Ebola Epidemic — Guinea, Liberia, and Sierra Leone, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378606-50",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Early Identification and Prevention of the Spread of Ebola in High-Risk African Countries, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378606-51",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Incident Management Systems and Building Emergency Management Capacity during the 2014–2016 Ebola Epidemic — Liberia, Sierra Leone, and Guinea, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378607-52",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Ebola Surveillance — Guinea, Liberia, and Sierra Leone, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378607-53",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Laboratory Response to Ebola — West Africa and United States, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378608-54",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Infection Prevention and Control for Ebola in Health Care Settings — West Africa and United States, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378609-55",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Travel and Border Health Measures to Prevent the International Spread of Ebola, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378609-56",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Lessons of Risk Communication and Health Promotion — West Africa and United States, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378610-57",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Early Identification and Prevention of the Spread of Ebola — United States, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378610-58",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Modeling in Real Time During the Ebola Response, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378611-59",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Safe and Effective Deployment of Personnel to Support the Ebola Response — West Africa, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782446378612-60",
+    "timestamp": "2016-07-07T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "SUPPLEMENTS: Implementing an Ebola Vaccine Study — Sierra Leone, SF, CA",
+      "extractedEntity": "San Francisco Sector Grid",
+      "snappedType": "grid_80m",
+      "snappedLabel": "San Francisco Sector Grid (GRID_80M)",
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight"
+    ],
+    "isVerified": true
+  },
+  {
     "id": "seeded-us-NY-10001-0",
     "timestamp": "1986-01-01T00:00:00Z",
     "ageGroup": "18-24",
