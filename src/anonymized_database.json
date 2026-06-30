@@ -497971,6 +497971,206 @@
     "isVerified": true
   },
   {
+    "id": "baked-alert-1782791740567-2",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Richmond, VA 23219",
+      "extractedEntity": "Virginia Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Virginia Administrative Sector (NEIGHBORHOOD)",
+      "lat": 37.5407,
+      "lng": -77.436
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Richmond, VA) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740571-3",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Los Angeles, CA 90012",
+      "extractedEntity": "California Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "California Administrative Sector (NEIGHBORHOOD)",
+      "lat": 34.0522,
+      "lng": -118.2437
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Los Angeles, CA) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740574-5",
+    "timestamp": "2018-06-28T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Indianapolis, IN 46204",
+      "extractedEntity": "Indiana Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Indiana Administrative Sector (NEIGHBORHOOD)",
+      "lat": 39.7684,
+      "lng": -86.1581
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Indianapolis, IN) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740586-16",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Phoenix, AZ 85003",
+      "extractedEntity": "Arizona Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Arizona Administrative Sector (NEIGHBORHOOD)",
+      "lat": 33.4484,
+      "lng": -112.074
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Phoenix, AZ) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740589-19",
+    "timestamp": "2018-06-14T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Raleigh, NC 27601",
+      "extractedEntity": "North Carolina Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "North Carolina Administrative Sector (NEIGHBORHOOD)",
+      "lat": 35.7796,
+      "lng": -78.6382
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Raleigh, NC) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740596-29",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Miami, FL 33101",
+      "extractedEntity": "Florida Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Florida Administrative Sector (NEIGHBORHOOD)",
+      "lat": 25.7617,
+      "lng": -80.1918
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Miami, FL) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740598-31",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Chicago, IL 60601",
+      "extractedEntity": "Illinois Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Illinois Administrative Sector (NEIGHBORHOOD)",
+      "lat": 41.8781,
+      "lng": -87.6298
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Chicago, IL) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740599-32",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Houston, TX 77002",
+      "extractedEntity": "Texas Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Texas Administrative Sector (NEIGHBORHOOD)",
+      "lat": 29.7604,
+      "lng": -95.3698
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Houston, TX) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740600-33",
+    "timestamp": "2018-05-31T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Miami, FL 33101",
+      "extractedEntity": "Florida Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Florida Administrative Sector (NEIGHBORHOOD)",
+      "lat": 25.7617,
+      "lng": -80.1918
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Miami, FL) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
+    "id": "baked-alert-1782791740611-40",
+    "timestamp": "2018-05-24T00:00:00Z",
+    "ageGroup": "45-54",
+    "gender": "Unknown",
+    "mannerOfDeath": "Undetermined",
+    "location": {
+      "originalAddress": "State Level Alert, Salt Lake City, UT 84111",
+      "extractedEntity": "Utah Administrative Sector",
+      "snappedType": "neighborhood",
+      "snappedLabel": "Utah Administrative Sector (NEIGHBORHOOD)",
+      "lat": 40.7608,
+      "lng": -111.891
+    },
+    "detailsStripped": [
+      "Exact timestamps removed, rounded safely to UTC midnight",
+      "Location generalized to State Administrative Capital (Salt Lake City, UT) to prevent residential localization"
+    ],
+    "isVerified": true
+  },
+  {
     "id": "seeded-us-NY-10001-0",
     "timestamp": "1986-01-01T00:00:00Z",
     "ageGroup": "18-24",
