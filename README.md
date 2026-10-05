@@ -11,53 +11,68 @@ the same items re-added every night, state totals turned into single dots with i
 and a generated 1980s–2010s backlog. v2 throws all of that away. Every number on the map comes straight from
 a source table; suppressed values stay suppressed.
 
-## Data sources (refreshed weekly by `.github/workflows/refresh.yml`)
+## How far back each measure goes
 
-### County rates (choropleth)
+| Measure | Years | Sources (in order of priority) |
+|---|---|---|
+| All deaths — where they lived | 1968–2025 (gap: 2010) | WONDER export · CDC 2020 table · NCHS death files 1968–88 · Census estimates 2001–25 · NCHS files 1989–99 (large counties) |
+| All deaths — where they died | 1968–2004, 2020 | WONDER export · CDC 2020 table · NCHS death files |
+| Overdose, suicide, homicide, firearm — lived | 1968–2004, 2019–now (gap 2005–18 until WONDER export) | WONDER export · CDC Mapping Injury, Overdose & Violence · NCHS death files |
+| Same four — where they died | 1968–2004 | WONDER export · NCHS death files |
+| Heart disease, stroke (all ages) — lived / died | 1968–2004 | WONDER export · NCHS death files |
+| Heart disease, stroke, adults 35+ | 2015–2023 | CDC Atlas of Heart Disease and Stroke (each year = middle of a 3-year average) |
+| Firearm suicides / homicides | 2019–now | CDC Mapping Injury, Overdose & Violence |
+| Drug poisoning (modeled) | 2003–2021 | CDC NCHS small-area model |
+| Traffic crash deaths (where the crash happened) | 1975–2024 | NHTSA FARS (crash dots 2001–2024) |
+| Weather deaths (where the event happened) | 1950–now | NOAA Storm Events (event dots where located) |
+| Life expectancy, premature death, YPLL, injury, child & infant mortality | one pooled release (to 2022) | County Health Rankings 2025 |
 
-| Measure | Source | Coverage | Publisher updates | Notes |
+**NCHS death files (1968–2004).** One record per death, from the NCHS Multiple Cause of Death public-use files
+hosted by NBER, with both the county of residence and the county of occurrence. Counts are exact; counties
+with 1–9 deaths are hidden. From 1989 the public files only name counties of 100,000+ people, so smaller
+counties are blank for 1989–2004. Population: NCI SEER county estimates 1969–2024 (1968 uses 1969).
+Cause definitions follow ICD-8 (1968–78), ICD-9 (1979–98) and ICD-10 (1999–); `tests/test_history_causes.py`
+checks them against published US totals (all, suicide, firearm, heart, stroke match exactly; homicide is
+within 1.5% because NCHS's older totals include legal intervention).
+
+Fixes needed to place pre-1982 records (`pipeline/history.py: build_crosswalk`): DC is missing from NBER's
+crosswalk; New York City is one area until 1982 (the five boroughs share its rate); Virginia used an older
+numbering scheme (counties = 3 × alphabetical index, cities from 300). SEER combines a few counties
+(e.g. some Virginia cities with their counties, Maui with Kalawao); those members share one rate.
+
+**CDC WONDER fills the gaps.** Step-by-step export instructions are in
+[`data_manual/wonder/README.md`](data_manual/wonder/README.md). Exports saved there take priority.
+
+## Death locations (points follow the selected measure and year)
+
+| Shown with | Source | Years | Where they died | Where they lived |
 |---|---|---|---|---|
-| Overdose, suicide, homicide, firearm (all / suicide / homicide) | CDC NCHS *Mapping Injury, Overdose, and Violence – County* ([psx4-wq38](https://data.cdc.gov/d/psx4-wq38)) | 2019–2024 + trailing 12 months | Monthly | Crude rate per 100k, county of residence. Counts 1–9 suppressed; rate is CDC's Bayesian modeled estimate (hatched). |
-| Overdose, monthly rolling 12-month counts | CDC NCHS VSRR provisional ([gb4e-yj24](https://data.cdc.gov/d/gb4e-yj24)) | 2020–present | Monthly | County panel chart. Counts 1–9 suppressed. |
-| All deaths — **where they lived** | US Census Bureau Population Estimates, components of change ([co-est{year}-alldata.csv](https://www.census.gov/programs-surveys/popest/data/data-sets.html)) | Jul 2020–Jun 2025 | Yearly (March) | Pipeline finds the newest vintage automatically. CT published by planning region (blank). |
-| All deaths — **where they died** | CDC NCHS county-of-occurrence tables ([6vqh-esgs](https://data.cdc.gov/d/6vqh-esgs) 2020, [kn79-hsxy](https://data.cdc.gov/d/kn79-hsxy) Jan 2020–Jun 2023) | 2020; 2020–23 avg | Archived 2023 | Residence counterpart for the 2020 comparison: [75vb-d79q](https://data.cdc.gov/d/75vb-d79q). |
-| Drug poisoning, long-run | CDC NCHS small-area model ([rpvx-m2md](https://data.cdc.gov/d/rpvx-m2md)) | 2003–2021 | Archived | Age-adjusted, every value modeled. |
-| Heart disease, stroke (adults 35+) | CDC Atlas of Heart Disease & Stroke ([mri7-5jtw](https://data.cdc.gov/d/mri7-5jtw), [y5ii-knwc](https://data.cdc.gov/d/y5ii-knwc)) | 2022–2024 avg | Yearly | Age-adjusted, spatially smoothed. |
-| Life expectancy, premature death, YPLL, injury, motor vehicle, child & infant mortality | [County Health Rankings & Roadmaps](https://www.countyhealthrankings.org/health-data/methodology-and-sources/data-documentation) | 2025 release | Yearly | Multi-year pooled. CT blank (planning regions). |
-| County boundaries | us-atlas 3 (Census 2017 cartographic boundaries) | | | Matches the county set NVSS uses. |
+| Traffic crash deaths | NHTSA FARS | 2001–2024 | crash coordinates (zoom in to a state) | — |
+| Weather deaths | NOAA Storm Events | 1950–now | event start point, where recorded | — |
+| All deaths, overdose, suicide, homicide, firearm | Cook County (IL) Medical Examiner | 2014–now | ~1 km squares | residence ZIP |
+| same | Santa Clara County (CA) Medical Examiner-Coroner | 2018–now | ~1 km squares | residence ZIP |
+| Overdose | Connecticut accidental drug-related deaths | 2012–2024 | town of injury | town of residence |
 
-### Death locations (points)
+## Weekly refresh
 
-| Layer | Source | Coverage | Publisher updates | Where they died | Where they lived |
-|---|---|---|---|---|---|
-| Traffic crashes | [NHTSA FARS](https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars) national CSV | Latest 2 years (2023–2024) | Yearly | Crash coordinates, rounded to ~100 m | not published |
-| Cook County, IL | [Medical Examiner Case Archive](https://datacatalog.cookcountyil.gov/d/cjeq-bs86) | 2019–present | Daily | ~1 km grid squares | Residence ZIP |
-| Santa Clara County, CA | [Medical Examiner-Coroner full dataset](https://data.sccgov.org/d/s3fb-yrjp) | 2019–present | Daily | ~1 km grid squares (source coordinates are often the hospital) | Residence ZIP |
-| Connecticut | [Accidental drug-related deaths](https://data.ct.gov/d/rybz-nyjw) | 2012–2024 | Yearly | Town of injury | Town of residence |
+`.github/workflows/refresh.yml` runs `pipeline/build_data.py` every Monday: CDC (monthly updates), Census,
+County Health Rankings, medical examiners (daily updates) and any WONDER exports, merged with the stored
+history in `site/data/hist/`. Run `python pipeline/history.py` by hand to rebuild the history (downloads
+~3 GB once into `.cache/`; `--skip nber fars noaa` to rebuild parts). FARS adds a year each spring and NOAA
+each month, so rerun `history.py --skip nber` a few times a year.
 
-Privacy: medical examiner files include street addresses, ages and causes. MortalGIS publishes only counts per
-~1 km square or ZIP Code, by year and manner of death.
-
-### Researched but not automated (candidates)
-
-- **CDC WONDER provisional mortality** — county of residence *or occurrence*, any cause, recent weeks. The API
-  only returns national data, so county figures need a manual export (could be dropped into the pipeline as a CSV).
-- **San Diego County ME** ([jkvb-n4p7](https://internal-sandiegocounty.data.socrata.com/d/jkvb-n4p7)) — 90k cases with
-  death/residence ZIP but no coordinates; would work as a ZIP-level lived/died layer.
-- **IHME US county mortality by cause, 1980–2014** (GHDx) — historical layer; requires a manual download.
-- **Milwaukee County ME** — public data moved off its old ArcGIS service; recheck.
-
-### Reliability
-
-Each source is fetched independently. If a point layer fails, the previous week's file is kept and the layer is
-marked stale on the map; if the core CDC overdose table collapses, the build stops and nothing is published.
-`site/data/validation.json` records coverage and per-source status for every run.
+Reliability: each source is fetched on its own. A failing medical examiner layer keeps last week's file and
+is marked stale; if the core CDC overdose table comes back nearly empty, the build stops and nothing is
+published. `site/data/validation.json` lists county coverage for every measure and year.
 
 ## Layout
 
 ```
 pipeline/build_data.py   county measures: download + validate + write site/data/*.json (stdlib only)
-pipeline/incidents.py    death-location layers (FARS, medical examiners) with privacy aggregation
+pipeline/incidents.py    medical examiner layers with privacy aggregation
+pipeline/history.py      one-time history build: NCHS 1968–2004, SEER population, FARS, NOAA
+data_manual/wonder/      CDC WONDER exports (manual; instructions inside)
+tests/                   cause-definition, history and WONDER-parser checks
 pipeline/wrap_index.py   wrap site/app.html into site/index.html
 site/                    static site (d3 + topojson from CDN), deploys as-is
 site/data/validation.json  coverage per measure + unmatched FIPS from the last run
@@ -76,6 +91,7 @@ To enable auto-deploy: add an `HF_TOKEN` repository secret (Hugging Face write t
 ## Roadmap
 
 1. **Phase 1 (done):** county choropleth, Michigan default, county panel with trends and ranks.
-2. **Phase 2 (done):** "where they lived / where they died" switch; death-location layers (FARS, Cook and Santa Clara
-   medical examiners, Connecticut drug deaths) aggregated for privacy.
-3. **Phase 3:** history back to 1980 (IHME county mortality by cause, 1980–2014) and CDC WONDER exports for all-cause deaths by year.
+2. **Phase 2 (done):** "where they lived / where they died" switch; death-location layers.
+3. **Phase 3 (done):** history back to 1968 (NCHS death files), traffic deaths 1975+, weather deaths 1950+,
+   one year slider for everything with coverage strip; all overlay checkboxes removed.
+4. **Next:** load the CDC WONDER exports (2005–2018); San Diego ME at ZIP level.
