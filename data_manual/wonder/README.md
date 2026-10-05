@@ -7,18 +7,20 @@ priority over every other source for the years they cover.
 
 ## File names
 
-`<cause>_<residence|occurrence>_<anything>.txt`
+You can keep the names WONDER gives the files (`Underlying Cause of Death 1999-2020 3.csv`) and
+either format (.txt or .csv). The build reads the cause from the query notes WONDER writes at the
+bottom of each file. If you prefer, name them `<cause>_<residence|occurrence>_<anything>.txt`
+(cause: `all`, `overdose`, `suicide`, `homicide`, `firearm`, `heart`, `stroke`).
 
-- cause: `all`, `overdose`, `suicide`, `homicide`, `firearm`, `heart`, `stroke`
-- residence = counted where the person lived; occurrence = where the death happened
-
-Examples: `overdose_residence_1999-2009.txt`, `all_occurrence_2018-2025.txt`
+Check files before uploading: `python pipeline/check_wonder.py path/to/*.csv`. Every file should say OK.
 
 ## Export A — where people lived, 1999–2020 (7 files, the important ones)
 
 1. Open <https://wonder.cdc.gov/ucd-icd10.html> → **I Agree** to the data use restrictions.
 2. **Section 1 (Organize table layout)**
-   - Group Results By: **County**, then **Year**
+   - Group Results By: **County** in the first box, **Year** in the second box, and **None** in
+     any others. Do not pick Census Region or State: the map needs one row per county *per year*.
+     The table preview should have a Year column; if it doesn't, the file can't be used.
    - Measures: leave **Deaths** checked (Population and Crude Rate can stay checked)
 3. **Section 2 (Select location)**: leave "The United States" selected.
 4. **Section 4 (Select year)**: leave **All Years** (1999–2020). If WONDER says the result is too
@@ -36,7 +38,8 @@ Examples: `overdose_residence_1999-2009.txt`, `all_occurrence_2018-2025.txt`
 6. **Other options** (last section): check **Export Results**, uncheck **Show Totals**, check
    **Show Zero Values** (so counties with no deaths show 0 instead of blank), and check
    **Show Suppressed Values** if that box is offered.
-7. Click **Send**. Your browser downloads a `.txt` file. Rename it as in the table and save it here.
+7. Click **Send** and save the download. One file per cause (7 total), or two per cause if you had
+   to split the years.
 
 ## Export B — where people died, 2018–latest (optional, 7 files)
 
