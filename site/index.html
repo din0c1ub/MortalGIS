@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="US county death rates: overdose, suicide, homicide, firearm, heart disease, life expectancy. Data from CDC NCHS and County Health Rankings.">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>MortalGIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-screen atlas. Control rail on the left (stacks under the map on phones), county map fills the rest. */
+:root{
+  --bg:#eef0f1; --panel:#f8f9f9; --ink:#1a222b; --muted:#5d6873; --line:#d3d8dc;
+  --accent:#7a1f2b; --focus:#1f5f7a; --nodata:#dfe2e4; --stroke:#ffffff; --hatch:rgba(26,34,43,.28);
+  --l1:#1f5f7a; --l2:#6a4c93; --l3:#2f7d4f; --l4:#26313b;
+  --r0:#f4ebe6; --r1:#ecd2c6; --r2:#e2b1a0; --r3:#d38a77; --r4:#bd5f52; --r5:#9c3a37; --r6:#6e1f25;
+  --f-display:"Spectral", Georgia, "Times New Roman", serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#192027; --ink:#e6eaee; --muted:#97a3ae; --line:#2b353f;
+  --accent:#e58a7c; --focus:#7cc3df; --nodata:#232b33; --stroke:#12171c; --hatch:rgba(230,234,238,.3);
+  --l1:#7cc3df; --l2:#b9a2e3; --l3:#7fd19c; --l4:#dfe6ec;
+  --r0:#2a2427; --r1:#46292c; --r2:#672f30; --r3:#8f3b35; --r4:#bb5443; --r5:#e07d5e; --r6:#f6b48c;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#192027; --ink:#e6eaee; --muted:#97a3ae; --line:#2b353f;
+  --accent:#e58a7c; --focus:#7cc3df; --nodata:#232b33; --stroke:#12171c; --hatch:rgba(230,234,238,.3);
+  --l1:#7cc3df; --l2:#b9a2e3; --l3:#7fd19c; --l4:#dfe6ec;
+  --r0:#2a2427; --r1:#46292c; --r2:#672f30; --r3:#8f3b35; --r4:#bb5443; --r5:#e07d5e; --r6:#f6b48c;
+  color-scheme:dark; }
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--f-body);}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.app{height:100%;display:grid;grid-template-columns:minmax(300px,360px) 1fr;grid-template-rows:auto 1fr}
+header{grid-column:1/-1;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{font:600 22px/1 var(--f-display);letter-spacing:.01em}
+.brand span{color:var(--accent)}
+.tag{color:var(--muted);font-size:13px}
+.search{margin-left:auto;position:relative}
+.search input{width:min(260px,60vw);padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+
+aside{overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:16px 20px 28px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.lbl{font:500 11px/1 var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;display:block}
+select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.desc{color:var(--muted);font-size:13px;margin-top:6px}
+.period{display:flex;align-items:center;gap:10px}
+.period input[type=range]{flex:1;accent-color:var(--accent)}
+.pval{font:500 13px var(--f-data);min-width:5.5em;text-align:right}
+.iconbtn{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:4px 10px;cursor:pointer}
+.iconbtn:hover{border-color:var(--muted)}
+.views{display:flex;gap:6px;flex-wrap:wrap}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.seg button{border:0;background:transparent;padding:7px 8px;cursor:pointer;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel);font-weight:600}
+.note{font-size:12.5px;color:var(--muted);background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:7px 9px;margin-top:8px}
+details.about summary{cursor:pointer;font:500 11px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.srcs{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:6px;font-size:12px}
+.srcs li{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.srcs a{color:var(--ink)} .srcs span{color:var(--muted);font-family:var(--f-data);white-space:nowrap}
+#pts{position:absolute;inset:0;pointer-events:none}
+.views button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:13px}
+.views button[aria-pressed=true]{border-color:var(--ink);font-weight:600}
+
+.legend svg{display:block;width:100%;height:auto;overflow:visible}
+.legend text{font:400 10.5px var(--f-data);fill:var(--muted)}
+.legkeys{display:flex;gap:14px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legkeys i{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+.legkeys .hz{background-image:repeating-linear-gradient(45deg,var(--hatch) 0 1.5px,transparent 1.5px 4px)}
+#cov{display:block;width:100%;height:auto;margin-top:6px;overflow:visible}
+#cov text{font:400 9.5px var(--f-data);fill:var(--muted)}
+.covkey{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:2px}
+.covkey i{display:inline-block;width:10px;height:8px;margin-right:4px;vertical-align:0}
+.dotkey{font-size:12.5px;color:var(--muted);margin-top:8px;display:flex;gap:8px;align-items:flex-start}
+.dotkey .sw{flex:none;width:10px;height:10px;border-radius:50%;margin-top:4px}
+.gapnote{position:absolute;left:50%;top:18px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;max-width:min(420px,80%);text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+
+.county{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:12px}
+.cname{font:600 20px/1.15 var(--f-display);text-wrap:balance}
+.csub{color:var(--muted);font-size:13px}
+.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big b{font:500 30px/1 var(--f-data);letter-spacing:-.02em}
+.big small{color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.warn{border-color:var(--accent);color:var(--accent)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.facts dt{color:var(--muted)} .facts dd{margin:0;font:400 13px var(--f-data);font-variant-numeric:tabular-nums}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font:400 10px var(--f-data);fill:var(--muted)}
+.chart h4,.allm h4{margin:0 0 4px;font:500 11px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.allm table{width:100%;border-collapse:collapse;font-size:12.5px}
+.allm td{padding:5px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+.allm td.v{font-family:var(--f-data);text-align:right;white-space:nowrap;padding-left:8px;font-variant-numeric:tabular-nums}
+.allm td.p{width:72px;padding-left:10px}
+.pbar{height:6px;background:var(--nodata);border-radius:3px;position:relative}
+.pbar i{position:absolute;top:-3px;width:2px;height:12px;background:var(--ink)}
+.allm tr{cursor:pointer} .allm tr:hover td{color:var(--accent)}
+.src{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.src a{color:inherit}
+
+main{position:relative;min-width:0;min-height:0}
+#map{width:100%;height:100%;display:block;touch-action:none}
+#map .c{stroke:var(--stroke);stroke-width:.25;vector-effect:non-scaling-stroke;cursor:pointer}
+#map .c:hover{stroke:var(--ink);stroke-width:1}
+#map .states{fill:none;stroke:var(--ink);stroke-opacity:.55;stroke-width:.8;vector-effect:non-scaling-stroke;pointer-events:none}
+#map .sel{fill:none;stroke:var(--focus);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
+#map .hatch{pointer-events:none}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.12);max-width:240px}
+.tip b{font-family:var(--f-data)}
+.zoom{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:32px;height:32px;border:1px solid var(--line);background:var(--panel);border-radius:6px;cursor:pointer;font-size:16px}
+.status{position:absolute;left:16px;bottom:12px;font-size:12px;color:var(--muted);background:var(--panel);padding:3px 8px;border-radius:4px;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
+
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 56vh auto;height:auto}
+  main{grid-row:2;min-height:56vh}
+  aside{grid-row:3;border-right:0;border-top:1px solid var(--line);overflow:visible}
+  header{padding:10px 16px} aside{padding:16px}
+  .search{margin-left:0;width:100%} .search input{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <header>
+    <div class="brand">Mortal<span>GIS</span></div>
+    <div class="tag">US county death rates, 1968 to today</div>
+    <div class="search">
+      <label for="q" class="lbl" hidden>Find a county</label>
+      <input id="q" list="countylist" placeholder="Find a county, e.g. Genesee, MI" autocomplete="off">
+      <datalist id="countylist"></datalist>
+    </div>
+  </header>
+
+  <aside>
+    <div>
+      <label class="lbl" for="measure">Cause of death</label>
+      <select id="measure"></select>
+      <div class="desc" id="mdesc"></div>
+    </div>
+    <div>
+      <span class="lbl" id="whereLbl">Count deaths by</span>
+      <div class="seg" role="group" aria-labelledby="whereLbl">
+        <button type="button" id="wLived" aria-pressed="true">Where they lived</button>
+        <button type="button" id="wDied" aria-pressed="false">Where they died</button>
+      </div>
+      <div class="note" id="whereNote" hidden></div>
+    </div>
+    <div id="periodWrap">
+      <label class="lbl" for="period">Year</label>
+      <div class="period">
+        <button class="iconbtn" id="play" type="button" aria-label="Play through years">▶</button>
+        <input type="range" id="period" min="0" max="0" step="1" value="0">
+        <span class="pval" id="pval"></span>
+      </div>
+      <svg id="cov" viewBox="0 0 320 22" role="img" aria-label="Years with data"></svg>
+      <div class="covkey" id="covkey"></div>
+    </div>
+    <div>
+      <span class="lbl">View</span>
+      <div class="views" id="views">
+        <button type="button" data-view="us" aria-pressed="false">United States</button>
+        <button type="button" data-view="state" aria-pressed="true">Michigan</button>
+        <button type="button" data-view="county" aria-pressed="false">Selected county</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="lbl" id="legTitle">Rate</span>
+      <svg id="legend" viewBox="0 0 320 34" role="img" aria-label="Map legend"></svg>
+      <div class="legkeys" id="legkeys"></div>
+      <div class="dotkey" id="dotkey" hidden></div>
+    </div>
+    <section class="county" id="county" aria-live="polite"></section>
+    <details class="about"><summary>About the data</summary><ul class="srcs" id="srcs"></ul>
+      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
+    <div class="src" id="src"></div>
+  </aside>
+
+  <main>
+    <svg id="map" role="img" aria-label="Choropleth map of US counties"></svg>
+    <canvas id="pts"></canvas>
+    <div class="zoom"><button id="zin" type="button" aria-label="Zoom in">+</button><button id="zout" type="button" aria-label="Zoom out">−</button></div>
+    <div class="tip" id="tip" hidden></div>
+    <div class="status" id="status"></div>
+    <div class="gapnote" id="gapnote" hidden></div>
+    <div class="loading" id="loading">Loading county data…</div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+(async function(){
+const $ = s => document.querySelector(s);
+const DEFAULT = {measure:"overdose", fips:"26049"};
+const state = {measure:null, year:null, fips:DEFAULT.fips, view:"state", playing:null, where:"lived", scale:"year"};
+const cache = {};
+const fmt = v => Math.abs(v)>=1000 ? d3.format(",.0f")(v) : d3.format(",.1f")(v);
+const fmtN = v => Number.isInteger(v) ? d3.format(",")(v) : d3.format(",.1f")(v);
+const fmtI = d3.format(","), pct = d3.format(".0%");
+
+let meta, topo;
+try{
+  [meta, topo] = await Promise.all([fetch("data/meta.json").then(r=>r.json()), fetch("data/counties-10m.json").then(r=>r.json())]);
+}catch(e){ $("#loading").textContent = "Couldn't load the county data files. Reload the page to try again."; return; }
+$("#loading").hidden = true;
+
+const counties = meta.counties; // [fips,name,state]
+const idx = new Map(counties.map((c,i)=>[c[0],i]));
+const M = new Map(meta.measures.map(m=>[m.key,m]));
+const SRC = meta.sources || {};
+const stAbbr = {"01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT","10":"DE","11":"DC","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN","19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA","26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE","32":"NV","33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND","39":"OH","40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD","47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV","55":"WI","56":"WY"};
+const label = c => `${c[1]}, ${stAbbr[c[0].slice(0,2)]||c[2]}`;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const ramp = () => d3.range(7).map(i=>css(`--r${i}`));
+
+// ---------- controls
+const sel = $("#measure"); const groups = d3.group(meta.measures, m=>m.group);
+for (const [g, ms] of groups){ const og=document.createElement("optgroup"); og.label=g; ms.filter(m=>m.place!=="occurrence"||!m.pair).forEach(m=>og.append(new Option(m.label,m.key))); sel.append(og); }
+$("#countylist").innerHTML = counties.map(c=>`<option value="${label(c)}"></option>`).join("");
+const byLabel = new Map(counties.map(c=>[label(c).toLowerCase(), c[0]]));
+
+// ---------- map
+const svg = d3.select("#map"), g = svg.append("g");
+const features = topojson.feature(topo, topo.objects.counties).features.filter(f=>idx.has(f.id));
+const nation = topojson.feature(topo, topo.objects.nation);
+const stateFeats = topojson.feature(topo, topo.objects.states).features;
+const projection = d3.geoAlbersUsa();
+const path = d3.geoPath(projection);
+svg.append("defs").append("pattern").attr("id","hatch").attr("patternUnits","userSpaceOnUse").attr("width",4).attr("height",4).attr("patternTransform","rotate(45)")
+  .append("rect").attr("width",.7).attr("height",4).attr("fill","var(--hatch)");
+const cPaths = g.append("g").selectAll("path").data(features).join("path").attr("class","c")
+  .on("pointermove", hover).on("pointerleave", ()=>{$("#tip").hidden=true}).on("click", (e,d)=>select(d.id,true));
+const hatchG = g.append("g").attr("class","hatch");
+g.append("path").attr("class","states").datum(topojson.mesh(topo, topo.objects.states, (a,b)=>a!==b));
+g.append("path").attr("class","states").datum(nation);
+const selPath = g.append("path").attr("class","sel");
+
+let W=0,H=0;
+function layout(){
+  const r = $("#map").getBoundingClientRect(); W=r.width; H=r.height;
+  if(!W||!H) return;
+  projection.fitExtent([[10,10],[W-10,H-10]], nation);
+  svg.attr("viewBox",`0 0 ${W} ${H}`);
+  cPaths.attr("d", path); g.selectAll(".states").attr("d", path);
+  drawHatch(); drawSel(); sizeCanvas(); drawPoints();
+}
+const zoom = d3.zoom().scaleExtent([1,60]).on("zoom", e=>{ g.attr("transform", e.transform); drawPoints(); });
+svg.call(zoom);
+$("#zin").onclick = ()=>svg.transition().duration(300).call(zoom.scaleBy,1.6);
+$("#zout").onclick = ()=>svg.transition().duration(300).call(zoom.scaleBy,1/1.6);
+function zoomTo(gj, pad=.12){
+  const [[x0,y0],[x1,y1]] = path.bounds(gj);
+  if(!isFinite(x0)) return;
+  const k = Math.min(60, (1-pad*2)/Math.max((x1-x0)/W,(y1-y0)/H));
+  svg.transition().duration(650).call(zoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2));
+}
+function setView(v){
+  state.view=v;
+  document.querySelectorAll("#views button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.view===v));
+  const st = state.fips.slice(0,2);
+  $("#views [data-view=state]").textContent = counties[idx.get(state.fips)][2] || "State";
+  if(v==="us") svg.transition().duration(650).call(zoom.transform, d3.zoomIdentity);
+  else if(v==="state") zoomTo({type:"FeatureCollection",features:features.filter(f=>f.id.slice(0,2)===st)});
+  else zoomTo(features.find(f=>f.id===state.fips), .3);
+}
+document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+
+// ---------- data helpers
+async function load(key){
+  if(!cache[key]) cache[key] = await fetch(`data/m_${key}.json`).then(r=>r.json());
+  return cache[key];
+}
+const isCount = m => m.colorBy==="count";
+function valArr(m, d, p){
+  if (isCount(m)) { const c = d.count && d.count[p]; return c ? c.map(v=>v==null||v<0?null:v) : null; }
+  return d.rate[p] || null;
+}
+function timeline(m){
+  const nums = m.periods.filter(p=>p!=="TTM").map(Number);
+  const out = nums.length ? d3.range(d3.min(nums), d3.max(nums)+1).map(String) : [];
+  if (m.periods.includes("TTM")) out.push("TTM");
+  return out;
+}
+function breaks(m, d, p){
+  if (isCount(m)) return {q:[1,2,5,10,20,50]};
+  const key = state.scale==="all" ? "_all" : "_y"+p;
+  d._b = d._b || {};
+  if (d._b[key]) return d._b[key];
+  let all = [];
+  for (const pp of (state.scale==="all" ? m.periods : [p])){ const a = valArr(m,d,pp); if(a) for(const v of a) if(v!=null && v>0) all.push(v); }
+  all.sort(d3.ascending);
+  const q = all.length ? [1,2,3,4,5,6].map(i=>+d3.quantileSorted(all, i/7).toFixed(1)) : [0,0,0,0,0,0];
+  return d._b[key] = {q};
+}
+const periodLabel = (m,p) => (m.periodLabels&&m.periodLabels[p]) || p;
+function srcRanges(d){
+  const by = d3.group(Object.entries(d.src||{}).filter(([p])=>p!=="TTM").sort((a,b)=>a[0]-b[0]), ([,s])=>s);
+  const out = [];
+  for (const [s, rows] of by){
+    const ys = rows.map(r=>+r[0]); let start=ys[0], prev=ys[0]; const parts=[];
+    for (const y of ys.slice(1).concat([null])){ if(y!==prev+1){ parts.push(start===prev?`${start}`:`${start}–${prev}`); start=y; } prev=y; }
+    out.push({s, text: parts.join(", ")});
+  }
+  return out;
+}
+
+// ---------- measure / year
+async function setMeasure(key, keepYear=true){
+  let m0 = M.get(key);
+  if (m0.pair){ const want = state.where==="died" ? "occurrence" : "residence"; if ((m0.place||"residence")!==want) key = m0.pair; }
+  const m = M.get(key); state.measure = key; sel.value = (m.place==="occurrence" && m.pair) ? m.pair : key;
+  const d = await load(key);
+  const tl = timeline(m);
+  if(!keepYear || !tl.includes(state.year)) state.year = tl.includes(state.year) ? state.year : nearestYear(m, state.year);
+  $("#mdesc").textContent = m.description;
+  const pr = $("#period"); pr.max = Math.max(0, tl.length-1); pr.value = tl.indexOf(state.year);
+  $("#periodWrap").hidden = tl.length < 2;
+  $("#legTitle").textContent = m.unit;
+  updateWhereNote(m);
+  drawCoverage(m, d);
+  const srcs = srcRanges(d).map(r=>`${r.text}: <a href="${(SRC[r.s]||{}).url||"#"}" target="_blank" rel="noopener">${(SRC[r.s]||{}).label||r.s}</a>`).join("<br>");
+  $("#src").innerHTML = `<b>Sources</b><br>${srcs}<br><br>${m.notes||""}<br><br>Built ${meta.generated.slice(0,10)}.`;
+  render();
+}
+function nearestYear(m, y){
+  const nums = m.periods.filter(p=>p!=="TTM");
+  if (!y || y==="TTM" || !nums.length) return m.defaultPeriod;
+  return nums.reduce((a,b)=>Math.abs(b-y)<Math.abs(a-y)?b:a, m.defaultPeriod);
+}
+function render(){
+  const m = M.get(state.measure), d = cache[state.measure], p = state.year;
+  const vals = valArr(m, d, p), b = breaks(m, d, p), R = ramp();
+  const cols = m.higherIsBetter ? R.slice().reverse() : R;
+  const scale = d3.scaleThreshold().domain(b.q).range(cols);
+  const nodata = css("--nodata");
+  const cnt = d.count && d.count[p];
+  cPaths.attr("fill", f=>{ const i=idx.get(f.id); const v = vals ? vals[i] : null;
+    if (v==null) return nodata; if (v===0) return css("--r0"); return scale(v); });
+  $("#pval").textContent = periodLabel(m,p);
+  drawLegend(b, cols, m, d, p);
+  drawHatch();
+  const n = vals ? vals.filter(v=>v!=null).length : 0;
+  const s = d.src && d.src[p];
+  $("#status").textContent = vals ? `${fmtI(n)} of ${fmtI(counties.length)} counties · ${periodLabel(m,p)}${s?` · ${(SRC[s]||{}).label||s}`:""}` : `No county data for ${p}`;
+  const gap = $("#gapnote");
+  if (!vals){
+    const why = (+p>=2005 && +p<=2018 && m.hasCounts && m.icdBreaks) ? "Public county death files stop in 2004 and CDC's current tables start in 2019. A CDC WONDER export fills these years (see the README)." : "This source doesn't cover this year.";
+    gap.hidden=false; gap.innerHTML = `<b>No county data for ${p}.</b> ${why}`;
+  } else if (s && SRC[s] && SRC[s].partial){
+    gap.hidden=false; gap.innerHTML = `<b>${p}: large counties only.</b> NCHS public files from 1989 to 2004 identify only counties of 100,000+ people.`;
+  } else gap.hidden=true;
+  drawPoints();
+  renderCounty();
+}
+function drawLegend(b, cols, m, d, p){
+  const L = d3.select("#legend"); L.selectAll("*").remove();
+  const w=320/7;
+  cols.forEach((c,i)=>L.append("rect").attr("x",i*w).attr("y",0).attr("width",w-1).attr("height",12).attr("fill",c));
+  const f = v => isCount(m) ? d3.format(",.0f")(v) : (m.unit.startsWith("years")&&v<200 ? v.toFixed(1) : (v>=100? d3.format(",.0f")(v): v.toFixed(1)));
+  L.append("text").attr("x",0).attr("y",26).attr("text-anchor","start").text(isCount(m)?"0":"");
+  b.q.forEach((v,i)=>L.append("text").attr("x",(i+1)*w-0.5).attr("y",26).attr("text-anchor","middle").text(f(v)));
+  const keys = [`<span><i style="background:var(--nodata)"></i>No data</span>`];
+  if (d.count && d.count[p] && d.count[p].some(v=>v===-1) && !(d.modeled && d.modeled[p])) keys.push(`<span><i class="hz" style="background-color:var(--nodata)"></i>Fewer than 10 deaths (hidden)</span>`);
+  if (d.modeled && d.modeled[p]) keys.push(`<span><i class="hz" style="background-color:var(--r2)"></i>${m.flagLabel||"Modeled estimate"}</span>`);
+  if (isCount(m)) keys.push(`<span>Color shows number of deaths</span>`);
+  $("#legkeys").innerHTML = keys.join("") + (isCount(m) ? "" : `<div class="views" role="group" aria-label="Color scale" style="margin-top:4px;width:100%"><button type="button" data-scale="year" aria-pressed="${state.scale==="year"}">Scale to this year</button><button type="button" data-scale="all" aria-pressed="${state.scale==="all"}">Same scale, all years</button></div>`);
+  $("#legkeys").querySelectorAll("[data-scale]").forEach(b=>b.onclick=()=>{ state.scale=b.dataset.scale; render(); });
+}
+function drawHatch(){
+  const d = cache[state.measure], p = state.year; hatchG.selectAll("*").remove();
+  if(!d) return;
+  const mod = d.modeled && d.modeled[p], cnt = d.count && d.count[p];
+  const pick = f => { const i = idx.get(f.id); return (mod && mod[i]) || (!mod && cnt && cnt[i]===-1); };
+  hatchG.selectAll("path").data(features.filter(pick)).join("path").attr("d",path).attr("fill","url(#hatch)");
+}
+function drawSel(){ const f=features.find(f=>f.id===state.fips); selPath.datum(f||null).attr("d", f?path:null); }
+function drawCoverage(m, d){
+  const tl = timeline(m), C = d3.select("#cov"); C.selectAll("*").remove();
+  if (tl.length < 2){ $("#covkey").innerHTML=""; return; }
+  const x = d3.scaleBand(tl, [0,320]).paddingInner(tl.length>40?0:0.08);
+  const color = p => { const s = d.src && d.src[p]; if(!s) return css("--line"); if(SRC[s]&&SRC[s].partial) return css("--r2"); return css("--r5"); };
+  C.append("g").selectAll("rect").data(tl).join("rect").attr("x",p=>x(p)).attr("y",2).attr("width",Math.max(1,x.bandwidth())).attr("height",8).attr("fill",color)
+    .append("title").text(p=>`${periodLabel(m,p)}: ${d.src&&d.src[p] ? (SRC[d.src[p]]||{}).label||d.src[p] : "no data"}`);
+  C.append("rect").attr("class","covsel").attr("y",0).attr("height",12).attr("fill","none").attr("stroke","var(--ink)").attr("stroke-width",1.2);
+  (m.icdBreaks||[]).filter(y=>tl.includes(String(y))).forEach(y=>{
+    C.append("line").attr("x1",x(String(y))).attr("x2",x(String(y))).attr("y1",0).attr("y2",13).attr("stroke","var(--ink)").attr("stroke-dasharray","2 1.5");
+  });
+  const first = tl[0], last = tl.filter(p=>p!=="TTM").at(-1);
+  C.append("text").attr("x",0).attr("y",21).text(first);
+  C.append("text").attr("x",320).attr("y",21).attr("text-anchor","end").text(last);
+  const hasPartial = Object.values(d.src||{}).some(s=>SRC[s]&&SRC[s].partial);
+  const hasGap = tl.some(p=>!(d.src&&d.src[p]));
+  $("#covkey").innerHTML = [`<span><i style="background:var(--r5)"></i>Every county</span>`,
+    hasPartial?`<span><i style="background:var(--r2)"></i>Large counties only</span>`:"",
+    hasGap?`<span><i style="background:var(--line)"></i>No data</span>`:"",
+    (m.icdBreaks||[]).length?`<span>┊ cause-coding change</span>`:""].join("");
+  markCoverage();
+}
+function markCoverage(){
+  const m = M.get(state.measure), tl = timeline(m);
+  const x = d3.scaleBand(tl, [0,320]);
+  d3.select("#cov .covsel").attr("x", x(state.year)-1).attr("width", Math.max(3, x.bandwidth()+2));
+}
+
+function getText(m, d, i, p){
+  if (isCount(m)) { const c = d.count && d.count[p] ? d.count[p][i] : null; return c==null ? "No data" : `${fmtN(c)} ${c===1?"death":"deaths"}`; }
+  const v = d.rate[p] ? d.rate[p][i] : null;
+  if (v==null) { const c = d.count && d.count[p] ? d.count[p][i] : null; return c===-1 ? "Fewer than 10 deaths" : "No data"; }
+  return m.unit.startsWith("years")&&!m.unit.includes("per") ? `${fmt(v)} yrs` : fmt(v);
+}
+function countText(d,i,p){
+  if(!d.count || !d.count[p]) return null; const c = d.count[p][i];
+  if(c==null) return null; if(c===-1) return "1–9 (hidden)"; if(typeof c==="string") return `${c} (range)`; return fmtN(c);
+}
+function hover(e, f){
+  if (hoverPoint(e)) return;
+  const i = idx.get(f.id), m = M.get(state.measure), d = cache[state.measure], p = state.year;
+  const c = isCount(m) ? null : countText(d,i,p);
+  const t = $("#tip"); t.hidden=false;
+  t.innerHTML = `<div>${label(counties[i])} · ${periodLabel(m,p)}</div><b>${getText(m,d,i,p)}</b> ${isCount(m)?"":`<span style="color:var(--muted)">${m.unit}</span>`}${c?`<div style="color:var(--muted)">Deaths: ${c}</div>`:""}${d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<div style="color:var(--accent)">Modeled estimate</div>`:""}`;
+  placeTip(e);
+}
+function placeTip(e){
+  const t=$("#tip"), r = $("main").getBoundingClientRect(); let x=e.clientX-r.left+14, y=e.clientY-r.top+14;
+  if(x+250>r.width) x-=270; if(y+90>r.height) y-=100;
+  t.style.left=x+"px"; t.style.top=y+"px";
+}
+
+// ---------- where they lived / died
+function setWhere(w){
+  state.where = w;
+  $("#wLived").setAttribute("aria-pressed", w==="lived"); $("#wDied").setAttribute("aria-pressed", w==="died");
+  const cur = M.get(state.measure);
+  setMeasure((cur.place==="occurrence" && cur.pair) ? cur.pair : state.measure, true);
+}
+function updateWhereNote(m){
+  const n = $("#whereNote");
+  if (state.where==="died" && !m.pair && m.place!=="occurrence") { n.hidden=false; n.textContent = "This measure is only published by the county people lived in."; }
+  else if (state.where==="lived" && m.place==="occurrence" && !m.pair) { n.hidden=false; n.textContent = "This measure is counted where the death happened."; }
+  else if (state.where==="died" && m.pair) { n.hidden=false; n.textContent = "Counted where the death happened. Counties with hospitals look high because patients from nearby counties die there."; }
+  else n.hidden = true;
+}
+async function pairLine(i){
+  const m = M.get(state.measure); if (!m.pair) return "";
+  const other = M.get(m.pair); if (!other) return "";
+  const d1 = cache[state.measure], d2 = await load(m.pair), p = state.year;
+  const a = d1.count && d1.count[p] ? d1.count[p][i] : null, b = d2.count && d2.count[p] ? d2.count[p][i] : null;
+  if (a==null || b==null || a<0 || b<0 || !b && !a) return "";
+  const occ = m.place==="occurrence" ? a : b, res = m.place==="occurrence" ? b : a;
+  if (!res) return "";
+  const ratio = occ/res, c = counties[i];
+  const word = ratio>1.08 ? "more deaths happen here than among residents (it draws patients from nearby)" : ratio<0.92 ? "fewer deaths happen here than among residents (many die in hospitals elsewhere)" : "about as many deaths happen here as among residents";
+  return `<div class="note" style="margin:0"><b>${m.label}, ${p}:</b> ${fmtI(occ)} happened in ${c[1]} County; ${fmtI(res)} were residents. ${ratio.toFixed(2)}× — ${word}.</div>`;
+}
+
+// ---------- death locations (follow the measure and year; no toggles)
+const L = new Map((meta.incidents||[]).map(l=>[l.key,l]));
+const LCOL = {fars:"--l4", cook_county:"--l1", santa_clara_county:"--l2", ct_drug:"--l3", noaa:"--l1"};
+const CATNAME = ["cases", "overdose deaths", "suicides", "homicides", "firearm deaths"];
+const canvas = $("#pts"), ctx = canvas.getContext("2d");
+let drawn = [];
+function sizeCanvas(){ const dpr=window.devicePixelRatio||1; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+"px"; canvas.style.height=H+"px"; ctx.setTransform(dpr,0,0,dpr,0,0); }
+async function loadPts(file){
+  if (cache["pt_"+file] === undefined){
+    cache["pt_"+file] = null;
+    try{ cache["pt_"+file] = await fetch(`data/points/${file}.json`).then(r=>r.ok?r.json():{}); }catch(e){ cache["pt_"+file]={}; }
+    drawPoints();
+  }
+  return cache["pt_"+file];
+}
+function visibleStates(t){
+  const x0=t.invertX(0), x1=t.invertX(W), y0=t.invertY(0), y1=t.invertY(H);
+  return stateFeats.filter(f=>{ const [[a,b],[c,d]] = path.bounds(f); return c>=x0 && a<=x1 && d>=y0 && b<=y1; }).map(f=>f.id);
+}
+function activeLayers(){
+  const m = M.get(state.measure), y = +state.year;
+  if (!m || !m.points || !y) return [];
+  return m.points.map(pt=>({pt, l:L.get(pt.layer)})).filter(({l})=>l && l.years.includes(y) && (state.where==="died" || l.hasLived || m.place==="occurrence"));
+}
+function drawPoints(){
+  if (!W) return;
+  ctx.clearRect(0,0,W,H); drawn = [];
+  const t = d3.zoomTransform(svg.node()), y = +state.year, lived = state.where==="lived";
+  const act = activeLayers(); const keyBits = []; let zoomHint = false;
+  for (const {pt, l} of act){
+    const col = css(LCOL[l.key]||"--l1");
+    if (l.kind==="fars"){
+      keyBits.push({col, text:`Fatal crashes in ${y} (NHTSA)`, hint: t.k<2.2});
+      if (t.k < 2.2){ zoomHint = true; continue; }
+      ctx.fillStyle = col; ctx.globalAlpha = .55;
+      for (const st of visibleStates(t)){
+        const data = cache["pt_fars_"+st]; if (data===undefined){ loadPts("fars_"+st); continue; } if(!data) continue;
+        for (const r of (data[y]||[])){
+          const p = projection([r[0],r[1]]); if(!p) continue;
+          const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-5||x>W+5||yy<-5||yy>H+5) continue;
+          const rad = Math.min(1.2+Math.sqrt(t.k)*0.45, 4) * Math.sqrt(r[2]);
+          ctx.beginPath(); ctx.arc(x,yy,rad,0,7); ctx.fill();
+          drawn.push([x,yy,Math.max(rad,4),{kind:"fars", n:r[2], m:r[3], y}]);
+        }
+      }
+      continue;
+    }
+    if (l.kind==="noaa"){
+      const data = cache["pt_noaa"]; if (data===undefined){ loadPts("noaa"); continue; } if(!data) continue;
+      const rows = data[y]||[]; if(!rows.length) continue;
+      keyBits.push({col, text:`Deadly weather events in ${y} (NOAA)`});
+      ctx.fillStyle = col; ctx.strokeStyle = col;
+      for (const r of rows){
+        const p = projection([r[0],r[1]]); if(!p) continue;
+        const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-10||x>W+10||yy<-10||yy>H+10) continue;
+        const rad = Math.max(2.5, Math.sqrt(r[2])*2.4);
+        ctx.globalAlpha=.35; ctx.beginPath(); ctx.arc(x,yy,rad,0,7); ctx.fill(); ctx.globalAlpha=.9; ctx.lineWidth=1; ctx.stroke();
+        drawn.push([x,yy,Math.max(rad,5),{kind:"noaa", n:r[2], ev:r[3], y}]);
+      }
+      continue;
+    }
+    const data = cache["pt_"+l.key]; if (data===undefined){ loadPts(l.key); continue; } if(!data) continue;
+    const yi = l.years.indexOf(y); if (yi<0) continue;
+    const rows = lived ? data.lived : data.died;
+    const ci = 3 + (pt.cat||0);
+    const grid = l.kind==="me" && !lived;
+    let cw=2, ch=2;
+    if (grid && data.died && data.died[0]){ const c0=data.died[0], a=projection([c0[0],c0[1]]), b=projection([c0[0]+0.01,c0[1]-0.01]); if(a&&b){ cw=Math.max(1.5,Math.abs(b[0]-a[0])*t.k); ch=Math.max(1.5,Math.abs(b[1]-a[1])*t.k);} }
+    ctx.fillStyle = col; ctx.strokeStyle = col;
+    let any = 0;
+    for (const r of rows){ if (r[2]!==yi) continue;
+      const n = r[ci]; if(!n) continue;
+      const p = projection([r[0],r[1]]); if(!p) continue;
+      const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-20||x>W+20||yy<-20||yy>H+20) { any++; continue; }
+      any++;
+      if (grid){
+        ctx.globalAlpha = Math.min(.95, .2 + Math.log2(1+n)*.17);
+        ctx.fillRect(x-cw/2, yy-ch/2, cw*0.92, ch*0.92);
+        drawn.push([x,yy,Math.max(cw/2,4),{kind:"me", l, n, cat:pt.cat||0, label:r[8], y}]);
+      } else {
+        const rad = Math.max(1.5, Math.sqrt(n) * Math.min(0.35+t.k*0.05, 1.6));
+        ctx.globalAlpha=.3; ctx.beginPath(); ctx.arc(x,yy,rad,0,7); ctx.fill(); ctx.globalAlpha=.85; ctx.lineWidth=.8; ctx.stroke();
+        drawn.push([x,yy,Math.max(rad,4),{kind:"me", l, n, cat:pt.cat||0, label:r[8], y}]);
+      }
+    }
+    if (any) keyBits.push({col, text:`${l.area}: medical examiner ${CATNAME[pt.cat||0]}, ${y} — ${lived ? l.livedNote : l.diedNote}`});
+  }
+  ctx.globalAlpha = 1;
+  const k = $("#dotkey");
+  if (keyBits.length){ k.hidden=false; k.innerHTML = keyBits.map(b=>`<span class="sw" style="background:${b.col}"></span><span>${b.text}${b.hint?" · zoom in to a state to see them":""}</span>`).join("</div><div class='dotkey'>"); k.innerHTML = keyBits.map(b=>`<div style="display:flex;gap:8px"><span class="sw" style="background:${b.col}"></span><span>${b.text}${b.hint?" · zoom in to a state to see them":""}</span></div>`).join(""); k.style.flexDirection="column"; }
+  else k.hidden = true;
+}
+function hoverPoint(e){
+  if (!drawn.length) return false;
+  const r = $("main").getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  let best=null, bd=1e9;
+  for (const d of drawn){ const dd=(d[0]-x)**2+(d[1]-y)**2; if (dd<d[2]*d[2] && dd<bd){ bd=dd; best=d; } }
+  if (!best) return false;
+  const i = best[3], t = $("#tip"); t.hidden=false;
+  if (i.kind==="fars") t.innerHTML = `<div>Fatal crash · ${d3.timeFormat("%b")(new Date(2000,(i.m||1)-1,1))} ${i.y}</div><b>${i.n}</b> ${i.n>1?"deaths":"death"}<div style="color:var(--muted)">NHTSA FARS</div>`;
+  else if (i.kind==="noaa") t.innerHTML = `<div>${i.ev||"Weather event"} · ${i.y}</div><b>${i.n}</b> ${i.n>1?"deaths":"death"}<div style="color:var(--muted)">NOAA Storm Events</div>`;
+  else {
+    const where = state.where==="lived" ? (i.label||"Residence area") : (i.l.kind==="town" ? (i.label||"Town") : "~1 km area");
+    t.innerHTML = `<div>${i.l.label} · ${where}</div><b>${fmtI(i.n)}</b> ${CATNAME[i.cat]} in ${i.y} <span style="color:var(--muted)">(${state.where==="lived"?"lived here":"died here"})</span>`;
+  }
+  placeTip(e);
+  return true;
+}
+
+// ---------- county panel
+function rankOf(vals, i, higherIsBetter, filter){
+  const v = vals[i]; if(v==null) return null;
+  const pool = vals.map((x,j)=>[x,j]).filter(([x,j])=>x!=null && (!filter||filter(j)));
+  const worse = pool.filter(([x])=> higherIsBetter ? x < v : x > v).length;
+  return {rank: worse+1, of: pool.length};
+}
+async function renderCounty(){
+  const i = idx.get(state.fips); const c = counties[i]; const m = M.get(state.measure), d = cache[state.measure], p = state.year;
+  const vals = valArr(m,d,p) || []; const st = c[0].slice(0,2);
+  const rU = vals.length ? rankOf(vals,i,m.higherIsBetter) : null, rS = vals.length ? rankOf(vals,i,m.higherIsBetter,j=>counties[j][0].slice(0,2)===st) : null;
+  const med = d3.median(vals.filter(v=>v!=null)), medS = d3.median(vals.filter((v,j)=>v!=null&&counties[j][0].slice(0,2)===st));
+  const cnt = isCount(m) ? null : countText(d,i,p), pop = meta.population[i];
+  const worst = m.higherIsBetter ? "lowest" : "highest";
+  const srcKey = d.src && d.src[p];
+  let h = `<div><div class="cname">${c[1]} County, ${c[2]}</div><div class="csub">${pop?`Population ${fmtI(pop)} (2023) · `:""}FIPS ${c[0]}</div></div>
+  <div><span class="lbl">${m.label}${m.place==="occurrence"&&m.pair?" (where they died)":""} · ${periodLabel(m,p)}</span><div class="big"><b>${getText(m,d,i,p)}</b><small>${isCount(m)?"":m.unit}</small></div></div>
+  <div class="chips">${d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<span class="chip warn">Modeled: fewer than 10 deaths</span>`:""}${srcKey?`<span class="chip">${(SRC[srcKey]||{}).label||srcKey}</span>`:""}</div>
+  <div id="pairline"></div>
+  <dl class="facts">
+    ${cnt?`<dt>Deaths</dt><dd>${cnt}</dd>`:""}
+    ${rS?`<dt>Rank in ${c[2]}</dt><dd>${rS.rank} of ${rS.of} (1 = ${worst})</dd>`:""}
+    ${rU?`<dt>Rank in US</dt><dd>${fmtI(rU.rank)} of ${fmtI(rU.of)}</dd>`:""}
+    <dt>${c[2]} median</dt><dd>${medS!=null?fmt(medS):"—"}</dd>
+    <dt>US county median</dt><dd>${med!=null?fmt(med):"—"}</dd>
+  </dl>
+  <div class="chart" id="trend"></div><div class="chart" id="monthly"></div><div class="allm" id="allm"></div>`;
+  $("#county").innerHTML = h;
+  drawTrend(m,d,i,st);
+  if (state.measure==="overdose") drawMonthly(i, st);
+  pairLine(i).then(x=>{ if(state.fips===c[0]) $("#pairline").innerHTML = x; });
+  drawAll(i);
+}
+function drawTrend(m,d,i,st){
+  const tl = timeline(m).filter(p=>p!=="TTM");
+  if (tl.length<2) return;
+  const pts = tl.map(p=>{ const a = valArr(m,d,p); return {p:+p, v: a ? a[i] : null, s: a ? d3.median(a.filter((v,j)=>v!=null&&counties[j][0].slice(0,2)===st)) : null}; });
+  if (pts.every(x=>x.v==null)) return;
+  const w=320,h=130,ml=34,mr=8,mt=8,mb=20;
+  const x=d3.scaleLinear(d3.extent(pts,q=>q.p),[ml,w-mr]);
+  const y=d3.scaleLinear([0,d3.max(pts,q=>Math.max(q.v||0,q.s||0))*1.1||1],[h-mb,mt]).nice();
+  const el=d3.select("#trend"); el.append("h4").text(`${m.label.split(" (")[0]} by year · county vs ${counties[i][2]} median`);
+  const s=el.append("svg").attr("viewBox",`0 0 ${w} ${h}`);
+  s.append("g").selectAll("line").data(y.ticks(4)).join("line").attr("x1",ml).attr("x2",w-mr).attr("y1",y).attr("y2",y).attr("stroke","var(--line)");
+  s.append("g").selectAll("text").data(y.ticks(4)).join("text").attr("x",ml-5).attr("y",v=>y(v)+3).attr("text-anchor","end").text(d3.format("~s"));
+  const xt = x.ticks(Math.min(7, tl.length)).filter(Number.isInteger);
+  s.append("g").selectAll("text").data(xt).join("text").attr("x",x).attr("y",h-5).attr("text-anchor","middle").text(v=>tl.length>12?v:"’"+String(v).slice(2));
+  (m.icdBreaks||[]).filter(b=>b>pts[0].p && b<pts.at(-1).p).forEach(b=>s.append("line").attr("x1",x(b)).attr("x2",x(b)).attr("y1",mt).attr("y2",h-mb).attr("stroke","var(--muted)").attr("stroke-dasharray","2 2").attr("opacity",.6));
+  s.append("path").attr("d",d3.line().defined(q=>q.s!=null).x(q=>x(q.p)).y(q=>y(q.s))(pts)).attr("fill","none").attr("stroke","var(--muted)").attr("stroke-dasharray","3 3");
+  s.append("path").attr("d",d3.area().defined(q=>q.v!=null).x(q=>x(q.p)).y0(h-mb).y1(q=>y(q.v))(pts)).attr("fill","var(--accent)").attr("opacity",.12);
+  s.append("path").attr("d",d3.line().defined(q=>q.v!=null).x(q=>x(q.p)).y(q=>y(q.v))(pts)).attr("fill","none").attr("stroke","var(--accent)").attr("stroke-width",1.8);
+  const cur = pts.find(q=>String(q.p)===state.year && q.v!=null);
+  if (cur) s.append("circle").attr("cx",x(cur.p)).attr("cy",y(cur.v)).attr("r",3.8).attr("fill","var(--accent)");
+  s.append("rect").attr("x",ml).attr("y",mt).attr("width",w-ml-mr).attr("height",h-mt-mb).attr("fill","transparent").style("cursor","pointer")
+    .on("click", ev=>{ const [mx]=d3.pointer(ev); const yr=String(Math.round(x.invert(mx))); const tl2=timeline(m); if(tl2.includes(yr)){ state.year=yr; $("#period").value=tl2.indexOf(yr); markCoverage(); render(); } })
+    .append("title").text("Click to jump to a year");
+}
+async function drawMonthly(i, st){
+  const key="mo"+st;
+  try{ if(!cache[key]) cache[key]=await fetch(`data/monthly/${st}.json`).then(r=>r.json()); }catch(e){ return; }
+  const md=cache[key], ser=md.series[counties[i][0]]; if(!ser || state.fips!==counties[i][0]) return;
+  const pts=md.months.map((mo,k)=>({t:d3.timeParse("%Y-%m")(mo), v:ser[k]}));
+  if(pts.every(q=>q.v==null)) return;
+  const w=320,h=110,ml=34,mr=8,mt=14,mb=20;
+  const x=d3.scaleTime(d3.extent(pts,q=>q.t),[ml,w-mr]), y=d3.scaleLinear([0,d3.max(pts,q=>q.v)*1.1],[h-mb,mt]).nice();
+  const el=d3.select("#monthly"); el.append("h4").text("Overdose deaths, rolling 12 months (provisional)");
+  const s=el.append("svg").attr("viewBox",`0 0 ${w} ${h}`);
+  s.append("g").selectAll("line").data(y.ticks(3)).join("line").attr("x1",ml).attr("x2",w-mr).attr("y1",y).attr("y2",y).attr("stroke","var(--line)");
+  s.append("g").selectAll("text").data(y.ticks(3)).join("text").attr("x",ml-5).attr("y",v=>y(v)+3).attr("text-anchor","end").text(d3.format("~s"));
+  s.append("g").selectAll("text").data(x.ticks(d3.timeYear.every(1))).join("text").attr("x",x).attr("y",h-5).attr("text-anchor","middle").text(d3.timeFormat("%Y"));
+  s.append("path").attr("d",d3.line().defined(q=>q.v!=null).x(q=>x(q.t)).y(q=>y(q.v))(pts)).attr("fill","none").attr("stroke","var(--ink)").attr("stroke-width",1.6);
+  const last=pts.filter(q=>q.v!=null).at(-1);
+  s.append("circle").attr("cx",x(last.t)).attr("cy",y(last.v)).attr("r",3.5).attr("fill","var(--ink)");
+  s.append("text").attr("x",x(last.t)).attr("y",mt-4).attr("text-anchor","end").style("fill","var(--ink)").text(`${last.v} · ${d3.timeFormat("%b %Y")(last.t)}`);
+  const sup=pts.filter(q=>q.v==null).length;
+  if(sup) el.append("div").attr("class","desc").text(`${sup} months hidden (1–9 deaths).`);
+}
+async function drawAll(i){
+  const rows=[];
+  for(const m of meta.measures){
+    if(["firearm_suicide","firearm_homicide"].includes(m.key)) continue;
+    const d=await load(m.key); const p=m.defaultPeriod; const vals=valArr(m,d,p); if(!vals) continue; const v=vals[i];
+    let pc=null; if(v!=null){ const pool=vals.filter(x=>x!=null); pc = pool.filter(x=>x<v).length/pool.length; }
+    rows.push({m,v,pc,p});
+  }
+  if(state.fips!==counties[i][0]) return;
+  $("#allm").innerHTML = `<h4>Every measure, latest year · position among US counties</h4><table>${rows.map(r=>`<tr data-k="${r.m.key}"><td>${r.m.label}${r.m.place==='occurrence'&&r.m.pair?' (where they died)':''}<div class="desc" style="margin:0">${periodLabel(r.m,r.p)}</div></td><td class="v">${r.v==null?"—":fmt(r.v)}</td><td class="p">${r.pc==null?"":`<div class="pbar" title="Higher than ${pct(r.pc)} of counties"><i style="left:calc(${(r.pc*100).toFixed(1)}% - 1px)"></i></div>`}</td></tr>`).join("")}</table><div class="desc">Tick = where this county sits from lowest (left) to highest (right).</div>`;
+  $("#allm").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{ const m=M.get(tr.dataset.k); if(m.place==="occurrence"&&m.pair){ state.where="died"; } else if(m.pair){ state.where="lived"; } $("#wLived").setAttribute("aria-pressed", state.where==="lived"); $("#wDied").setAttribute("aria-pressed", state.where==="died"); setMeasure(tr.dataset.k); });
+}
+function renderSources(){
+  const seen = new Map();
+  for (const [k,s] of Object.entries(SRC)) if (k!=="wonder" || (meta.wonderFiles||[]).length) seen.set(s.url+k,[s.label, k==="wonder"? (meta.wonderFiles||[]).join(", ") : ""]);
+  if (meta.monthly) seen.set(meta.monthly.sourceUrl,[meta.monthly.source, meta.monthly.asOf]);
+  (meta.incidents||[]).filter(l=>l.kind==="me"||l.kind==="town").forEach(l=>seen.set(l.sourceUrl,[l.source, `through ${l.latest}${l.stale?" (stale)":""}`]));
+  const urls = {}; for (const [k,s] of Object.entries(SRC)) urls[s.url+k]=s.url;
+  $("#srcs").innerHTML = [...seen].map(([u,[n,a]])=>`<li><a href="${urls[u]||u}" target="_blank" rel="noopener">${n}</a><span>${a||""}</span></li>`).join("") + `<li><span style="font-family:var(--f-body)">Site rebuilt</span><span>${meta.generated.slice(0,10)}</span></li>`;
+}
+
+function select(fips, fromMap){
+  if(!idx.has(fips)) return;
+  state.fips = fips; drawSel();
+  $("#views [data-view=state]").textContent = counties[idx.get(fips)][2];
+  renderCounty();
+  if(!fromMap) setView("county");
+}
+
+// ---------- events
+sel.onchange = ()=>setMeasure(sel.value, true);
+$("#wLived").onclick = ()=>setWhere("lived");
+$("#wDied").onclick = ()=>setWhere("died");
+svg.on("pointermove.pts", e=>{ if(e.target===svg.node()) { if(!hoverPoint(e)) $("#tip").hidden=true; } });
+$("#period").oninput = e=>{ state.year = timeline(M.get(state.measure))[+e.target.value]; markCoverage(); render(); };
+$("#play").onclick = ()=>{
+  if(state.playing){ clearInterval(state.playing); state.playing=null; $("#play").textContent="▶"; return; }
+  const m=M.get(state.measure), tl=timeline(m); let k=tl.indexOf(state.year); if(k>=tl.length-1) k=-1;
+  $("#play").textContent="❚❚";
+  state.playing=setInterval(()=>{ k++; if(k>=tl.length){ clearInterval(state.playing); state.playing=null; $("#play").textContent="▶"; return;} state.year=tl[k]; $("#period").value=k; markCoverage(); render(); }, tl.length>30?450:900);
+};
+$("#q").addEventListener("change", e=>{ const f=byLabel.get(e.target.value.trim().toLowerCase()); if(f){ select(f); e.target.blur(); } });
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{ drawCoverage(M.get(state.measure), cache[state.measure]); render(); });
+new MutationObserver(()=>{ drawCoverage(M.get(state.measure), cache[state.measure]); render(); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+new ResizeObserver(()=>{ layout(); }).observe($("#map"));
+
+layout();
+renderSources();
+await setMeasure(DEFAULT.measure, false);
+drawSel();
+setTimeout(()=>setView("state"), 50);
+})();
+
+</script>
+
+</body>
+</html>

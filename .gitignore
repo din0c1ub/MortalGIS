@@ -1,8 +1,4 @@
-node_modules/
-build/
-dist/
-coverage/
+raw/
+__pycache__/
 .DS_Store
-*.log
-.env*
-!.env.example
+.cache/

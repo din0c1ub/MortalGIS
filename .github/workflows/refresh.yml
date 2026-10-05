@@ -1,0 +1,48 @@
+name: Refresh data & deploy
+
+on:
+  schedule:
+    - cron: '17 9 * * 1'   # Mondays 09:17 UTC. Sources update monthly at most; weekly is plenty.
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: Check the WONDER importer
+        run: python tests/test_wonder_parse.py
+
+      - name: Build data (fails if a core source collapses)
+        run: |
+          pip install -q pandas
+          python pipeline/build_data.py && python pipeline/wrap_index.py
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "MortalGIS bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add site/
+          git diff --cached --quiet && echo "No data changes" || git commit -m "data: weekly refresh [skip ci]"
+          git push
+
+      - name: Deploy site/ to Hugging Face Space
+        if: env.HF_TOKEN != ''
+        env:
+          HF_SPACE: ${{ vars.HF_SPACE || 'dinoclub/mortal-gis' }}
+        run: |
+          pip install -q huggingface_hub
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          api.upload_folder(repo_id=os.environ["HF_SPACE"], repo_type="space", folder_path="site",
+                            commit_message="Weekly data refresh", delete_patterns=["assets/*", "server.cjs*"])
+          PY
