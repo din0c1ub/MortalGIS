@@ -214,6 +214,57 @@ def chr_measures(year: int):
     return out
 
 
+def census_pep():
+    """Census Population Estimates Program, county totals (latest vintage).
+    Deaths by county of residence for each estimate year (July 1 to June 30) and population."""
+    this = datetime.now().year
+    for v in range(this, this - 4, -1):
+        url = f"https://www2.census.gov/programs-surveys/popest/datasets/2020-{v}/counties/totals/co-est{v}-alldata.csv"
+        try:
+            raw = get(url, retries=2).decode("latin-1")
+        except RuntimeError:
+            continue
+        log(f"• Census PEP vintage {v} …")
+        rows = list(csv.DictReader(io.StringIO(raw)))
+        years = [y for y in range(2020, v + 1) if f"DEATHS{y}" in rows[0]]
+        deaths, pop = defaultdict(dict), defaultdict(dict)
+        for r in rows:
+            if r["SUMLEV"] != "050":
+                continue
+            f = r["STATE"].zfill(2) + r["COUNTY"].zfill(3)
+            for y in years:
+                d = num(r.get(f"DEATHS{y}"))
+                p = num(r.get(f"POPESTIMATE{y}"))
+                if d is not None:
+                    deaths[str(y)][f] = int(d)
+                if p:
+                    pop[str(y)][f] = int(p)
+        log(f"  years {years[0]}–{years[-1]}")
+        return deaths, pop, v
+    raise RuntimeError("no Census PEP vintage found")
+
+
+def cdc_occurrence_residence():
+    """All-cause deaths by county where the death happened vs where the person lived.
+    - 2020: CDC annual tables by county of occurrence (6vqh-esgs) and residence (75vb-d79q).
+    - 2020 to mid-2023: cumulative deaths by county of occurrence (kn79-hsxy), shown as a yearly average.
+    Counties with 1-9 deaths are suppressed by CDC (left blank)."""
+    log("• CDC all-cause deaths by county of occurrence / residence …")
+    def table(ds, fcol, dcol):
+        rows = json.loads(get(SOCRATA.format(id=ds) + "?" + urllib.parse.urlencode({"$select": f"{fcol},{dcol}", "$limit": 10000})))
+        return {fips5(r[fcol]): {"count": int(float(r[dcol]))} for r in rows if r.get(dcol) and r.get(fcol)}
+    occ = {"2020": table("6vqh-esgs", "fips_code", "total_deaths")}
+    cum = json.loads(get(SOCRATA.format(id="kn79-hsxy") + "?" + urllib.parse.urlencode({"$limit": 10000})))
+    if cum:
+        d0 = datetime.fromisoformat(cum[0]["start_week"][:10]); d1 = datetime.fromisoformat(cum[0]["end_week"][:10])
+        yrs = ((d1 - d0).days + 1) / 365.25
+        occ["2020–23"] = {fips5(r["county_fips_code"]): {"count": int(float(r["total_death"])), "years": yrs}
+                          for r in cum if r.get("total_death")}
+    res = {"2020": table("75vb-d79q", "fips_code", "total_deaths")}
+    log(f"  occurrence 2020: {len(occ['2020']):,}; 2020–23: {len(occ.get('2020–23', {})):,}; residence 2020: {len(res['2020']):,}")
+    return occ, res
+
+
 # ---------------------------------------------------------------- build
 def build(out_dir: Path, chr_year: int):
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -230,6 +281,8 @@ def build(out_dir: Path, chr_year: int):
     heart, heart_year = cdc_cardio("mri7-5jtw", "heart disease")
     stroke, stroke_year = cdc_cardio("y5ii-knwc", "stroke")
     chr_ = chr_measures(chr_year)
+    pep_deaths, pep_pop, pep_vintage = census_pep()
+    occ, res = cdc_occurrence_residence()
 
     unmatched = defaultdict(set)
 
@@ -323,6 +376,64 @@ def build(out_dir: Path, chr_year: int):
             "notes": "Each CHR measure pools several recent years (typically 3) to stabilise small counties. Connecticut uses 2022 planning regions in CHR and is not shown.",
         })
 
+
+    # ---- all-cause deaths: where people lived vs where they died
+    def pop_for(y, f):
+        p = pep_pop.get(str(y), {}).get(f) or pep_pop.get(str(min(int(y), max(map(int, pep_pop)))), {}).get(f)
+        if p is None:  # Connecticut: Census now uses planning regions; fall back to NCHS 2021 county population
+            p = (poison.get(str(min(int(y), 2021))) or {}).get(f, {}).get("pop")
+        return p
+
+    def rate_block(src: dict, years: list[str]):
+        rate, count, flag = {}, {}, {}
+        for y in years:
+            rr, cc, ff = [None] * len(fips_list), [None] * len(fips_list), [0] * len(fips_list)
+            for f, v in src[y].items():
+                i = idx.get(f)
+                if i is None:
+                    continue
+                if v.get("shown", 1) < 0.9:  # more than 10% of weeks suppressed: the sum would be badly low
+                    continue
+                p = pop_for(y[:4], f)
+                cc[i] = v["count"]
+                ff[i] = 1 if v.get("partial") else 0
+                if p:
+                    rr[i] = round(v["count"] / v.get("years", 1) / p * 1e5, 1)
+            rate[y], count[y], flag[y] = rr, cc, ff
+        return {"rate": rate, "count": count, "modeled": flag}
+
+    occ_years = sorted(occ)  # ["2020", "2020–23"]
+    values["all_deaths_died"] = rate_block(occ, occ_years)
+    values["all_deaths_died"].pop("modeled")
+    common = {"group": "All-cause & age", "unit": "deaths per 100k residents", "rateType": "crude", "hasCounts": True}
+
+    pep_years = [y for y in sorted(pep_deaths) if y != "2020"]  # 2020 estimate year covers only Apr–Jun
+    values["all_deaths"] = rate_block({y: {f: {"count": c} for f, c in pep_deaths[y].items()} for y in pep_years}, pep_years)
+    values["all_deaths"].pop("modeled")
+    measures.insert(0, {**common, "key": "all_deaths", "label": "All deaths", "place": "residence", "pair": "all_deaths_died",
+        "description": "Deaths from any cause, counted in the county where the person lived.",
+        "periods": pep_years, "defaultPeriod": pep_years[-1],
+        "periodLabels": {y: f"Jul {int(y)-1}–Jun {y}" for y in pep_years},
+        "source": f"US Census Bureau Population Estimates, Vintage {pep_vintage} (components of change)",
+        "sourceUrl": "https://www.census.gov/programs-surveys/popest/data/data-sets.html", "asOf": str(pep_vintage),
+        "notes": "Estimate years run July 1 to June 30. Connecticut is published by planning region and is not shown."})
+    measures.insert(1, {**common, "key": "all_deaths_died", "label": "All deaths", "place": "occurrence", "pair": "all_deaths",
+        "description": "Deaths from any cause, counted in the county where the death happened. Counties with hospitals, hospices and nursing homes take in deaths from neighbouring counties.",
+        "periods": occ_years, "defaultPeriod": "2020–23",
+        "periodLabels": {"2020–23": "Jan 2020–Jun 2023, yearly avg"},
+        "source": "CDC NCHS — provisional death counts by county of occurrence (total deaths columns of the COVID-19 tables)",
+        "sourceUrl": "https://data.cdc.gov/d/kn79-hsxy", "asOf": "2023-06",
+        "notes": "2020 from the annual county-of-occurrence table; 2020–23 is the Jan 2020–Jun 2023 total divided by 3.5 years. CDC stopped these tables in 2023. Counties with 1–9 deaths are blank. The rate divides deaths that happened in the county by its resident population. Newer county-of-occurrence data exists only as manual exports from CDC WONDER (no API)."})
+
+    # Exact like-for-like comparison: calendar 2020, residence (quarterly table) vs occurrence (weekly table)
+    occ_ratio = [None] * len(fips_list)
+    for f, v in res.get("2020", {}).items():
+        o = occ.get("2020", {}).get(f)
+        i = idx.get(f)
+        if i is None or not o or not v["count"]:
+            continue
+        occ_ratio[i] = [o["count"], v["count"], 0]
+
     population = aligned(chr_["population"], "population")
 
     # monthly overdose series, split by state so the browser loads only what it needs
@@ -335,7 +446,17 @@ def build(out_dir: Path, chr_year: int):
     for st, d in by_state.items():
         (out_dir / "monthly" / f"{st}.json").write_text(json.dumps({"months": months, "series": d}, separators=(",", ":")))
 
+    status = {}
+    try:
+        from incidents import build_incidents
+        incident_layers = build_incidents(out_dir, status)
+    except Exception as e:  # noqa: BLE001
+        log(f"! incident layers failed: {e}")
+        incident_layers = []
+
     meta = {
+        "incidents": incident_layers,
+        "occVsRes2020": occ_ratio,
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         "counties": [[c["fips"], c["name"], c["state"]] for c in counties],
         "population": population,
@@ -350,7 +471,7 @@ def build(out_dir: Path, chr_year: int):
     (out_dir / "counties-10m.json").write_text(json.dumps(topo, separators=(",", ":")))
 
     # ------------------------------------------------ validation report
-    report = {"unmatched_fips": {k: sorted(v) for k, v in unmatched.items()}, "coverage": {}}
+    report = {"unmatched_fips": {k: sorted(v) for k, v in unmatched.items()}, "coverage": {}, "incident_sources": status}
     for m in measures:
         p = m["defaultPeriod"]
         arr = values[m["key"]]["rate"][p]
