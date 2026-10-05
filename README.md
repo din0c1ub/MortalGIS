@@ -1,108 +1,51 @@
----
-title: MortalGIS - Ethical Spatial Anonymization & Mortality Data Sandbox
-emoji: 🛡️
-colorFrom: red
-colorTo: gray
-sdk: static
-pinned: false
----
+# MortalGIS v2
 
-# MortalGIS 🛡️
+An atlas of US county death rates built only from official public data.
 
-A highly polished, interactive, mobile-responsive web application designed to demonstrate **Ethical & Legal GIS sanitation workflows for post-mortem privacy**. Bypassing direct address pointing, MortalGIS simulates in-memory data minimization, PostGIS spatial queries, and compliance scoring.
+**Live:** https://huggingface.co/spaces/dinoclub/mortal-gis
 
-## 🚀 Hugging Face Spaces Deployment Guide
+## What changed from v1
 
-Since this is a client-side single page app (SPA) powered by Vite, React, and Leaflet, it can be hosted **100% free** on Hugging Face Spaces using the **Static SDK**.
+v1 showed ~15,800 "records" that were mostly not deaths: CDC article headlines pinned to San Francisco,
+the same items re-added every night, state totals turned into single dots with invented ages and genders,
+and a generated 1980s–2010s backlog. v2 throws all of that away. Every number on the map comes straight from
+a source table; suppressed values stay suppressed.
 
-### Option A: Automatic Push via Git (Recommended)
+## Data sources
 
-1. **Create a Space on Hugging Face**:
-   - Go to [huggingface.co/new-space](https://huggingface.co/new-space)
-   - Choose a name (e.g., `mortalgis`)
-   - Select **Static** as the SDK.
-   - Choose the **Public** or **Private** visibility.
+| Measure | Source | Years | Notes |
+|---|---|---|---|
+| Overdose, suicide, homicide, firearm (all / suicide / homicide) | CDC NCHS *Mapping Injury, Overdose, and Violence – County* ([psx4-wq38](https://data.cdc.gov/d/psx4-wq38)) | 2019–2024 + trailing 12 months | Crude rate per 100k, county of residence. Counts 1–9 suppressed; rate is CDC's Bayesian modeled estimate (hatched on map). |
+| Overdose, monthly rolling 12-month counts | CDC NCHS VSRR provisional ([gb4e-yj24](https://data.cdc.gov/d/gb4e-yj24)) | 2020–present | Provisional; counts 1–9 suppressed. County panel chart. |
+| Drug poisoning, long-run | CDC NCHS small-area model ([rpvx-m2md](https://data.cdc.gov/d/rpvx-m2md)) | 2003–2021 | Age-adjusted, every value modeled. |
+| Heart disease, stroke (adults 35+) | CDC Atlas of Heart Disease & Stroke ([mri7-5jtw](https://data.cdc.gov/d/mri7-5jtw), [y5ii-knwc](https://data.cdc.gov/d/y5ii-knwc)) | 2022–2024 avg | Age-adjusted, spatially smoothed. |
+| Life expectancy, premature death, YPLL, injury, motor vehicle, child & infant mortality, population | [County Health Rankings & Roadmaps](https://www.countyhealthrankings.org/health-data/methodology-and-sources/data-documentation) 2025 | Multi-year pooled | CT uses 2022 planning regions in CHR, so CT is blank for these. |
+| County boundaries | us-atlas 3 (Census 2017 cartographic boundaries) | | Matches the county set NVSS uses. |
 
-2. **Clone the Space Repository locally**:
-   ```bash
-   git clone https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME
-   ```
+CDC WONDER's API only returns national data, so it is not used for county figures.
 
-3. **Build the Portal App**:
-   Run the build script in this workspace folder to compile the static site:
-   ```bash
-   npm run build
-   ```
-   This will generate a highly optimized bundle inside the `dist/` folder.
+## Layout
 
-4. **Copy built files to your Space repo**:
-   Copy the entire *contents* of the `dist/` directory into your cloned Hugging Face Space directory:
-   ```bash
-   cp -r dist/* /path/to/cloned/hf/space/
-   # Also copy this README.md so Hugging Face registers the Static configuration metadata
-   cp README.md /path/to/cloned/hf/space/
-   ```
-
-5. **Commit and Push**:
-   ```bash
-   cd /path/to/cloned/hf/space/
-   git add .
-   git commit -m "Deploy MortalGIS app to Hugging Face Spaces"
-   git push origin main
-   ```
-   *Within seconds, Hugging Face will build and publish your app online!*
-
----
-
-### Option B: Built-in Direct Upload via the Web UI
-
-If you don't want to use the Git terminal, you can upload compiled assets directly:
-
-1. Create your Static Space on [huggingface.co/new-space](https://huggingface.co/new-space).
-2. Build the app locally using `npm run build`.
-3. In your Space's browser window, click **Files and versions** -> **Add file** -> **Upload files**.
-4. Drag and drop all the files inside the `dist/` directory (including the `assets/` subfolder, `index.html`, any logos) and this `README.md` file to the root of the upload box.
-5. Commit changes directly on the web interface.
-
----
-
-## 🔄 Path 1: Zero-Cost Automated "Static CI/CD Rebuild" Pipeline
-
-This repository is pre-configured with a dual-stage, serverless pipeline:
-1. **Scraping & PII Minimization**: Standardizes unstructured sources, strips names, rounds dates, map exact ages to 10-year groups, and snaps locations into a safe **80m Physical Grid**.
-2. **Commit & Bake**: Writes the update directly into `/src/anonymized_database.json`, rebuilding the client portal with fresh records daily.
-
-### 💻 Running Locally
-
-You can manually trigger and review local scrapes at any time:
-```bash
-# 1. Runs the Node scraper + 80m Grid Snapping Pipeline
-npm run scrape
-
-# 2. Compiles your React App with the fresh baked records
-npm run build
+```
+pipeline/build_data.py   download + validate + write site/data/*.json (stdlib only)
+pipeline/wrap_index.py   wrap site/app.html into site/index.html
+site/                    static site (d3 + topojson from CDN), deploys as-is
+site/data/validation.json  coverage per measure + unmatched FIPS from the last run
+.github/workflows/refresh.yml  weekly rebuild, commit, push to the HF Space
 ```
 
-### 🤖 Nightly Automated Rebuild (GitHub Actions Setup)
+Run locally:
 
-To have GitHub automatically harvest public logs, de-identify them, and redeploy them to your static Hugging Face space every night completely free:
+```bash
+python pipeline/build_data.py && python pipeline/wrap_index.py
+cd site && python -m http.server 8000   # open http://localhost:8000
+```
 
-1. Create a repository on GitHub and push this project codebase.
-2. In your GitHub repo settings, go to **Settings** -> **Secrets and variables** -> **Actions** -> **Repository Secrets**.
-3. Create three secrets:
-   - `HF_USERNAME`: Your Hugging Face user profile handle (e.g. `johnsmith`).
-   - `HF_SPACE_NAME`: The Exact name of the Static Space you set up (e.g. `mortalgis`).
-   - `HF_TOKEN`: A Hugging Face **User Access Token** with `write` permissions (Generate one at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)).
-4. Commit the pipeline definition `.github/workflows/deploy.yml`. 
+To enable auto-deploy: add an `HF_TOKEN` repository secret (Hugging Face write token).
 
-*Your workflow is now active! GitHub will trigger a run every night, pull incoming RSS/Examiner entries, sanitize and anonymize them, and push the newly built static applet to Hugging Face with no server overhead.*
+## Roadmap
 
----
-
-## 🛠️ Tech Stack & Key Modules
-
-- **Core UI**: React 19, TypeScript, Tailwind CSS v4, Motion Transitions.
-- **Geodata Visualizer**: Leaflet with dark high-contrast map themes.
-- **PII Scrubbing Pipeline**: Algorithmic / Regex patterns running entirely in-memory prior to coordinate aggregation.
-- **Compliance Scorecard**: Dynamic checklist verifying geodemographic safety markers in real-time.
-- **Historical Analysis**: Decadal filters supporting archive mapping back to regional legacy records from the 1980s.
+1. **Phase 1 (this):** county choropleth, Michigan default, county panel with trends and ranks.
+2. **Phase 2:** incident layers with real coordinates (Cook County Medical Examiner, NHTSA FARS crashes),
+   hex-binned with small-cell suppression — this is where v1's privacy work belongs.
+3. **Phase 3:** history back to 1980 (IHME county mortality by cause, 1980–2014) and CDC WONDER exports for all-cause deaths by year.
