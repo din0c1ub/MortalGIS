@@ -7,6 +7,7 @@
 :root{
   --bg:#eef0f1; --panel:#f8f9f9; --ink:#1a222b; --muted:#5d6873; --line:#d3d8dc;
   --accent:#7a1f2b; --focus:#1f5f7a; --nodata:#dfe2e4; --stroke:#ffffff; --hatch:rgba(26,34,43,.28);
+  --l1:#1f5f7a; --l2:#6a4c93; --l3:#2f7d4f; --l4:#26313b;
   --r0:#f4ebe6; --r1:#ecd2c6; --r2:#e2b1a0; --r3:#d38a77; --r4:#bd5f52; --r5:#9c3a37; --r6:#6e1f25;
   --f-display:"Spectral", Georgia, "Times New Roman", serif;
   --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -16,11 +17,13 @@
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#12171c; --panel:#192027; --ink:#e6eaee; --muted:#97a3ae; --line:#2b353f;
   --accent:#e58a7c; --focus:#7cc3df; --nodata:#232b33; --stroke:#12171c; --hatch:rgba(230,234,238,.3);
+  --l1:#7cc3df; --l2:#b9a2e3; --l3:#7fd19c; --l4:#dfe6ec;
   --r0:#2a2427; --r1:#46292c; --r2:#672f30; --r3:#8f3b35; --r4:#bb5443; --r5:#e07d5e; --r6:#f6b48c;
   color-scheme:dark; } }
 :root[data-theme="dark"]{
   --bg:#12171c; --panel:#192027; --ink:#e6eaee; --muted:#97a3ae; --line:#2b353f;
   --accent:#e58a7c; --focus:#7cc3df; --nodata:#232b33; --stroke:#12171c; --hatch:rgba(230,234,238,.3);
+  --l1:#7cc3df; --l2:#b9a2e3; --l3:#7fd19c; --l4:#dfe6ec;
   --r0:#2a2427; --r1:#46292c; --r2:#672f30; --r3:#8f3b35; --r4:#bb5443; --r5:#e07d5e; --r6:#f6b48c;
   color-scheme:dark; }
 
@@ -48,6 +51,25 @@ select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6p
 .iconbtn{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:4px 10px;cursor:pointer}
 .iconbtn:hover{border-color:var(--muted)}
 .views{display:flex;gap:6px;flex-wrap:wrap}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.seg button{border:0;background:transparent;padding:7px 8px;cursor:pointer;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel);font-weight:600}
+.note{font-size:12.5px;color:var(--muted);background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:7px 9px;margin-top:8px}
+.layers{display:flex;flex-direction:column;gap:7px}
+.layer{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:start;font-size:13px;cursor:pointer}
+.layer input{margin:3px 0 0;accent-color:var(--accent)}
+.layer small{grid-column:2;color:var(--muted);font-size:12px}
+.layer .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+.mchips{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.mchips button{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer;color:var(--muted)}
+.mchips button[aria-pressed=true]{border-color:var(--ink);color:var(--ink)}
+.row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row2 select{width:auto}
+details.about summary{cursor:pointer;font:500 11px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.srcs{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:6px;font-size:12px}
+.srcs li{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.srcs a{color:var(--ink)} .srcs span{color:var(--muted);font-family:var(--f-data);white-space:nowrap}
+#pts{position:absolute;inset:0;pointer-events:none}
 .views button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:13px}
 .views button[aria-pressed=true]{border-color:var(--ink);font-weight:600}
 
@@ -121,6 +143,14 @@ main{position:relative;min-width:0;min-height:0}
       <select id="measure"></select>
       <div class="desc" id="mdesc"></div>
     </div>
+    <div>
+      <span class="lbl" id="whereLbl">Count deaths by</span>
+      <div class="seg" role="group" aria-labelledby="whereLbl">
+        <button type="button" id="wLived" aria-pressed="true">Where they lived</button>
+        <button type="button" id="wDied" aria-pressed="false">Where they died</button>
+      </div>
+      <div class="note" id="whereNote" hidden></div>
+    </div>
     <div id="periodWrap">
       <label class="lbl" for="period">Year</label>
       <div class="period">
@@ -142,16 +172,29 @@ main{position:relative;min-width:0;min-height:0}
       <svg id="legend" viewBox="0 0 320 34" role="img" aria-label="Map legend"></svg>
       <div class="legkeys">
         <span><i style="background:var(--nodata)"></i>No data</span>
-        <label id="modKey" style="cursor:pointer"><input type="checkbox" id="showMod" checked style="margin:0 5px 0 0;vertical-align:-2px;accent-color:var(--accent)"><i style="background:repeating-linear-gradient(45deg,var(--hatch) 0 1.5px,transparent 1.5px 4px)"></i>Mark modeled rates (1–9 deaths)</label>
+        <label id="modKey" style="cursor:pointer"><input type="checkbox" id="showMod" checked style="margin:0 5px 0 0;vertical-align:-2px;accent-color:var(--accent)"><i style="background:repeating-linear-gradient(45deg,var(--hatch) 0 1.5px,transparent 1.5px 4px)"></i><span id="modTxt">Mark modeled rates (1–9 deaths)</span></label>
         <span>Classes hold even across years</span>
       </div>
     </div>
+    <div>
+      <span class="lbl">Death locations</span>
+      <div class="layers" id="layers"></div>
+      <div class="row2" style="margin-top:8px">
+        <label class="lbl" for="ptYear" style="margin:0">Year</label>
+        <select id="ptYear"></select>
+      </div>
+      <div class="mchips" id="mchips"></div>
+      <div class="desc" id="ptNote"></div>
+    </div>
     <section class="county" id="county" aria-live="polite"></section>
+    <details class="about"><summary>About the data</summary><ul class="srcs" id="srcs"></ul>
+      <div class="desc">The site rebuilds every week from these sources. Every figure comes straight from the source table; nothing is estimated by MortalGIS. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
     <div class="src" id="src"></div>
   </aside>
 
   <main>
     <svg id="map" role="img" aria-label="Choropleth map of US counties"></svg>
+    <canvas id="pts"></canvas>
     <div class="zoom"><button id="zin" type="button" aria-label="Zoom in">+</button><button id="zout" type="button" aria-label="Zoom out">−</button></div>
     <div class="tip" id="tip" hidden></div>
     <div class="status" id="status"></div>
@@ -165,7 +208,7 @@ main{position:relative;min-width:0;min-height:0}
 (async function(){
 const $ = s => document.querySelector(s);
 const DEFAULT = {measure:"overdose", fips:"26049"};
-const state = {measure:null, period:null, fips:DEFAULT.fips, view:"state", playing:null};
+const state = {measure:null, period:null, fips:DEFAULT.fips, view:"state", playing:null, where:"lived", layers:new Set(["fars","cook_county"]), ptYear:null, manners:new Set([0,1,2,3,4,5])};
 const cache = {};
 const fmt = v => Math.abs(v)>=1000 ? d3.format(",.0f")(v) : d3.format(",.1f")(v);
 const _u = 0, fmtI = d3.format(","), pct = d3.format(".0%");
@@ -185,7 +228,7 @@ const ramp = () => { const cs=getComputedStyle(document.documentElement); return
 
 // ---------- controls
 const sel = $("#measure"); const groups = d3.group(meta.measures, m=>m.group);
-for (const [g, ms] of groups){ const og=document.createElement("optgroup"); og.label=g; ms.forEach(m=>og.append(new Option(m.label,m.key))); sel.append(og); }
+for (const [g, ms] of groups){ const og=document.createElement("optgroup"); og.label=g; ms.filter(m=>m.place!=="occurrence").forEach(m=>og.append(new Option(m.label,m.key))); sel.append(og); }
 $("#countylist").innerHTML = counties.map(c=>`<option value="${label(c)}"></option>`).join("");
 const byLabel = new Map(counties.map(c=>[label(c).toLowerCase(), c[0]]));
 
@@ -211,9 +254,9 @@ function layout(){
   projection.fitExtent([[10,10],[W-10,H-10]], nation);
   svg.attr("viewBox",`0 0 ${W} ${H}`);
   cPaths.attr("d", path); g.selectAll(".states").attr("d", path);
-  drawHatch(); drawSel();
+  drawHatch(); drawSel(); sizeCanvas(); drawPoints();
 }
-const zoom = d3.zoom().scaleExtent([1,60]).on("zoom", e=>{ g.attr("transform", e.transform); });
+const zoom = d3.zoom().scaleExtent([1,60]).on("zoom", e=>{ g.attr("transform", e.transform); drawPoints(); });
 svg.call(zoom);
 $("#zin").onclick = ()=>svg.transition().duration(300).call(zoom.scaleBy,1.6);
 $("#zout").onclick = ()=>svg.transition().duration(300).call(zoom.scaleBy,1/1.6);
@@ -249,15 +292,19 @@ function breaks(key, d, m){
 function periodLabel(m,p){ return (m.periodLabels&&m.periodLabels[p]) || p; }
 
 async function setMeasure(key, keepPeriod){
-  const m = M.get(key); state.measure = key; sel.value = key;
+  let m0 = M.get(key);
+  if (m0.pair){ const want = state.where==="died" ? "occurrence" : "residence"; if ((m0.place||"residence")!==want) key = m0.pair; }
+  const m = M.get(key); state.measure = key; sel.value = m.place==="occurrence" ? m.pair : key;
+  updateWhereNote(m);
   const d = await load(key);
   if(!keepPeriod || !m.periods.includes(state.period)) state.period = m.defaultPeriod;
   $("#mdesc").textContent = m.description;
   const pr = $("#period"); pr.max = m.periods.length-1; pr.value = m.periods.indexOf(state.period);
   $("#periodWrap").hidden = m.periods.length < 2;
   $("#modKey").hidden = !d.modeled;
+  $("#modTxt").textContent = m.flagLabel || "Mark modeled rates (1–9 deaths)";
   $("#legTitle").textContent = m.unit;
-  $("#src").innerHTML = `<b>Source:</b> <a href="${m.sourceUrl}" target="_blank" rel="noopener">${m.source}</a>${m.asOf?` · data as of ${m.asOf}`:""}. ${m.notes}<br><br>Counties are where the person lived, not where they died. Rates use the county's population; small counties swing a lot from year to year.<br>Built ${meta.generated.slice(0,10)}.`;
+  $("#src").innerHTML = `<b>Source:</b> <a href="${m.sourceUrl}" target="_blank" rel="noopener">${m.source}</a>${m.asOf?` · data as of ${m.asOf}`:""}. ${m.notes}<br><br>County rates count people where they lived unless the measure says otherwise. Rates use the county's population; small counties swing a lot from year to year.<br>Built ${meta.generated.slice(0,10)}.`;
   render();
 }
 function render(){
@@ -299,6 +346,7 @@ function countText(d,i,p){
   if(c==null) return null; if(c===-1) return "1–9 (suppressed)"; if(typeof c==="string") return `${c} (range)`; return fmtI(c);
 }
 function hover(e, f){
+  if (hoverPoint(e)) return;
   const i = idx.get(f.id), m = M.get(state.measure), d = cache[state.measure], p = state.period;
   const c = countText(d,i,p);
   const t = $("#tip"); t.hidden=false;
@@ -325,6 +373,7 @@ async function renderCounty(){
   let h = `<div><div class="cname">${c[1]} County, ${c[2]}</div><div class="csub">${pop?`Population ${fmtI(pop)} · `:""}FIPS ${c[0]}</div></div>
   <div><span class="lbl">${m.label} · ${periodLabel(m,p)}</span><div class="big"><b>${valueText(m,d,i,p)}</b><small>${m.unit}</small></div></div>
   <div class="chips">${d.modeled&&d.modeled[p][i]?`<span class="chip warn">Modeled: fewer than 10 deaths</span>`:""}<span class="chip">${m.rateType}</span></div>
+  ${occLine(i)}
   <dl class="facts">
     ${cnt?`<dt>Deaths</dt><dd>${cnt}</dd>`:""}
     ${rS?`<dt>Rank in ${c[2]}</dt><dd>${rS.rank} of ${rS.of} (1 = ${worst})</dd>`:""}
@@ -386,9 +435,156 @@ async function drawAll(i){
     rows.push({m,v,pc,p});
   }
   if(state.fips!==counties[i][0]) return;
-  const h = `<h4>Every measure · position among US counties</h4><table>${rows.map(r=>`<tr data-k="${r.m.key}"><td>${r.m.label}<div class="desc" style="margin:0">${periodLabel(r.m,r.p)}</div></td><td class="v">${r.v==null?"—":fmt(r.v)}</td><td class="p">${r.pc==null?"":`<div class="pbar" title="Higher than ${pct(r.pc)} of counties"><i style="left:calc(${(r.pc*100).toFixed(1)}% - 1px)"></i></div>`}</td></tr>`).join("")}</table><div class="desc">Tick = where this county sits from lowest (left) to highest (right) value.</div>`;
+  const h = `<h4>Every measure · position among US counties</h4><table>${rows.map(r=>`<tr data-k="${r.m.key}"><td>${r.m.label}${r.m.place==='occurrence'?' (where they died)':''}<div class="desc" style="margin:0">${periodLabel(r.m,r.p)}</div></td><td class="v">${r.v==null?"—":fmt(r.v)}</td><td class="p">${r.pc==null?"":`<div class="pbar" title="Higher than ${pct(r.pc)} of counties"><i style="left:calc(${(r.pc*100).toFixed(1)}% - 1px)"></i></div>`}</td></tr>`).join("")}</table><div class="desc">Tick = where this county sits from lowest (left) to highest (right) value.</div>`;
   $("#allm").innerHTML=h;
-  $("#allm").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>setMeasure(tr.dataset.k));
+  $("#allm").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{ const m=M.get(tr.dataset.k); if(m.place==="occurrence"){ setWhere("died"); } else if(m.pair && state.where==="died"){ setWhere("lived"); } setMeasure(tr.dataset.k); });
+}
+
+// ---------- where they lived / died
+function setWhere(w){
+  state.where = w;
+  $("#wLived").setAttribute("aria-pressed", w==="lived"); $("#wDied").setAttribute("aria-pressed", w==="died");
+  const cur = M.get(state.measure);
+  setMeasure(cur.place==="occurrence" ? cur.pair : state.measure, true);
+  renderLayers(); drawPoints();
+}
+function updateWhereNote(m){
+  const n = $("#whereNote");
+  if (state.where==="died" && !m.pair){
+    n.hidden=false; n.textContent = "CDC publishes this cause only by the county people lived in. The death-location layers below show where deaths happened.";
+  } else if (state.where==="died" && m.place==="occurrence"){
+    n.hidden=false; n.textContent = "Counted where the death happened (2020 to mid-2023, the latest CDC published by county). Hospital counties look high because patients die there from surrounding counties.";
+  } else n.hidden=true;
+}
+function occLine(i){
+  const r = meta.occVsRes2020 && meta.occVsRes2020[i]; if(!r) return "";
+  const c = counties[i], ratio = r[0]/r[1];
+  const word = ratio>1.08 ? "more deaths happen here than among residents (it draws patients from nearby)" : ratio<0.92 ? "fewer deaths happen here than among residents (people die in hospitals elsewhere)" : "about as many deaths happen here as among residents";
+  return `<div class="note" style="margin:0"><b>Where residents die, 2020:</b> ${fmtI(r[0])} deaths happened in ${c[1]} County; ${fmtI(r[1])} residents died${r[2]?" (approx., some small counts suppressed)":""}. ${ratio.toFixed(2)}× — ${word}.</div>`;
+}
+
+// ---------- death-location layers (canvas)
+const L = new Map((meta.incidents||[]).map(l=>[l.key,l]));
+const MAN = ["Accident","Homicide","Suicide","Natural","Undetermined","Pending/other"];
+const layerColor = k => getComputedStyle(document.documentElement).getPropertyValue({fars:"--l4",cook_county:"--l1",santa_clara_county:"--l2",ct_drug:"--l3"}[k]||"--l1").trim();
+const canvas = $("#pts"), ctx = canvas.getContext("2d");
+let drawn = []; // [x,y,r,info] for hit testing
+function sizeCanvas(){ const dpr=window.devicePixelRatio||1; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+"px"; canvas.style.height=H+"px"; ctx.setTransform(dpr,0,0,dpr,0,0); }
+async function loadLayer(k, st){
+  const ck = st ? `${k}_${st}` : k;
+  if (cache["pt_"+ck] === undefined){
+    cache["pt_"+ck] = null;
+    try{ cache["pt_"+ck] = await fetch(`data/points/${ck}.json`).then(r=>r.ok?r.json():[]); }catch(e){ cache["pt_"+ck]=[]; }
+    drawPoints();
+  }
+  return cache["pt_"+ck];
+}
+const stateFeats = topojson.feature(topo, topo.objects.states).features;
+function visibleStates(t){
+  const x0=t.invertX(0), x1=t.invertX(W), y0=t.invertY(0), y1=t.invertY(H);
+  return stateFeats.filter(f=>{ const [[a,b],[c,d]] = path.bounds(f); return c>=x0 && a<=x1 && d>=y0 && b<=y1; }).map(f=>f.id);
+}
+function renderLayers(){
+  const box = $("#layers"); box.innerHTML = "";
+  for (const l of L.values()){
+    const disabled = state.where==="lived" && !l.hasLived;
+    const lab = document.createElement("label"); lab.className="layer"; if(disabled) lab.style.opacity=.5;
+    lab.innerHTML = `<input type="checkbox" ${state.layers.has(l.key)?"checked":""} ${disabled?"disabled":""}><span><i class="sw" style="background:${layerColor(l.key)}"></i>${l.label}</span><small>${l.area} · ${l.years[0]}–${l.years.at(-1)}${state.ptYear && state.layers.has(l.key) && effYear(l,+state.ptYear)!==+state.ptYear ? ` · showing ${effYear(l,+state.ptYear)}` : ""}${l.stale?" · last update failed, showing previous data":""}${disabled?" · location of death only":""}</small>`;
+    lab.querySelector("input").onchange = e=>{ e.target.checked ? state.layers.add(l.key) : state.layers.delete(l.key); renderLayers(); drawPoints(); };
+    box.append(lab);
+  }
+  const active = [...L.values()].filter(l=>state.layers.has(l.key) && !(state.where==="lived" && !l.hasLived));
+  const years = [...new Set(active.flatMap(l=>l.years))].sort();
+  const ys = $("#ptYear"); const prev = state.ptYear;
+  ys.innerHTML = years.map(y=>`<option>${y}</option>`).join("");
+  const nowY = new Date().getFullYear();
+  state.ptYear = years.includes(prev) ? prev : (years.filter(y=>y<nowY).at(-1) ?? years.at(-1));
+  ys.value = state.ptYear; ys.disabled = !years.length;
+  const hasME = active.some(l=>l.kind==="me");
+  $("#mchips").innerHTML = hasME ? MAN.map((m,i)=>`<button type="button" data-i="${i}" aria-pressed="${state.manners.has(i)}">${m}</button>`).join("") : "";
+  $("#mchips").querySelectorAll("button").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; state.manners.has(i)?state.manners.delete(i):state.manners.add(i); renderLayers(); drawPoints(); });
+  const notes = active.map(l=>`<b>${l.label}:</b> ${state.where==="lived" ? (l.livedNote||"") : l.diedNote}`);
+  $("#ptNote").innerHTML = active.length ? notes.join("<br>") : "Turn on a layer to see individual death locations.";
+}
+$("#ptYear").onchange = e=>{ state.ptYear = +e.target.value; renderLayers(); drawPoints(); };
+function effYear(l, y){ if (l.years.includes(y)) return y; const below = l.years.filter(v=>v<=y); return below.length ? below.at(-1) : l.years[0]; }
+function drawPoints(){
+  if (!W) return;
+  ctx.clearRect(0,0,W,H); drawn = [];
+  const t = d3.zoomTransform(svg.node()), y = +state.ptYear;
+  let hint = "";
+  for (const l of L.values()){
+    if (!state.layers.has(l.key)) continue;
+    if (state.where==="lived" && !l.hasLived) continue;
+    const col = layerColor(l.key);
+    if (l.kind==="fars"){
+      if (t.k < 2.2){ hint = "Zoom in to a state to see crash locations."; continue; }
+      for (const st of visibleStates(t)){
+        const rows = cache["pt_fars_"+st]; if (rows===undefined){ loadLayer("fars", st); continue; } if(!rows) continue;
+        const fy = effYear(l, y);
+        ctx.fillStyle = col; ctx.globalAlpha = .55;
+        for (const r of rows){ if (r[2]!==fy) continue;
+          const p = projection([r[0],r[1]]); if(!p) continue;
+          const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-5||x>W+5||yy<-5||yy>H+5) continue;
+          const rad = Math.min(1.2+Math.sqrt(t.k)*0.45, 4) * Math.sqrt(r[3]);
+          ctx.beginPath(); ctx.arc(x,yy,rad,0,7); ctx.fill();
+          drawn.push([x,yy,Math.max(rad,4),{l, n:r[3], m:r[4], y:r[2]}]);
+        }
+      }
+      continue;
+    }
+    const data = cache["pt_"+l.key]; if (data===undefined){ loadLayer(l.key); continue; } if(!data) continue;
+    const ly = effYear(l, y); const yi = l.years.indexOf(ly); if (yi<0) continue;
+    const rows = state.where==="lived" ? data.lived : data.died;
+    const grid = l.kind==="me" && state.where==="died";
+    ctx.fillStyle = col; ctx.strokeStyle = col;
+    let cell = 0;
+    let cellH = 0;
+    if (grid){ const c0=data.died[0]||[-87.7,41.8], a=projection([c0[0],c0[1]]), b=projection([c0[0]+0.01,c0[1]-0.01]);
+      cell = a&&b ? Math.max(1.5, Math.abs(b[0]-a[0])*t.k) : 2; cellH = a&&b ? Math.max(1.5, Math.abs(b[1]-a[1])*t.k) : 2; }
+    for (const r of rows){ if (r[2]!==yi) continue;
+      const counts = r.slice(3,9); const n = counts.reduce((a,c,i)=>a+(state.manners.has(i)||l.kind!=="me"?c:0),0); if(!n) continue;
+      const p = projection([r[0],r[1]]); if(!p) continue;
+      const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-20||x>W+20||yy<-20||yy>H+20) continue;
+      if (grid){
+        // ~1 km squares, opacity by count (log scale)
+        ctx.globalAlpha = Math.min(.95, .18 + Math.log2(1+n)*.16);
+        ctx.fillRect(x-cell/2, yy-cellH/2, cell*0.92, cellH*0.92);
+        drawn.push([x,yy,Math.max(cell/2,4),{l, n, counts, label:r[9], y}]);
+      } else {
+        const rad = Math.max(1.5, Math.sqrt(n) * Math.min(0.35+t.k*0.05, 1.6));
+        ctx.globalAlpha=.3; ctx.beginPath(); ctx.arc(x,yy,rad,0,7); ctx.fill(); ctx.globalAlpha=.85; ctx.lineWidth=.8; ctx.stroke();
+        drawn.push([x,yy,Math.max(rad,4),{l, n, counts, label:r[9], y}]);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  const st = $("#status"); if (hint && !st.dataset.base) {}
+  st.title = hint; if (hint) st.textContent = st.textContent.split(" · Zoom")[0] + " · " + hint;
+}
+function hoverPoint(e){
+  if (!drawn.length) return false;
+  const r = $("main").getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  let best=null, bd=1e9;
+  for (const d of drawn){ const dd=(d[0]-x)**2+(d[1]-y)**2; if (dd<d[2]*d[2] && dd<bd){ bd=dd; best=d; } }
+  if (!best) return false;
+  const i = best[3], t = $("#tip"); t.hidden=false;
+  if (i.l.kind==="fars") t.innerHTML = `<div>Fatal crash · ${d3.timeFormat("%b")(new Date(2000,i.m-1,1))} ${i.y}</div><b>${i.n}</b> ${i.n>1?"deaths":"death"}<div style="color:var(--muted)">NHTSA FARS</div>`;
+  else {
+    const where = state.where==="lived" ? (i.label||"Residence area") : (i.l.kind==="town" ? (i.label||"Town") : "~1 km area");
+    const parts = i.l.kind==="me" ? i.counts.map((c,k)=>c&&state.manners.has(k)?`${MAN[k]} ${c}`:null).filter(Boolean).join(" · ") : "";
+    t.innerHTML = `<div>${i.l.label} · ${where}</div><b>${fmtI(i.n)}</b> ${i.n>1?"deaths":"death"} in ${i.y} <span style="color:var(--muted)">(${state.where==="lived"?"lived here":"died here"})</span>${parts?`<div style="color:var(--muted)">${parts}</div>`:""}`;
+  }
+  let tx=x+14, ty=y+14; if(tx+250>r.width) tx-=270; if(ty+90>r.height) ty-=100;
+  t.style.left=tx+"px"; t.style.top=ty+"px";
+  return true;
+}
+function renderSources(){
+  const seen = new Map();
+  meta.measures.forEach(m=>{ if(!seen.has(m.sourceUrl)) seen.set(m.sourceUrl,[m.source, m.asOf||m.periods.at(-1)]); });
+  if (meta.monthly) seen.set(meta.monthly.sourceUrl,[meta.monthly.source, meta.monthly.asOf]);
+  (meta.incidents||[]).forEach(l=>seen.set(l.sourceUrl,[l.source, `through ${l.latest}${l.stale?" (stale)":""}`]));
+  $("#srcs").innerHTML = [...seen].map(([u,[n,a]])=>`<li><a href="${u}" target="_blank" rel="noopener">${n}</a><span>${a||""}</span></li>`).join("") + `<li><span style="font-family:var(--f-body)">Site rebuilt</span><span>${meta.generated.slice(0,10)}</span></li>`;
 }
 
 function select(fips, fromMap){
@@ -402,6 +598,9 @@ function select(fips, fromMap){
 // ---------- events
 sel.onchange = ()=>setMeasure(sel.value, true);
 $("#showMod").onchange = ()=>drawHatch();
+$("#wLived").onclick = ()=>setWhere("lived");
+$("#wDied").onclick = ()=>setWhere("died");
+svg.on("pointermove.pts", e=>{ if(e.target===svg.node()) hoverPoint(e); });
 $("#period").oninput = e=>{ state.period = M.get(state.measure).periods[+e.target.value]; render(); };
 $("#play").onclick = ()=>{
   if(state.playing){ clearInterval(state.playing); state.playing=null; $("#play").textContent="▶"; return; }
@@ -415,6 +614,7 @@ new MutationObserver(()=>render()).observe(document.documentElement,{attributes:
 new ResizeObserver(()=>{ layout(); }).observe($("#map"));
 
 layout();
+renderLayers(); renderSources();
 await setMeasure(DEFAULT.measure);
 drawSel();
 setTimeout(()=>setView("state"), 50);
