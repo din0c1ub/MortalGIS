@@ -204,6 +204,16 @@
   ]
  },
  "coverage": {
+  "all_deaths": {
+   "period": "2025",
+   "counties_with_value": 3133,
+   "of": 3153
+  },
+  "all_deaths_died": {
+   "period": "2020\u201323",
+   "counties_with_value": 3087,
+   "of": 3153
+  },
   "overdose": {
    "period": "2024",
    "counties_with_value": 3141,
@@ -283,6 +293,24 @@
    "period": "CHR 2025",
    "counties_with_value": 1180,
    "of": 3153
+  }
+ },
+ "incident_sources": {
+  "fars": {
+   "ok": true,
+   "latest": "2024"
+  },
+  "cook_county": {
+   "ok": true,
+   "latest": "2026-10-05"
+  },
+  "santa_clara_county": {
+   "ok": true,
+   "latest": "2026-10-05"
+  },
+  "ct_drug": {
+   "ok": true,
+   "latest": "2024"
   }
  }
 }
