@@ -1,7 +1,6 @@
 """Incident layers: where deaths happened (and, where published, where the person lived).
 
 Sources
-- NHTSA FARS: every fatal crash on US public roads, with coordinates. Annual.
 - Cook County (IL) Medical Examiner case archive: incident coordinates + residence ZIP. Daily.
 - Santa Clara County (CA) Medical Examiner-Coroner: coordinates + residence ZIP. Daily.
 - Connecticut accidental drug-related deaths: injury town + residence town. Annual.
@@ -10,7 +9,6 @@ Privacy rules applied here (the source tables are more detailed than what we pub
 - Medical examiner incident points are snapped to a ~1 km grid (0.01 degree) and only counts per
   cell, year and manner of death are kept. No ages, names, addresses, causes or exact times.
 - Residence is aggregated to ZIP Code (ZCTA centroid) or town; never a street.
-- FARS crash coordinates are already public; they are rounded to ~100 m.
 """
 from __future__ import annotations
 
@@ -23,16 +21,7 @@ from datetime import datetime
 
 from build_data import get, log  # shared helpers
 
-MANNERS = ["Accident", "Homicide", "Suicide", "Natural", "Undetermined", "Pending/other"]
 GRID = 0.01  # degrees, ~1.1 km north-south
-
-
-def manner_ix(m: str | None) -> int:
-    m = (m or "").strip().lower()
-    for i, k in enumerate(["accident", "homicide", "suicide", "natural", "undetermined"]):
-        if m.startswith(k):
-            return i
-    return 5
 
 
 def snap(v: float) -> float:
@@ -69,7 +58,7 @@ def zcta_centroids():
 
 
 def _pack(cells: dict, years: list[int], labels: dict | None = None):
-    """cells[(lon,lat,year)] -> [6 counts] → compact rows [lon,lat,yearIdx,c0..c5(,label)]."""
+    """cells[(lon,lat,year)] -> [counts] → compact rows [lon,lat,yearIdx,c0..cN(,label)]."""
     yi = {y: i for i, y in enumerate(years)}
     out = []
     for (lon, lat, y), c in cells.items():
@@ -82,16 +71,37 @@ def _pack(cells: dict, years: list[int], labels: dict | None = None):
     return out
 
 
+CATS = ["all", "overdose", "suicide", "homicide", "firearm"]
+DRUG_TERMS = ("drug", "fentanyl", "heroin", "cocaine", "methamphetamine", "amphetamine", "opioid", "opiate",
+              "oxycodone", "hydrocodone", "morphine", "methadone", "benzodiazepine", "alprazolam", "xylazine",
+              "tramadol", "overdose", "buprenorphine", "carfentanil")
+GUN_TERMS = ("gunshot", "firearm", "shotgun", "rifle", "handgun")
+
+
+def categories(manner: str, cause: str, gun_flag=None, opioid_flag=None) -> list[int]:
+    m, c = (manner or "").lower(), (cause or "").lower()
+    out = [0]
+    if not m.startswith("natural") and (any(t in c for t in DRUG_TERMS) or str(opioid_flag).lower() == "true"):
+        out.append(1)
+    if m.startswith("suicide"):
+        out.append(2)
+    if m.startswith("homicide"):
+        out.append(3)
+    if str(gun_flag).lower() == "true" or any(t in c for t in GUN_TERMS):
+        out.append(4)
+    return out
+
+
 def medical_examiner(name, domain, dataset, cols, since_year, area, url):
-    """Generic ME source → died (grid) + lived (ZIP) aggregates."""
+    """Generic ME source → died (~1 km grid) + lived (ZIP) counts per year and category."""
     log(f"• {name} medical examiner …")
     z = zcta_centroids()
-    died, lived, zlabel = defaultdict(lambda: [0] * 6), defaultdict(lambda: [0] * 6), {}
+    died, lived, zlabel = defaultdict(lambda: [0] * 5), defaultdict(lambda: [0] * 5), {}
     n = latest = 0
     years = set()
     where = f"{cols['date']} >= '{since_year}-01-01'"
-    sel = ",".join([cols["date"], cols["manner"], cols["lat"], cols["lon"], cols["rzip"]])
-    for r in socrata_all(domain, dataset, sel, where):
+    fields = [cols[k] for k in ("date", "manner", "lat", "lon", "rzip", "cause") if cols.get(k)] + [cols[k] for k in ("gun", "opioid") if cols.get(k)]
+    for r in socrata_all(domain, dataset, ",".join(fields), where):
         try:
             y = int(str(r.get(cols["date"]))[:4])
         except ValueError:
@@ -101,35 +111,38 @@ def medical_examiner(name, domain, dataset, cols, since_year, area, url):
         n += 1
         years.add(y)
         latest = max(latest, int(str(r[cols["date"]])[:10].replace("-", "")))
-        mi = manner_ix(r.get(cols["manner"]))
+        cats = categories(r.get(cols["manner"]), r.get(cols.get("cause", ""), ""), r.get(cols.get("gun", "")), r.get(cols.get("opioid", "")))
         try:
             lat, lon = float(r[cols["lat"]]), float(r[cols["lon"]])
             if lat and lon:
-                died[(snap(lon), snap(lat), y)][mi] += 1
+                cell = died[(snap(lon), snap(lat), y)]
+                for k in cats:
+                    cell[k] += 1
         except (KeyError, TypeError, ValueError):
             pass
         zp = str(r.get(cols["rzip"]) or "")[:5]
         if zp in z:
-            k = (*z[zp], y)
-            lived[k][mi] += 1
+            cell = lived[(*z[zp], y)]
+            for k in cats:
+                cell[k] += 1
             zlabel[z[zp]] = f"ZIP {zp}"
     years = sorted(years)
     log(f"  {n:,} cases {years[0]}–{years[-1]}; {len(died):,} grid cells, {len(lived):,} ZIP cells")
     lat_s = str(latest)
     return {
         "key": name.lower().replace(" ", "_"), "label": f"{name} Medical Examiner", "kind": "me", "area": area,
-        "years": years, "manners": MANNERS, "hasLived": True,
+        "years": years, "cats": CATS, "hasLived": True,
         "latest": f"{lat_s[:4]}-{lat_s[4:6]}-{lat_s[6:]}", "cases": n,
         "died": _pack(died, years), "lived": _pack(lived, years, zlabel),
-        "diedNote": "Where the injury or death happened, snapped to a ~1 km grid.",
-        "livedNote": "Where the person lived, by ZIP Code.",
+        "diedNote": "where the injury or death happened (~1 km squares)",
+        "livedNote": "where the person lived (ZIP Codes)",
         "source": f"{name} Medical Examiner open data", "sourceUrl": url,
     }
 
 
 def ct_drug_deaths():
     log("• Connecticut accidental drug-related deaths …")
-    died, lived, labels = defaultdict(lambda: [0] * 6), defaultdict(lambda: [0] * 6), {}
+    died, lived, labels = defaultdict(lambda: [0] * 5), defaultdict(lambda: [0] * 5), {}
     years = set()
     n = 0
     for r in socrata_all("data.ct.gov", "rybz-nyjw", "date,injurycity,injurycitygeo,residencecity,residencecitygeo,deathcitygeo,deathcity", "date IS NOT NULL"):
@@ -140,62 +153,19 @@ def ct_drug_deaths():
                                   (r.get("residencecitygeo"), r.get("residencecity"), lived)]:
             if geo and geo.get("latitude"):
                 k = (round(float(geo["longitude"]), 4), round(float(geo["latitude"]), 4))
-                bucket[(*k, y)][0] += 1  # all accidental
+                c = bucket[(*k, y)]
+                c[0] += 1  # all
+                c[1] += 1  # every record is a drug death
                 labels[k] = (city or "").title()
     years = sorted(years)
     log(f"  {n:,} deaths {years[0]}–{years[-1]}")
     return {
         "key": "ct_drug", "label": "Connecticut drug deaths", "kind": "town", "area": "Connecticut",
-        "years": years, "manners": MANNERS, "hasLived": True, "latest": f"{years[-1]}", "cases": n,
+        "years": years, "cats": CATS, "hasLived": True, "latest": f"{years[-1]}", "cases": n,
         "died": _pack(died, years, labels), "lived": _pack(lived, years, labels),
-        "diedNote": "Town where the drug use/injury happened (or death town if unknown).",
-        "livedNote": "Town where the person lived.",
+        "diedNote": "town where the drug use happened",
+        "livedNote": "town where the person lived",
         "source": "CT Office of the Chief Medical Examiner via data.ct.gov", "sourceUrl": "https://data.ct.gov/d/rybz-nyjw",
-    }
-
-
-def fars(out_dir, n_years: int = 2):
-    """Download the most recent FARS years and write one file per state."""
-    this = datetime.now().year
-    got = []
-    by_state = defaultdict(list)
-    for y in range(this, this - 6, -1):
-        if len(got) == n_years:
-            break
-        url = f"https://static.nhtsa.gov/nhtsa/downloads/FARS/{y}/National/FARS{y}NationalCSV.zip"
-        try:
-            raw = get(url, retries=2, timeout=300)
-        except RuntimeError:
-            continue
-        log(f"• NHTSA FARS {y} …")
-        zf = zipfile.ZipFile(io.BytesIO(raw))
-        name = next(n for n in zf.namelist() if n.lower().endswith("accident.csv"))
-        rows = csv.DictReader(io.TextIOWrapper(zf.open(name), encoding="latin-1"))
-        k = 0
-        for r in rows:
-            try:
-                lat, lon = float(r["LATITUDE"]), float(r["LONGITUD"])
-            except ValueError:
-                continue
-            if not (17 < lat < 72 and -180 < lon < -60):  # 77.7777/88.8888/99.9999 = unknown
-                continue
-            st = str(r["STATE"]).zfill(2)
-            by_state[st].append([round(lon, 3), round(lat, 3), y, int(r["FATALS"]), int(r["MONTH"])])
-            k += 1
-        got.append(y)
-        log(f"  {k:,} fatal crashes with coordinates")
-    if not got:
-        raise RuntimeError("no FARS year downloadable")
-    (out_dir / "points").mkdir(exist_ok=True)
-    for st, rows in by_state.items():
-        (out_dir / "points" / f"fars_{st}.json").write_text(json.dumps(rows, separators=(",", ":")))
-    total = sum(len(v) for v in by_state.values())
-    return {
-        "key": "fars", "label": "Traffic crashes (FARS)", "kind": "fars", "area": "United States",
-        "years": sorted(got), "hasLived": False, "perState": True, "crashes": total,
-        "diedNote": "Location of every fatal crash on a public road. Dot size = deaths in the crash.",
-        "source": "NHTSA Fatality Analysis Reporting System", "sourceUrl": "https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars",
-        "latest": str(max(got)),
     }
 
 
@@ -204,15 +174,16 @@ def build_incidents(out_dir, status: dict):
     (out_dir / "points").mkdir(exist_ok=True)
     layers = []
     jobs = [
-        ("fars", lambda: fars(out_dir)),
         ("cook_county", lambda: medical_examiner(
             "Cook County", "datacatalog.cookcountyil.gov", "cjeq-bs86",
-            {"date": "death_date", "manner": "manner", "lat": "latitude", "lon": "longitude", "rzip": "residence_zip"},
-            2019, "Cook County, IL (Chicago)", "https://datacatalog.cookcountyil.gov/d/cjeq-bs86")),
+            {"date": "death_date", "manner": "manner", "lat": "latitude", "lon": "longitude", "rzip": "residence_zip",
+             "cause": "primarycause", "gun": "gunrelated", "opioid": "opioids"},
+            2014, "Cook County, IL (Chicago)", "https://datacatalog.cookcountyil.gov/d/cjeq-bs86")),
         ("santa_clara_county", lambda: medical_examiner(
             "Santa Clara County", "data.sccgov.org", "s3fb-yrjp",
-            {"date": "death_date", "manner": "manner_of_death", "lat": "latitude", "lon": "longitude", "rzip": "resident_zip"},
-            2019, "Santa Clara County, CA (San Jose)", "https://data.sccgov.org/d/s3fb-yrjp")),
+            {"date": "death_date", "manner": "manner_of_death", "lat": "latitude", "lon": "longitude", "rzip": "resident_zip",
+             "cause": "cause_of_death"},
+            2018, "Santa Clara County, CA (San Jose)", "https://data.sccgov.org/d/s3fb-yrjp")),
         ("ct_drug", ct_drug_deaths),
     ]
     prev_index = {}
@@ -222,7 +193,7 @@ def build_incidents(out_dir, status: dict):
     for key, fn in jobs:
         try:
             layer = fn()
-            if layer.get("kind") != "fars":
+            if True:
                 (out_dir / "points" / f"{layer['key']}.json").write_text(
                     json.dumps({"died": layer.pop("died"), "lived": layer.pop("lived")}, separators=(",", ":")))
             layer["fetched"] = datetime.utcnow().strftime("%Y-%m-%d")
