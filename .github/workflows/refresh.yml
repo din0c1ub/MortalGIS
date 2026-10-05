@@ -17,8 +17,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
 
+      - name: Check the WONDER importer
+        run: python tests/test_wonder_parse.py
+
       - name: Build data (fails if a core source collapses)
-        run: python pipeline/build_data.py && python pipeline/wrap_index.py
+        run: |
+          pip install -q pandas
+          python pipeline/build_data.py && python pipeline/wrap_index.py
 
       - name: Commit refreshed data
         run: |
