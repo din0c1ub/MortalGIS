@@ -273,37 +273,77 @@ WONDER_DIR = ROOT / "data_manual" / "wonder"
 CAUSES = ["all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke"]
 
 
+def wonder_cause_from_notes(text):
+    """Work out cause and place from the "Query Parameters" notes WONDER appends to every export,
+    so files can keep their downloaded names (e.g. "Underlying Cause of Death 1999-2020 3.csv")."""
+    notes = text.split('"---"', 1)[1] if '"---"' in text else ""
+    params = " ".join(l.strip().strip('"') for l in notes.splitlines())
+    group = re.search(r"Group By: ([^\n]*?)(?:\s{2,}|Show |Calculate|$)", params)
+    group = group.group(1) if group else ""
+    place = "occ" if re.search(r"Occurrence (County|State)", params) else "res"
+    intent = re.search(r"Injury Intent: (\w+)", params)
+    mech = re.search(r"Injury Mechanism[^:]*: (\w+)", params)
+    if "Drug poisonings (overdose)" in params:
+        cause = "overdose"
+    elif intent and mech and mech.group(1) != "All":
+        cause = None  # e.g. firearm suicides: not a map measure
+    elif intent:
+        cause = {"Suicide": "suicide", "Homicide": "homicide"}.get(intent.group(1))
+    elif mech:
+        cause = "firearm" if mech.group(1) == "Firearm" else None
+    elif re.search(r"Diseases of heart", params):
+        cause = "heart"
+    elif re.search(r"Cerebrovascular diseases", params):
+        cause = "stroke"
+    elif re.search(r"(ICD-10 Codes|Cause List|Causes?:|Chapter)", params):
+        cause = None  # some other cause selection we don't map
+    else:
+        cause = "all"
+    return cause, place, group
+
+
 def wonder_imports():
-    """Tab-delimited exports from CDC WONDER saved in data_manual/wonder/.
-    File names start with <cause>_<residence|occurrence>, e.g. overdose_residence_1999-2020.txt.
-    Needs a county code column and a year column ("Year Code" or "Year"), plus "Deaths"."""
+    """Exports from CDC WONDER saved in data_manual/wonder/ (tab-delimited .txt or comma .csv).
+    Cause and residence/occurrence come from the file name (<cause>_<residence|occurrence>_*.txt)
+    or, failing that, from the query notes WONDER writes at the bottom of each file.
+    Needs a county code column, a year column ("Year Code" or "Year") and "Deaths"."""
     out = defaultdict(lambda: defaultdict(dict))  # (cause, place) -> year -> fips -> count
+    report = []
     files = []
     if WONDER_DIR.exists():
         files = sorted(p for p in WONDER_DIR.iterdir() if p.suffix.lower() in (".txt", ".tsv", ".csv"))
     for path in files:
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
         m = re.match(r"(all|overdose|suicide|homicide|firearm|heart|stroke)_(residence|occurrence)", path.stem.lower())
-        if not m:
-            log(f"  ! skipped {path.name}: name must start with <cause>_<residence|occurrence>")
+        if m:
+            cause, place = m.group(1), ("res" if m.group(2) == "residence" else "occ")
+        else:
+            cause, place, _ = wonder_cause_from_notes(text)
+        if not cause:
+            log(f"  ! skipped {path.name}: could not tell which cause it is (name it <cause>_<residence|occurrence>_….txt)")
+            report.append({"file": path.name, "ok": False, "why": "unknown cause"})
             continue
-        cause, place = m.group(1), ("res" if m.group(2) == "residence" else "occ")
-        text = path.read_text(encoding="utf-8", errors="replace")
         body = text.split('"---"')[0]
-        rows = list(csv.DictReader(io.StringIO(body), delimiter="\t"))
+        first = body.splitlines()[0] if body else ""
+        delim = "\t" if first.count("\t") > first.count(",") else ","
+        rows = list(csv.DictReader(io.StringIO(body), delimiter=delim))
         if not rows:
             log(f"  ! {path.name}: no rows")
+            report.append({"file": path.name, "ok": False, "why": "no rows"})
             continue
-        cols = rows[0].keys()
-        ccol = next((c for c in cols if c and "County Code" in c), None)
+        cols = [c for c in rows[0].keys() if c]
+        ccol = next((c for c in cols if "County Code" in c), None)
         ycol = next((c for c in cols if c in ("Year Code", "Year")), None)
         if not ccol or not ycol or "Deaths" not in cols:
-            log(f"  ! {path.name}: needs County Code, Year and Deaths columns (found {list(cols)})")
+            why = "no Year column (Group By must be County, then Year)" if ccol and not ycol else f"needs County Code, Year and Deaths (found {cols})"
+            log(f"  ! skipped {path.name} ({cause}): {why}")
+            report.append({"file": path.name, "cause": cause, "ok": False, "why": why})
             continue
         n = 0
         for r in rows:
             f, y, d = (r.get(ccol) or "").strip(), (r.get(ycol) or "").strip()[:4], (r.get("Deaths") or "").strip()
             if not (f.isdigit() and y.isdigit()):
-                continue
+                continue  # Total rows, blank lines
             f = CENSUS_MERGE.get(f.zfill(5), f.zfill(5))
             if d.lower() == "suppressed":
                 v = -1
@@ -318,6 +358,8 @@ def wonder_imports():
                 cell[f] = v
             n += 1
         log(f"  WONDER {path.name}: {n:,} county-years ({cause}, {'residence' if place == 'res' else 'occurrence'})")
+        report.append({"file": path.name, "cause": cause, "place": place, "ok": True, "countyYears": n})
+    wonder_imports.report = report
     return out
 
 
