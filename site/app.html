@@ -348,7 +348,7 @@ function render(){
   $("#status").textContent = vals ? `${fmtI(n)} of ${fmtI(counties.length)} counties · ${periodLabel(m,p)}${s?` · ${(SRC[s]||{}).label||s}`:""}` : `No county data for ${p}`;
   const gap = $("#gapnote");
   if (!vals){
-    const why = (+p>=2005 && +p<=2018 && m.hasCounts && m.icdBreaks) ? "Public county death files stop in 2004 and CDC's current tables start in 2019. A CDC WONDER export fills these years (see the README)." : "This source doesn't cover this year.";
+    const why = (m.place==="occurrence" && +p>=2005) ? "Counts by the county where the death happened aren't published for these years. Switch to \u201cWhere they lived\u201d for every year." : "This source doesn't cover this year.";
     gap.hidden=false; gap.innerHTML = `<b>No county data for ${p}.</b> ${why}`;
   } else if (s && SRC[s] && SRC[s].partial){
     gap.hidden=false; gap.innerHTML = `<b>${p}: large counties only.</b> NCHS public files from 1989 to 2004 identify only counties of 100,000+ people.`;
@@ -459,8 +459,9 @@ async function pairLine(i){
 
 // ---------- death locations (follow the measure and year; no toggles)
 const L = new Map((meta.incidents||[]).map(l=>[l.key,l]));
-const LCOL = {fars:"--l4", cook_county:"--l1", santa_clara_county:"--l2", ct_drug:"--l3", noaa:"--l1"};
-const CATNAME = ["cases", "overdose deaths", "suicides", "homicides", "firearm deaths"];
+const LCOL = {fars:"--l4", noaa:"--l1"};
+const lcol = l => LCOL[l.key] || ("--l"+(l.color||1));
+const CATNAME = ["deaths", "overdose deaths", "suicides", "homicides", "firearm deaths", "traffic deaths", "heart disease deaths"];
 const canvas = $("#pts"), ctx = canvas.getContext("2d");
 let drawn = [];
 function sizeCanvas(){ const dpr=window.devicePixelRatio||1; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+"px"; canvas.style.height=H+"px"; ctx.setTransform(dpr,0,0,dpr,0,0); }
@@ -487,7 +488,7 @@ function drawPoints(){
   const t = d3.zoomTransform(svg.node()), y = +state.year, lived = state.where==="lived";
   const act = activeLayers(); const keyBits = []; let zoomHint = false;
   for (const {pt, l} of act){
-    const col = css(LCOL[l.key]||"--l1");
+    const col = css(lcol(l));
     if (l.kind==="fars"){
       keyBits.push({col, text:`Fatal crashes in ${y} (NHTSA)`, hint: t.k<2.2});
       if (t.k < 2.2){ zoomHint = true; continue; }
@@ -521,7 +522,7 @@ function drawPoints(){
     const data = cache["pt_"+l.key]; if (data===undefined){ loadPts(l.key); continue; } if(!data) continue;
     const yi = l.years.indexOf(y); if (yi<0) continue;
     const rows = lived ? data.lived : data.died;
-    const ci = 3 + (pt.cat||0);
+    const ci = 3 + (pt.cat||0), li = 3 + (l.cats||[]).length;
     const grid = l.kind==="me" && !lived;
     let cw=2, ch=2;
     if (grid && data.died && data.died[0]){ const c0=data.died[0], a=projection([c0[0],c0[1]]), b=projection([c0[0]+0.01,c0[1]-0.01]); if(a&&b){ cw=Math.max(1.5,Math.abs(b[0]-a[0])*t.k); ch=Math.max(1.5,Math.abs(b[1]-a[1])*t.k);} }
@@ -535,14 +536,15 @@ function drawPoints(){
       if (grid){
         ctx.globalAlpha = Math.min(.95, .2 + Math.log2(1+n)*.17);
         ctx.fillRect(x-cw/2, yy-ch/2, cw*0.92, ch*0.92);
-        drawn.push([x,yy,Math.max(cw/2,4),{kind:"me", l, n, cat:pt.cat||0, label:r[8], y}]);
+        drawn.push([x,yy,Math.max(cw/2,4),{kind:"me", l, n, cat:pt.cat||0, label:r[li], y}]);
       } else {
         const rad = Math.max(1.5, Math.sqrt(n) * Math.min(0.35+t.k*0.05, 1.6));
         ctx.globalAlpha=.3; ctx.beginPath(); ctx.arc(x,yy,rad,0,7); ctx.fill(); ctx.globalAlpha=.85; ctx.lineWidth=.8; ctx.stroke();
-        drawn.push([x,yy,Math.max(rad,4),{kind:"me", l, n, cat:pt.cat||0, label:r[8], y}]);
+        drawn.push([x,yy,Math.max(rad,4),{kind:"me", l, n, cat:pt.cat||0, label:r[li], y}]);
       }
     }
-    if (any) keyBits.push({col, text:`${l.area}: medical examiner ${CATNAME[pt.cat||0]}, ${y} — ${lived ? l.livedNote : l.diedNote}`});
+    if (any){ const cn = CATNAME[pt.cat||0], lab = l.label + (l.label.toLowerCase().includes(cn.split(" ")[0].replace(/s$/,"")) ? "" : ` — ${cn}`);
+      keyBits.push({col, text:`${lab}, ${y}: ${lived ? l.livedNote : l.diedNote}`}); }
   }
   ctx.globalAlpha = 1;
   const k = $("#dotkey");
@@ -559,7 +561,7 @@ function hoverPoint(e){
   if (i.kind==="fars") t.innerHTML = `<div>Fatal crash · ${d3.timeFormat("%b")(new Date(2000,(i.m||1)-1,1))} ${i.y}</div><b>${i.n}</b> ${i.n>1?"deaths":"death"}<div style="color:var(--muted)">NHTSA FARS</div>`;
   else if (i.kind==="noaa") t.innerHTML = `<div>${i.ev||"Weather event"} · ${i.y}</div><b>${i.n}</b> ${i.n>1?"deaths":"death"}<div style="color:var(--muted)">NOAA Storm Events</div>`;
   else {
-    const where = state.where==="lived" ? (i.label||"Residence area") : (i.l.kind==="town" ? (i.label||"Town") : "~1 km area");
+    const where = state.where==="lived" ? (i.label||"Residence area") : (i.l.kind==="me" ? "~1 km area" : (i.label||"Area"));
     t.innerHTML = `<div>${i.l.label} · ${where}</div><b>${fmtI(i.n)}</b> ${CATNAME[i.cat]} in ${i.y} <span style="color:var(--muted)">(${state.where==="lived"?"lived here":"died here"})</span>`;
   }
   placeTip(e);
@@ -659,7 +661,7 @@ function renderSources(){
   const seen = new Map();
   for (const [k,s] of Object.entries(SRC)) if (k!=="wonder" || (meta.wonderFiles||[]).length) seen.set(s.url+k,[s.label, k==="wonder"? (meta.wonderFiles||[]).join(", ") : ""]);
   if (meta.monthly) seen.set(meta.monthly.sourceUrl,[meta.monthly.source, meta.monthly.asOf]);
-  (meta.incidents||[]).filter(l=>l.kind==="me"||l.kind==="town").forEach(l=>seen.set(l.sourceUrl,[l.source, `through ${l.latest}${l.stale?" (stale)":""}`]));
+  (meta.incidents||[]).filter(l=>l.kind!=="fars"&&l.kind!=="noaa").forEach(l=>seen.set(l.sourceUrl,[l.source, `through ${l.latest}${l.stale?" (stale)":""}`]));
   const urls = {}; for (const [k,s] of Object.entries(SRC)) urls[s.url+k]=s.url;
   $("#srcs").innerHTML = [...seen].map(([u,[n,a]])=>`<li><a href="${urls[u]||u}" target="_blank" rel="noopener">${n}</a><span>${a||""}</span></li>`).join("") + `<li><span style="font-family:var(--f-body)">Site rebuilt</span><span>${meta.generated.slice(0,10)}</span></li>`;
 }
