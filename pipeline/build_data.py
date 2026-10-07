@@ -454,12 +454,13 @@ def build(out_dir: Path, chr_year: int):
     try:
         import statefill
         log("• State-published county counts …")
-        n2f = lambda st: {c["name"].lower().replace(".", "").replace("saint ", "st "): c["fips"] for c in counties if c["fips"].startswith(st)}  # noqa: E731
-        state_fills = {"MI": statefill.michigan(n2f("26")), "NY": statefill.new_york(n2f("36"))}
+        n2f = lambda st: {statefill.norm(c["name"]): c["fips"] for c in counties if c["fips"].startswith(st)}  # noqa: E731
+        state_fills = {"MI": statefill.michigan(n2f("26")), "NY": statefill.new_york(n2f("36")), "NM": statefill.from_bundles("nm_ibis", n2f("35")),
+                       "PA": statefill.from_bundles("pa_eddie", n2f("42"))}
     except Exception as e:  # noqa: BLE001
         log(f"  ! state fills skipped: {e}")
         state_fills = {}
-    STATE_NAMES = {"MI": "Michigan DHHS", "NY": "New York State DOH"}
+    STATE_NAMES = {"MI": "Michigan DHHS", "NY": "New York State DOH", "NM": "New Mexico DOH", "PA": "Pennsylvania DOH"}
     fill_report = {}
     hpop = (hist("pop") or {}).get("pop", {})
     if not hpop:
@@ -642,7 +643,7 @@ def build(out_dir: Path, chr_year: int):
                         for f, c in cells.items():
                             i = idx.get(f)
                             w = cnt[i] if i is not None else None
-                            if w is not None and w >= 10:
+                            if isinstance(w, int) and w >= 10:
                                 yt += 1
                                 ya += abs(w - c) <= max(2, 0.1 * w)
                         tot, agree = tot + yt, agree + ya

@@ -11,9 +11,17 @@ Sources
 from __future__ import annotations
 
 import html
+import json
+import unicodedata
 import re
 
 from build_data import get, log
+
+def norm(name: str) -> str:
+    """County name key: lowercase, no accents or periods, 'Saint' -> 'st' (Doña Ana -> dona ana)."""
+    n = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower().replace(".", "").strip()
+    return n.replace("saint ", "st ")
+
 
 MI_BASE = "https://www.mdch.state.mi.us/osr/deaths/{}.asp"
 # MortalGIS cause -> MDHHS table. Drug-induced and diabetes-related are NOT used: wider definitions than CDC's.
@@ -48,7 +56,7 @@ def michigan(name_to_fips: dict):
         years = [c if c.isdigit() else None for c in head]
         got = {}
         for r in rows:
-            f = name_to_fips.get(r[0].lower().replace(".", "").replace("saint ", "st "))
+            f = name_to_fips.get(norm(r[0]))
             if not f:
                 continue
             for y, v in zip(years, r):
@@ -95,7 +103,7 @@ def new_york(name_to_fips: dict, first=2001, last=None):
                 if key in hl:
                     colmap[back] = cause
         for r in rows:
-            f = name_to_fips.get(r[0].lower().replace(".", "").replace("saint ", "st "))
+            f = name_to_fips.get(norm(r[0]))
             if not f or len(r) - 1 < len(names):
                 continue
             for back, cause in colmap.items():
@@ -104,4 +112,24 @@ def new_york(name_to_fips: dict, first=2001, last=None):
                     out.setdefault(cause, {}).setdefault(str(y), {})[f] = int(v)
     for cause, years in out.items():
         log(f"  New York DOH {cause}: {len(years)} years")
+    return out
+
+
+STATES_DIR = __import__("pathlib").Path(__file__).resolve().parents[1] / "data_manual" / "states"
+
+
+def from_bundles(prefix: str, name_to_fips: dict):
+    """State query exports saved by the Chrome scripts: data_manual/states/<prefix>*.json,
+    {"data": {cause: {year: {county name: count (-1 = suppressed)}}}}. Used for portals without an API
+    (New Mexico IBIS)."""
+    out = {}
+    for p in sorted(STATES_DIR.glob(f"{prefix}*.json")):
+        b = json.loads(p.read_text())
+        for cause, years in (b.get("data") or {}).items():
+            for y, cells in years.items():
+                for name, v in cells.items():
+                    f = name_to_fips.get(norm(name))
+                    if f and isinstance(v, int) and v >= 0:
+                        out.setdefault(cause, {}).setdefault(str(y), {})[f] = v
+        log(f"  {p.name}: {', '.join(sorted(b.get('data') or {}))}")
     return out

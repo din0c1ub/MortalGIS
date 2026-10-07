@@ -290,7 +290,13 @@ def allegheny():
 
 
 def police_killings():
-    log("• People killed by police (Fatal Encounters, Washington Post) …")
+    """Fatal Encounters 2000–2012, Mapping Police Violence 2013– (trimmed copy in data_manual/mpv).
+    Without the MPV file, falls back to Fatal Encounters to 2021 + Washington Post Fatal Force 2022–24."""
+    from pathlib import Path
+    mpv = Path(__file__).resolve().parents[1] / "data_manual" / "mpv" / "mpv_killings_trimmed.csv"
+    use_mpv = mpv.exists()
+    fe_last = 2012 if use_mpv else 2021
+    log(f"• People killed by police (Fatal Encounters{', Mapping Police Violence' if use_mpv else ', Washington Post'}) …")
     acc = Acc()
     fe = get("https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/export?format=csv").decode("utf-8", "replace")
     rows = csv.reader(io.StringIO(fe))
@@ -309,24 +315,32 @@ def police_killings():
             pt = (snap(float(r[lo])), snap(float(r[la])))
         except ValueError:
             continue
-        if y > 2021:
+        if y > fe_last:
             continue
         cats = [0] + ([4] if "gunshot" in force else []) + ([5] if "vehicle" in force else [])
         acc.add(y, cats, pt, None, date=f"{yy}-{int(mo):02d}-{int(dd):02d}")
-    wp = get("https://raw.githubusercontent.com/washingtonpost/data-police-shootings/master/v2/fatal-police-shootings-data.csv").decode("utf-8")
-    for r in csv.DictReader(io.StringIO(wp)):
-        y = int(r["date"][:4])
-        if y <= 2021:
-            continue
-        try:
-            pt = (snap(float(r["longitude"])), snap(float(r["latitude"])))
-        except ValueError:
-            continue
-        acc.add(y, [0, 4], pt, None, date=r["date"])
+    if use_mpv:
+        for r in csv.DictReader(mpv.open()):
+            force = r["use_of_force"].lower()
+            cats = [0] + ([4] if "gunshot" in force else []) + ([5] if "vehicle" in force else [])
+            acc.add(int(r["date"][:4]), cats, (snap(float(r["lon"])), snap(float(r["lat"]))), None, date=r["date"])
+        src = "Fatal Encounters (2000–2012) and Mapping Police Violence / Campaign Zero (2013–)"
+        url = "https://mappingpoliceviolence.org/methodology"
+    else:
+        wp = get("https://raw.githubusercontent.com/washingtonpost/data-police-shootings/master/v2/fatal-police-shootings-data.csv").decode("utf-8")
+        for r in csv.DictReader(io.StringIO(wp)):
+            y = int(r["date"][:4])
+            if y <= 2021:
+                continue
+            try:
+                pt = (snap(float(r["longitude"])), snap(float(r["latitude"])))
+            except ValueError:
+                continue
+            acc.add(y, [0, 4], pt, None, date=r["date"])
+        src, url = "Fatal Encounters (2000–2021) and The Washington Post Fatal Force (2022–2024, CC BY-NC-SA)", "https://fatalencounters.org/"
     return layer("police", "Killed by police", "United States", acc, kind="me", what="killed by police,",
-                 show={"all": 0, "firearm": 4, "traffic": 5}, color=4,
-                 source="Fatal Encounters (2000–2021) and The Washington Post Fatal Force (2022–2024, CC BY-NC-SA)",
-                 url="https://fatalencounters.org/", died_note="where the person was killed (~1 km squares); shootings, vehicle pursuits and other force")
+                 show={"all": 0, "firearm": 4, "traffic": 5}, color=4, source=src, url=url,
+                 died_note="where the person was killed (~1 km squares); shootings, vehicle pursuits and other force")
 
 
 def other_accidents():

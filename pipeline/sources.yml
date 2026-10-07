@@ -396,21 +396,22 @@ sources:
     notes: Checked 2026-10-07 - data.ct.gov rybz-nyjw ends 2024-12-31; the OCME publishes a year at a time.
 
   - id: police_killings
-    name: Fatal Encounters (2000-2021) + Washington Post Fatal Force (2022-2024)
-    publisher: Fatal Encounters / The Washington Post
-    url: https://fatalencounters.org/
-    license: FE free with attribution; WaPo CC BY-NC-SA
-    access: download
+    name: Fatal Encounters (2000-2012) + Mapping Police Violence (2013-)
+    publisher: Fatal Encounters / Campaign Zero
+    url: https://mappingpoliceviolence.org/methodology
+    license: FE free with attribution; MPV no license stated ("should be public and free to access") - attributed
+    access: browser
     kind: points
     geography: grid-1km
     place: [died]
-    causes: [homicide, firearm]
-    years: 2000-2024
+    causes: [all, firearm, traffic]
+    years: 2000-
     grain: day
-    cadence: static
+    cadence: monthly
     layer: police
+    files: [mpv/mpv_killings_trimmed.csv]
     status: live
-    notes: WaPo stopped updating after 2024. Candidate replacement - see mpv.
+    notes: MPV is an Airtable view, so the weekly job can't download it - refresh by hand (Download CSV, then pipeline/trim_mpv.py; see data_manual/mpv/README.md). The trimmed file keeps only date, ~1 km cell and use of force. Replaced the Washington Post Fatal Force data, which stopped after 2024 (still the fallback if the MPV file is missing).
 
   - id: fra_msha
     name: FRA rail accidents + MSHA mine accidents
@@ -683,37 +684,43 @@ sources:
     gap: Ohio's disclosure rule doesn't hide small death counts, so all 88 counties x every cause could be filled, 2007 on.
     value: 4
     effort: 3
-    notes: Interactive export, no API - a Chrome pull like WONDER. Unsuppressed small counts not yet confirmed in the live tool. Citation line required.
+    notes: "Blocked 2026-10-07: the Claude in Chrome extension has no permission for publicapps.odh.ohio.gov, and the network allowlist blocks it from the cloud and the desktop shell. Needs the site allowed in the extension, then a Chrome pull like NM/PA."
 
   - id: nm_ibis
-    name: New Mexico IBIS death queries
+    name: New Mexico IBIS death queries (county x year, 15 leading causes + overdose)
     publisher: New Mexico Department of Health
-    url: https://ibis.doh.nm.gov
+    url: https://ibis.doh.nm.gov/query/builder/mort/MortCnty/Count.html
+    license: public state statistics; cite NMDOH IBIS
     access: browser
     kind: county-counts
     geography: county
     place: [lived]
-    causes: all-17 (NCHS 113 list, firearm by intent)
-    years: verify
-    status: candidate
-    gap: Small-numbers rule says county counts by standard cause lists are not suppressed - fills New Mexico's many small counties.
-    value: 3
-    effort: 3
-    notes: XLSX export. Cause-specific small counts unverified.
+    causes: [suicide, homicide, overdose, heart, cancer, clrd, stroke, liver, diabetes, alzheimers, flu_pneumonia, kidney, covid]
+    years: 1999-2024
+    grain: year
+    hidden: only small-population cells (**); counts 1-9 published
+    cadence: manual-yearly
+    files: [states/nm_ibis_*.json]
+    status: live
+    notes: "Pulled 2026-10-07 with the Chrome script (one query per cause; the builder's hidden CauseDrug2/CauseDespair fields must be disabled or they filter the result). Overdose uses CDC's exact codes (X40-X44, X60-X64, X85, Y10-Y14). Agreement with CDC 87-98%; stroke (77%) and flu, kidney, COVID (<90%) are skipped automatically."
 
   - id: pa_eddie
-    name: Pennsylvania EDDIE death statistics
+    name: Pennsylvania EDDIE death statistics (county x year)
     publisher: Pennsylvania Department of Health
-    url: https://pa.gov/agencies/health/health-statistics/eddie-about/eddie-faqs
+    url: https://www.phaim.health.pa.gov/EDD/WebForms/DeathCntySt.aspx
+    license: public state statistics; cite PA DOH EDDIE
     access: browser
     kind: county-counts
     geography: county
     place: [lived]
-    status: candidate
-    gap: Rules hide rates, not counts - may fill Pennsylvania's 67 counties.
-    value: 3
-    effort: 3
-    notes: CSV export. Unsuppressed counts unverified in a live query.
+    causes: [all, heart, stroke, clrd, diabetes, flu_pneumonia, liver, kidney, covid, homicide, suicide, firearm, falls, cancer, alzheimers]
+    years: 1990-2024
+    grain: year
+    hidden: none for counts
+    cadence: manual-yearly
+    files: [states/pa_eddie_*.json]
+    status: live
+    notes: "Pulled 2026-10-07: one table with 15 causes x 67 counties x 1990-2024 (takes ~60 s to render). Chrome blocks downloads from this site, so the file was carried to GitHub in the tab (window.name) and attached there. Agreement with CDC 98-100% on every cause. Firearm includes legal intervention (CDC's firearm measure does too). No exact overdose match (EDDIE's poisoning/drug-induced are wider)."
 
   - id: nc_databook
     name: North Carolina County Health Data Book (5-year counts)
@@ -733,17 +740,8 @@ sources:
     name: Mapping Police Violence
     publisher: Campaign Zero
     url: https://mappingpoliceviolence.org/methodology
-    access: download
-    kind: points
-    geography: point
-    place: [died]
-    causes: [homicide, firearm]
-    years: 2013-
-    status: candidate
-    gap: Police killings after 2024, since the Washington Post database stopped.
-    value: 3
-    effort: 2
-    notes: 'The "Download CSV" button on the Airtable view linked from the methodology page; updated about every 2 weeks. Reported to include address, lat/lon, tract, county. No license stated ("should be public and free to access") - attribute, consider asking Campaign Zero.'
+    status: live
+    notes: Added 2026-10-07 as part of police_killings (2013-, 16,253 located killings through 2026-09-23).
 
   - id: more_me_portals
     name: More medical examiner / coroner open data
