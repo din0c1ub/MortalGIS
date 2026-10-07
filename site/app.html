@@ -372,6 +372,22 @@ function render(){
   const m = M.get(state.measure), d = cache[state.measure], p = state.year;
   let vals = valArr(m, d, p), b = breaks(m, d, p), R = ramp();
   const moMode = !!state.month && monthChoro();
+  const smMode = !!state.month && !moMode && stateMonthOk();
+  let smInfo = null;
+  if (smMode){
+    const c = causeOf(state.measure), smd = cache["_sm_"+c];
+    if (smd===undefined){ loadStateMonth(c).then(()=>render()); }
+    else if (smd){
+      const k = smd.months.indexOf(`${p}-${String(state.month).padStart(2,"0")}`);
+      if (k>=0){
+        const stv = {}; for (const [st, ser] of Object.entries(smd.series)){ const v=ser[k], pop=smd.pop[st]; stv[st] = (v==null||v<0||!pop) ? null : v/pop*1e5; }
+        vals = counties.map(c0=>stv[c0[0].slice(0,2)] ?? null);
+        const pos = Object.values(stv).filter(v=>v!=null&&v>0).sort(d3.ascending);
+        b = {q: d3.range(1,7).map(j=>+d3.quantile(pos, j/7).toPrecision(2))};
+        smInfo = {n: Object.values(stv).filter(v=>v!=null).length};
+      }
+    }
+  }
   if (moMode){
     if (!cache._moAll){ loadMonthlyAll().then(()=>render()); }
     const mv = monthVals();
@@ -382,14 +398,17 @@ function render(){
   const scale = d3.scaleThreshold().domain(b.q).range(cols);
   const nodata = css("--nodata");
   const cnt = d.count && d.count[p];
+  cPaths.attr("stroke-opacity", smMode ? 0.12 : null);
   cPaths.attr("fill", f=>{ const i=idx.get(f.id); const v = vals ? vals[i] : null;
     if (v==null) return nodata; if (v===0) return css("--r0"); return scale(v); });
-  $("#pval").textContent = moMode ? `${MON[state.month-1]} ${p}` : periodLabel(m,p);
+  $("#pval").textContent = (moMode||smMode) ? `${MON[state.month-1]} ${p}` : periodLabel(m,p);
+  $("#legTitle").textContent = smMode ? "per 100k residents, this month (states)" : (moMode ? "per 100k residents, past 12 months" : m.unit);
   drawLegend(b, cols, m, d, p);
-  if (moMode) hatchG.selectAll("*").remove(); else drawHatch();
+  if (moMode||smMode) hatchG.selectAll("*").remove(); else drawHatch();
   const n = vals ? vals.filter(v=>v!=null).length : 0;
   const s = d.src && d.src[p];
-  $("#status").textContent = moMode ? `${fmtI(n)} counties · 12 months ending ${MON[state.month-1]} ${p} · CDC provisional county overdose counts`
+  $("#status").textContent = smMode ? `${smInfo?smInfo.n:"…"} states · ${m.label}, ${MON[state.month-1]} ${p} · CDC WONDER (by state of residence)`
+    : moMode ? `${fmtI(n)} counties · 12 months ending ${MON[state.month-1]} ${p} · CDC provisional county overdose counts`
     : (vals ? `${fmtI(n)} of ${fmtI(counties.length)} counties · ${periodLabel(m,p)}${s?` · ${(SRC[s]||{}).label||s}`:""}` : `No county data for ${p}`);
   const gap = $("#gapnote");
   if (!vals){
@@ -547,7 +566,18 @@ function monthVals(){
   const k = mo.months.indexOf(`${state.year}-${String(state.month).padStart(2,"0")}`); if (k<0) return null;
   return counties.map((c,i)=>{ const s=mo.series[c[0]], pop=meta.population[i]; const v=s&&s[k]; return (v==null||!pop) ? null : v/pop*1e5; });
 }
-function monthCapable(){ return monthChoro() || activeLayers().some(({l})=>(l.hasMonthly && state.where==="died") || l.kind==="fars"); }
+// State × month counts for most causes (CDC WONDER, 1999–): used for the month map when there is no county series.
+const causeOf = k => { const b = (k||"").replace(/_died$/,""); return b==="all_deaths" ? "all" : b; };
+function stateMonthOk(){
+  const r = (meta.stateMonth||{})[causeOf(state.measure)]; const m = M.get(state.measure);
+  return !!r && m && m.place!=="occurrence" && state.year!=="TTM" && +state.year>=+r[0].slice(0,4) && +state.year<=+r[1].slice(0,4);
+}
+async function loadStateMonth(c){
+  const k="_sm_"+c; if (cache[k]!==undefined) return cache[k];
+  cache[k]=null; try{ cache[k]=await fetch(`data/state_month/${c}.json`).then(r=>r.ok?r.json():null); }catch(e){ cache[k]=null; }
+  return cache[k];
+}
+function monthCapable(){ return monthChoro() || stateMonthOk() || activeLayers().some(({l})=>(l.hasMonthly && state.where==="died") || l.kind==="fars"); }
 function drawMonths(){
   const w = $("#monthWrap"), cap = monthCapable() && state.year!=="TTM";
   w.hidden = !cap; if (!cap){ if(state.month){ state.month=0; } return; }
@@ -555,6 +585,7 @@ function drawMonths(){
     MON.map((n,i)=>`<button type="button" data-m="${i+1}" aria-pressed="${state.month===i+1}" title="${n}">${n[0]}</button>`).join("");
   $("#months").querySelectorAll("button").forEach(b=>b.onclick=()=>{ state.month=+b.dataset.m; drawMonths(); render(); });
   $("#monthNote").textContent = monthChoro() ? "By month: county colors show overdose deaths in the 12 months ending that month (CDC provisional)."
+    : stateMonthOk() ? "By month: the map switches to states (monthly county counts are too small to publish). Dots, where shown, move by month too."
     : "Death locations by month; county colors stay yearly.";
 }
 function drawPoints(){
@@ -680,10 +711,11 @@ async function renderCounty(){
     <dt>US county${medLbl}</dt><dd>${med!=null?fmt(med):"—"}</dd>
     ${sparse?`<dt style="grid-column:1/-1;font-size:11.5px;color:var(--muted)">* among counties with enough deaths to publish a rate</dt>`:""}
   </dl>
-  <div class="chart" id="trend"></div><div class="chart" id="monthly"></div><div class="allm" id="allm"></div>`;
+  <div class="chart" id="trend"></div><div class="chart" id="monthly"></div><div class="chart" id="smchart"></div><div class="allm" id="allm"></div>`;
   $("#county").innerHTML = h;
   drawTrend(m,d,i,st);
   if (state.measure==="overdose") drawMonthly(i, st);
+  drawStateMonthly(i, st, m);
   pairLine(i).then(x=>{ if(state.fips===c[0]) $("#pairline").innerHTML = x; });
   drawAll(i);
 }
@@ -730,6 +762,26 @@ async function drawMonthly(i, st){
   s.append("text").attr("x",x(last.t)).attr("y",mt-4).attr("text-anchor","end").style("fill","var(--ink)").text(`${last.v} · ${d3.timeFormat("%b %Y")(last.t)}`);
   const sup=pts.filter(q=>q.v==null).length;
   if(sup) el.append("div").attr("class","desc").text(`${sup} months hidden (1–9 deaths).`);
+}
+async function drawStateMonthly(i, st, m){
+  const c = causeOf(m.key); if (!(meta.stateMonth||{})[c]) return;
+  const smd = await loadStateMonth(c); if (!smd || state.fips!==counties[i][0]) return;
+  const ser = smd.series[st]; if (!ser) return;
+  const pts = smd.months.map((mo,k)=>({t:d3.timeParse("%Y-%m")(mo), v: ser[k]==null||ser[k]<0 ? null : ser[k]}));
+  if (pts.every(q=>q.v==null)) return;
+  const w=320,h=110,ml=34,mr=8,mt=14,mb=20;
+  const x=d3.scaleTime(d3.extent(pts,q=>q.t),[ml,w-mr]), y=d3.scaleLinear([0,d3.max(pts,q=>q.v)*1.1],[h-mb,mt]).nice();
+  const el=d3.select("#smchart"); el.selectAll("*").remove();
+  el.append("h4").text(`${counties[i][2]}: ${m.label.toLowerCase()} by month`);
+  const s=el.append("svg").attr("viewBox",`0 0 ${w} ${h}`);
+  s.append("g").selectAll("line").data(y.ticks(3)).join("line").attr("x1",ml).attr("x2",w-mr).attr("y1",y).attr("y2",y).attr("stroke","var(--line)");
+  s.append("g").selectAll("text").data(y.ticks(3)).join("text").attr("x",ml-5).attr("y",v=>y(v)+3).attr("text-anchor","end").text(d3.format("~s"));
+  const yrs = x.ticks(d3.timeYear.every(pts.length>200?5:2));
+  s.append("g").selectAll("text").data(yrs).join("text").attr("x",x).attr("y",h-5).attr("text-anchor","middle").text(d3.timeFormat("%Y"));
+  s.append("path").attr("d",d3.line().defined(q=>q.v!=null).x(q=>x(q.t)).y(q=>y(q.v))(pts)).attr("fill","none").attr("stroke","var(--ink)").attr("stroke-width",1.1);
+  if (state.year && state.year!=="TTM"){ const t0=d3.timeParse("%Y-%m")(`${state.year}-${String(state.month||1).padStart(2,"0")}`);
+    if (t0>=x.domain()[0] && t0<=x.domain()[1]) s.append("line").attr("x1",x(t0)).attr("x2",x(t0)).attr("y1",mt).attr("y2",h-mb).attr("stroke","var(--accent,#7a1f2b)").attr("stroke-width",1.2); }
+  el.append("div").attr("class","desc").text("Deaths per month among state residents (CDC WONDER). The latest months are incomplete.");
 }
 async function drawAll(i){
   const rows=[];
