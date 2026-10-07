@@ -713,9 +713,9 @@
    }
   },
   "heart": {
-   "periods": "1968\u20132020",
-   "n_periods": 53,
-   "default": "2020",
+   "periods": "1968\u20132025",
+   "n_periods": 58,
+   "default": "2025",
    "counties_default": 3142,
    "by_year": {
     "1968": 3128,
@@ -770,7 +770,12 @@
     "2017": 3142,
     "2018": 3142,
     "2019": 3142,
-    "2020": 3142
+    "2020": 3142,
+    "2021": 3142,
+    "2022": 3142,
+    "2023": 3142,
+    "2024": 3142,
+    "2025": 3142
    }
   },
   "heart_died": {
@@ -819,9 +824,9 @@
    }
   },
   "stroke": {
-   "periods": "1968\u20132020",
-   "n_periods": 53,
-   "default": "2020",
+   "periods": "1968\u20132025",
+   "n_periods": 58,
+   "default": "2025",
    "counties_default": 3142,
    "by_year": {
     "1968": 3126,
@@ -876,7 +881,12 @@
     "2017": 3142,
     "2018": 3142,
     "2019": 3142,
-    "2020": 3142
+    "2020": 3142,
+    "2021": 3142,
+    "2022": 3142,
+    "2023": 3142,
+    "2024": 3142,
+    "2025": 3142
    }
   },
   "stroke_died": {
@@ -1220,9 +1230,45 @@
    "ok": true,
    "latest": "2026-10-06"
   },
+  "orange_fl": {
+   "ok": true,
+   "latest": "2026-09-26"
+  },
+  "san_diego": {
+   "ok": true,
+   "latest": "2026-07-31"
+  },
+  "sacramento": {
+   "ok": true,
+   "latest": "2026-10-05"
+  },
+  "allegheny": {
+   "ok": true,
+   "latest": "2026-08-03"
+  },
   "ct_drug": {
    "ok": true,
    "latest": "2024"
+  },
+  "police": {
+   "ok": true,
+   "latest": "2024-12-31"
+  },
+  "chicago_homicides": {
+   "ok": true,
+   "latest": "2013-12-31"
+  },
+  "nyc_homicides": {
+   "ok": true,
+   "latest": "2024-12-30"
+  },
+  "philly_homicides": {
+   "ok": true,
+   "latest": "2026-10-05"
+  },
+  "detroit_homicides": {
+   "ok": true,
+   "latest": "2026-09-27"
   }
  }
 }
