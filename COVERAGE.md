@@ -1,6 +1,6 @@
 # MortalGIS data coverage
 
-Generated 2026-10-07 18:18 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
+Generated 2026-10-07 18:25 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
 
 ## Needs attention
 
@@ -14,19 +14,19 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | Measure | Counted where | Years | Hidden, latest year | Hidden, average | Gaps |
 |---|---|---|---|---|---|
 | All deaths | lived | 1968–2025 | 1% | 1% | – |
-| All deaths | died | 1968–2025 | 2% | 2% | large counties only 1989–2004; no data 2005–2017 |
+| All deaths | died | 1968–2020 | 0% | 2% | large counties only 1989–2004; no data 2005–2019 |
 | Drug overdose deaths | lived | 1968–2024 | 49% | 42% | – |
-| Drug overdose deaths | died | 1968–2025 | 51% | 38% | large counties only 1989–2004; no data 2005–2017 |
+| Drug overdose deaths | died | 1968–2004 | 20% | 36% | large counties only 1989–2004 |
 | Suicide deaths | lived | 1968–2024 | 57% | 62% | – |
-| Suicide deaths | died | 1968–2025 | 58% | 42% | large counties only 1989–2004; no data 2005–2017 |
+| Suicide deaths | died | 1968–2004 | 4% | 38% | large counties only 1989–2004 |
 | Homicide deaths | lived | 1968–2024 | 48% | 49% | – |
-| Homicide deaths | died | 1968–2025 | 46% | 46% | large counties only 1989–2004; no data 2005–2017 |
+| Homicide deaths | died | 1968–2004 | 51% | 45% | large counties only 1989–2004 |
 | Firearm deaths | lived | 1968–2024 | 59% | 63% | – |
-| Firearm deaths | died | 1968–2025 | 60% | 46% | large counties only 1989–2004; no data 2005–2017 |
+| Firearm deaths | died | 1968–2004 | 20% | 43% | large counties only 1989–2004 |
 | Heart disease deaths | lived | 1968–2025 | 7% | 5% | – |
-| Heart disease deaths | died | 1968–2025 | 9% | 5% | large counties only 1989–2004; no data 2005–2017 |
+| Heart disease deaths | died | 1968–2004 | 0% | 4% | large counties only 1989–2004 |
 | Stroke deaths | lived | 1968–2025 | 32% | 28% | – |
-| Stroke deaths | died | 1968–2025 | 43% | 21% | large counties only 1989–2004; no data 2005–2017 |
+| Stroke deaths | died | 1968–2004 | 0% | 16% | large counties only 1989–2004 |
 | Cancer deaths | lived | 1999–2025 | 8% | 8% | – |
 | Cancer deaths | died | 2018–2025 | 11% | 11% | – |
 | Alzheimer's disease deaths | lived | 1999–2025 | 39% | 45% | – |
