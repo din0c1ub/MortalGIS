@@ -23,6 +23,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 import zipfile
 from collections import defaultdict
 from datetime import datetime
@@ -116,22 +117,22 @@ class Acc:
         self.monthly = defaultdict(lambda: [0] * NC)  # (lon, lat, year, month) for the place of death
         self.years, self.n, self.latest = set(), 0, ""
 
-    def add(self, y, cats, died=None, lived=None, dlabel=None, llabel=None, date=""):
-        if not y or y > datetime.now().year:
+    def add(self, y, cats, died=None, lived=None, dlabel=None, llabel=None, date="", w=1):
+        if not y or y > datetime.now().year or w <= 0:
             return
-        self.n += 1
+        self.n += w
         self.years.add(y)
         self.latest = max(self.latest, str(date)[:10])
         mo = str(date)[5:7]
         if died and mo.isdigit() and 1 <= int(mo) <= 12 and str(date)[:4] == str(y):
             c = self.monthly[(*died, y, int(mo))]
             for k in cats:
-                c[k] += 1
+                c[k] += w
         for pt, bucket, lab in ((died, self.died, dlabel), (lived, self.lived, llabel)):
             if pt:
                 c = bucket[(*pt, y)]
                 for k in cats:
-                    c[k] += 1
+                    c[k] += w
                 if lab:
                     self.labels[pt] = lab
 
@@ -328,6 +329,118 @@ def police_killings():
                  url="https://fatalencounters.org/", died_note="where the person was killed (~1 km squares); shootings, vehicle pursuits and other force")
 
 
+def other_accidents():
+    """Rail accidents (FRA, 1975–) and mine accidents (MSHA, 2000–): deaths with a location, shown on All deaths."""
+    import urllib.parse
+    log("• Rail and mine accidents (FRA, MSHA) …")
+    acc = Acc()
+    seen = set()
+    for r in socrata_all("data.transportation.gov", "85tf-25kj", "incidentkey,date,latitude,longitude,totalpersonskilled", "totalpersonskilled != '0'"):
+        key = r.get("incidentkey") or r.get("date")
+        if key in seen:  # one accident can be reported by several railroads
+            continue
+        seen.add(key)
+        try:
+            k = int(float(r.get("totalpersonskilled") or 0))
+            pt = (snap(float(r["longitude"])), snap(float(r["latitude"])))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not (-180 < pt[0] < -60 and 15 < pt[1] < 72):
+            continue
+        acc.add(int(r["date"][:4]), [0], pt, None, date=r["date"], w=k)
+    mines = {}
+    z = zipfile.ZipFile(io.BytesIO(get("https://arlweb.msha.gov/OpenGovernmentData/DataSets/Mines.zip")))
+    rows = csv.reader(io.StringIO(z.read(z.namelist()[0]).decode("latin-1")), delimiter="|")
+    head = next(rows)
+    mi, la, lo = head.index("MINE_ID"), head.index("LATITUDE"), head.index("LONGITUDE")
+    for r in rows:
+        try:
+            lat, lon = float(r[la]), float(r[lo])
+        except (IndexError, ValueError):
+            continue
+        if lon > 0:
+            lon = -lon  # a few rows store west longitude as positive
+        if 15 < lat < 72 and -180 < lon < -60:
+            mines[r[mi]] = (snap(lon), snap(lat))
+    z = zipfile.ZipFile(io.BytesIO(get("https://arlweb.msha.gov/OpenGovernmentData/DataSets/Accidents.zip")))
+    rows = csv.reader(io.StringIO(z.read(z.namelist()[0]).decode("latin-1")), delimiter="|")
+    head = next(rows)
+    mi, dt, dg = head.index("MINE_ID"), head.index("ACCIDENT_DT"), head.index("DEGREE_INJURY")
+    for r in rows:
+        if len(r) <= max(mi, dt, dg) or "FATAL" not in r[dg].upper() or r[mi] not in mines:
+            continue
+        try:
+            mo, dd, yy = r[dt].split("/")
+        except ValueError:
+            continue
+        acc.add(int(yy), [0], mines[r[mi]], None, date=f"{yy}-{mo}-{dd}")
+    return layer("other_accidents", "Rail and mine deaths", "United States", acc, kind="me", what="federal accident records",
+                 show={"all": 0}, color=4, source="FRA rail equipment accidents (1975–) and MSHA mine accidents (2000–)",
+                 url="https://data.transportation.gov/d/85tf-25kj",
+                 died_note="rail and mine accidents where someone died (~1 km squares)")
+
+
+_places = None
+
+
+def place_point(location):
+    """'Twin Falls, Idaho' → (lon, lat) from the Census places gazetteer (city centroid)."""
+    global _places
+    if _places is None:
+        _places = {}
+        try:
+            raw = get("https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_place_national.zip")
+            z = zipfile.ZipFile(io.BytesIO(raw))
+            rows = csv.reader(io.StringIO(z.read(z.namelist()[0]).decode("latin-1")), delimiter="\t")
+            head = [h.strip() for h in next(rows)]
+            ui, ni, la, lo = head.index("USPS"), head.index("NAME"), head.index("INTPTLAT"), head.index("INTPTLONG")
+            for r in rows:
+                name = re.sub(r" (city|town|village|CDP|borough|municipality)$", "", r[ni].strip()).lower()
+                _places[(name, r[ui])] = (snap(float(r[lo])), snap(float(r[la])))
+        except Exception as e:  # noqa: BLE001
+            log(f"  ! places gazetteer: {e}")
+    try:
+        city, state = [x.strip() for x in location.rsplit(",", 1)]
+    except ValueError:
+        return None
+    return _places.get((city.lower(), STATE_ABBR.get(state.lower(), state.upper()[:2])))
+
+
+STATE_ABBR = {n.lower(): a for a, n in [("AL","Alabama"),("AK","Alaska"),("AZ","Arizona"),("AR","Arkansas"),("CA","California"),("CO","Colorado"),("CT","Connecticut"),("DE","Delaware"),("DC","District of Columbia"),("FL","Florida"),("GA","Georgia"),("HI","Hawaii"),("ID","Idaho"),("IL","Illinois"),("IN","Indiana"),("IA","Iowa"),("KS","Kansas"),("KY","Kentucky"),("LA","Louisiana"),("ME","Maine"),("MD","Maryland"),("MA","Massachusetts"),("MI","Michigan"),("MN","Minnesota"),("MS","Mississippi"),("MO","Missouri"),("MT","Montana"),("NE","Nebraska"),("NV","Nevada"),("NH","New Hampshire"),("NJ","New Jersey"),("NM","New Mexico"),("NY","New York"),("NC","North Carolina"),("ND","North Dakota"),("OH","Ohio"),("OK","Oklahoma"),("OR","Oregon"),("PA","Pennsylvania"),("RI","Rhode Island"),("SC","South Carolina"),("SD","South Dakota"),("TN","Tennessee"),("TX","Texas"),("UT","Utah"),("VT","Vermont"),("VA","Virginia"),("WA","Washington"),("WV","West Virginia"),("WI","Wisconsin"),("WY","Wyoming")]}
+
+
+def mass_shootings():
+    log("• Mass shootings (Mother Jones) …")
+    acc = Acc()
+    txt = get("https://docs.google.com/spreadsheets/d/1b9o6uDO18sLxBqPwl_Gh9bnhW-ev_dABH83M5Vb5L8o/export?format=csv").decode("utf-8", "replace")
+    rows = csv.reader(io.StringIO(txt))
+    head = next(rows)
+    loc_i = head.index("location")  # the sheet has two "location" columns; the first is "City, State"
+    for vals in rows:
+        r = dict(zip(head, vals))
+        r["location"] = vals[loc_i] if len(vals) > loc_i else ""
+        try:
+            mo, dd, yy = r["date"].split("/")
+            yy = int(yy)
+            if yy < 100:  # the sheet mixes 2- and 4-digit years
+                yy += 2000 if yy <= datetime.now().year % 100 else 1900
+            k = int(float(r.get("fatalities") or 0))
+        except (KeyError, ValueError):
+            continue
+        try:
+            pt = (snap(float(r["longitude"])), snap(float(r["latitude"])))
+        except (KeyError, ValueError):
+            pt = place_point(r["location"])  # newest rows lack coordinates
+            if not pt:
+                continue
+        acc.add(yy, [0, 3, 4], pt, None, date=f"{yy}-{int(mo):02d}-{int(dd):02d}", w=k)
+    return layer("mass_shootings", "Mass shootings", "United States", acc, kind="me", what="news database",
+                 show={"all": 0, "homicide": 3, "firearm": 4}, color=4,
+                 source="Mother Jones US mass shootings database (1982–)",
+                 url="https://www.motherjones.com/politics/2012/12/mass-shootings-mother-jones-full-data/",
+                 died_note="public mass shootings, sized by people killed")
+
+
 def city_homicides(key, city, fetch, url, source, cats_fn, color=2, show=None, before=None, note=""):
     log(f"• {city} homicides …")
     acc = Acc()
@@ -420,6 +533,8 @@ def build_incidents(out_dir, status: dict):
         ("allegheny", allegheny),
         ("ct_drug", ct_drug_deaths),
         ("police", police_killings),
+        ("other_accidents", other_accidents),
+        ("mass_shootings", mass_shootings),
         ("chicago_homicides", lambda: city_homicides("chicago_homicides", "Chicago", _chicago,
             "https://data.cityofchicago.org/d/gumc-mgzr", "Chicago Police Department via City of Chicago Data Portal", yes, color=2,
             before=2014, note=" — before 2014; the Cook County ME layer covers later years")),

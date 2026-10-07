@@ -322,6 +322,8 @@ def wonder_imports():
             except ValueError:
                 log(f"  ! {path.name}: not valid JSON")
                 continue
+            if bundle.get("level") == "state":  # state × month bundles are read separately
+                continue
             place = bundle.get("place", "res")
             for cause, years in (bundle.get("data") or {}).items():
                 if cause not in CAUSES:
@@ -732,6 +734,39 @@ def build(out_dir: Path, chr_year: int):
     for k, v in values.items():
         (out_dir / f"m_{k}.json").write_text(json.dumps(v, separators=(",", ":")))
     (out_dir / "counties-10m.json").write_text(json.dumps(topo, separators=(",", ":")))
+
+    # state × month death counts by cause (WONDER state_month bundles) → site/data/state_month/<cause>.json
+    sm_dir = out_dir / "state_month"
+    sm_dir.mkdir(exist_ok=True)
+    sm = defaultdict(lambda: defaultdict(dict))  # cause -> "YYYY-MM" -> state -> deaths (-1 suppressed)
+    if WONDER_DIR.exists():
+        for f in sorted(WONDER_DIR.glob("*state_month*.json")):  # later files (Provisional 2018+) override earlier ones
+            try:
+                b = json.loads(f.read_text())
+            except ValueError:
+                continue
+            for cause, months in (b.get("data") or {}).items():
+                ms_sorted = sorted(months)
+                if "provisional" in (b.get("note") or "").lower():
+                    ms_sorted = ms_sorted[:-2]  # the newest provisional months are still filling in
+                for mo in ms_sorted:
+                    sm[cause][mo].update(months[mo])
+    st_pop = defaultdict(int)
+    seer = (hist("pop") or {}).get("pop") or {}
+    seer_latest = seer[max(seer)] if seer else None  # SEER covers every county (CHR lacks Connecticut)
+    for j, c in enumerate(counties):
+        pop = (seer_latest[j] if seer_latest and j < len(seer_latest) else None) or population[j]
+        if pop:
+            st_pop[c["fips"][:2]] += pop
+    for cause, months in sm.items():
+        ms = sorted(months)
+        sts = sorted({s for m_ in ms for s in months[m_]})
+        series = {s: [months[m_].get(s) for m_ in ms] for s in sts}
+        (sm_dir / f"{cause}.json").write_text(json.dumps({"months": ms, "series": series, "pop": {s: st_pop.get(s) for s in sts}}, separators=(",", ":")))
+    if sm:
+        log(f"  state × month: {len(sm)} causes, {min(min(v) for v in sm.values())}–{max(max(v) for v in sm.values())}")
+        meta["stateMonth"] = {c: [min(v), max(v)] for c, v in sm.items()}
+        (out_dir / "meta.json").write_text(json.dumps(meta, separators=(",", ":")))
 
     # latest.json: each measure's default period only, so the county panel's "every measure" list
     # doesn't have to download every measure file (~40 MB) when a county is clicked
