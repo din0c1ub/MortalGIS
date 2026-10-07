@@ -1,6 +1,6 @@
 # MortalGIS data coverage
 
-Generated 2026-10-07 18:25 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
+Generated 2026-10-07 19:01 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
 
 ## Needs attention
 
@@ -11,55 +11,57 @@ Generated 2026-10-07 18:25 UTC by `pipeline/coverage.py` from `pipeline/sources.
 
 Hidden = share of counties whose count is 1–9 and therefore not published (CDC confidentiality rule).
 
-| Measure | Counted where | Years | Hidden, latest year | Hidden, average | Gaps |
-|---|---|---|---|---|---|
-| All deaths | lived | 1968–2025 | 1% | 1% | – |
-| All deaths | died | 1968–2020 | 0% | 2% | large counties only 1989–2004; no data 2005–2019 |
-| Drug overdose deaths | lived | 1968–2024 | 49% | 42% | – |
-| Drug overdose deaths | died | 1968–2004 | 20% | 36% | large counties only 1989–2004 |
-| Suicide deaths | lived | 1968–2024 | 57% | 62% | – |
-| Suicide deaths | died | 1968–2004 | 4% | 38% | large counties only 1989–2004 |
-| Homicide deaths | lived | 1968–2024 | 48% | 49% | – |
-| Homicide deaths | died | 1968–2004 | 51% | 45% | large counties only 1989–2004 |
-| Firearm deaths | lived | 1968–2024 | 59% | 63% | – |
-| Firearm deaths | died | 1968–2004 | 20% | 43% | large counties only 1989–2004 |
-| Heart disease deaths | lived | 1968–2025 | 7% | 5% | – |
-| Heart disease deaths | died | 1968–2004 | 0% | 4% | large counties only 1989–2004 |
-| Stroke deaths | lived | 1968–2025 | 32% | 28% | – |
-| Stroke deaths | died | 1968–2004 | 0% | 16% | large counties only 1989–2004 |
-| Cancer deaths | lived | 1999–2025 | 8% | 8% | – |
-| Cancer deaths | died | 2018–2025 | 11% | 11% | – |
-| Alzheimer's disease deaths | lived | 1999–2025 | 39% | 45% | – |
-| Alzheimer's disease deaths | died | 2018–2025 | 38% | 38% | – |
-| Diabetes deaths | lived | 1999–2025 | 43% | 48% | – |
-| Diabetes deaths | died | 2018–2025 | 46% | 46% | – |
-| Liver disease & cirrhosis deaths | lived | 1999–2025 | 55% | 59% | – |
-| Liver disease & cirrhosis deaths | died | 2018–2025 | 55% | 54% | – |
-| Chronic lung disease deaths (COPD, asthma) | lived | 1999–2025 | 27% | 30% | – |
-| Chronic lung disease deaths (COPD, asthma) | died | 2018–2025 | 32% | 32% | – |
-| Flu & pneumonia deaths | lived | 1999–2025 | 55% | 56% | – |
-| Flu & pneumonia deaths | died | 2018–2025 | 48% | 48% | – |
-| Kidney disease deaths | lived | 1999–2025 | 54% | 57% | – |
-| Kidney disease deaths | died | 2018–2025 | 53% | 54% | – |
-| COVID-19 deaths | lived | 2020–2025 | 58% | 39% | – |
-| COVID-19 deaths | died | 2020–2025 | 43% | 41% | – |
-| Fall deaths (accidental) | lived | 1999–2025 | 57% | 60% | – |
-| Fall deaths (accidental) | died | 2018–2025 | 48% | 48% | – |
-| Alcohol-induced deaths | lived | 1999–2025 | 57% | 59% | – |
-| Alcohol-induced deaths | died | 2018–2025 | 55% | 54% | – |
-| Firearm suicides | lived | 2019–2024 | 62% | 63% | – |
-| Firearm homicides | lived | 2019–2024 | 43% | 44% | – |
-| Traffic crash deaths | died | 1975–2024 | 0% | 0% | – |
-| Weather deaths | died | 1950–2026 | 0% | 0% | – |
-| Drug poisoning (modeled) | lived | 2003–2021 | – | – | – |
-| Heart disease, adults 35+ (CDC atlas) | lived | 2015–2023 | – | – | no data 2021 |
-| Stroke, adults 35+ (CDC atlas) | lived | 2015–2023 | – | – | no data 2021 |
-| Life expectancy | lived | 2022–2022 | – | – | – |
-| Premature death rate (under 75) | lived | 2022–2022 | – | – | – |
-| Years of potential life lost | lived | 2022–2022 | – | – | – |
-| Injury deaths (all) | lived | 2022–2022 | – | – | – |
-| Child mortality (under 18) | lived | 2022–2022 | – | – | – |
-| Infant mortality | lived | 2022–2022 | – | – | – |
+5-year = the same share when deaths are added up over five-year spans (latest span shown).
+
+| Measure | Counted where | Years | Hidden, latest year | Hidden, average | Hidden, 5-year | Gaps |
+|---|---|---|---|---|---|---|
+| All deaths | lived | 1968–2025 | 1% | 1% | – | – |
+| All deaths | died | 1968–2020 | 0% | 2% | – | large counties only 1989–2004; no data 2005–2019 |
+| Drug overdose deaths | lived | 1968–2024 | 49% | 42% | 29% (2014-2018) | – |
+| Drug overdose deaths | died | 1968–2004 | 20% | 36% | – | large counties only 1989–2004 |
+| Suicide deaths | lived | 1968–2024 | 57% | 62% | 21% (2019-2023) | – |
+| Suicide deaths | died | 1968–2004 | 4% | 38% | – | large counties only 1989–2004 |
+| Homicide deaths | lived | 1968–2024 | 48% | 49% | 49% (2019-2023) | – |
+| Homicide deaths | died | 1968–2004 | 51% | 45% | – | large counties only 1989–2004 |
+| Firearm deaths | lived | 1968–2024 | 59% | 63% | 27% (2014-2018) | – |
+| Firearm deaths | died | 1968–2004 | 20% | 43% | – | large counties only 1989–2004 |
+| Heart disease deaths | lived | 1968–2025 | 7% | 5% | 1% (2019-2023) | – |
+| Heart disease deaths | died | 1968–2004 | 0% | 4% | – | large counties only 1989–2004 |
+| Stroke deaths | lived | 1968–2025 | 32% | 28% | 6% (2019-2023) | – |
+| Stroke deaths | died | 1968–2004 | 0% | 16% | – | large counties only 1989–2004 |
+| Cancer deaths | lived | 1999–2025 | 8% | 8% | 1% (2019-2023) | – |
+| Cancer deaths | died | 2018–2025 | 11% | 11% | – | – |
+| Alzheimer's disease deaths | lived | 1999–2025 | 39% | 45% | 10% (2019-2023) | – |
+| Alzheimer's disease deaths | died | 2018–2025 | 38% | 38% | – | – |
+| Diabetes deaths | lived | 1999–2025 | 43% | 48% | 10% (2019-2023) | – |
+| Diabetes deaths | died | 2018–2025 | 46% | 46% | – | – |
+| Liver disease & cirrhosis deaths | lived | 1999–2025 | 55% | 59% | 22% (2019-2023) | – |
+| Liver disease & cirrhosis deaths | died | 2018–2025 | 55% | 54% | – | – |
+| Chronic lung disease deaths (COPD, asthma) | lived | 1999–2025 | 27% | 30% | 5% (2019-2023) | – |
+| Chronic lung disease deaths (COPD, asthma) | died | 2018–2025 | 32% | 32% | – | – |
+| Flu & pneumonia deaths | lived | 1999–2025 | 55% | 56% | 21% (2019-2023) | – |
+| Flu & pneumonia deaths | died | 2018–2025 | 48% | 48% | – | – |
+| Kidney disease deaths | lived | 1999–2025 | 54% | 57% | 20% (2019-2023) | – |
+| Kidney disease deaths | died | 2018–2025 | 53% | 54% | – | – |
+| COVID-19 deaths | lived | 2020–2025 | 58% | 39% | 4% (2019-2023) | – |
+| COVID-19 deaths | died | 2020–2025 | 43% | 41% | – | – |
+| Fall deaths (accidental) | lived | 1999–2025 | 57% | 60% | 36% (2014-2018) | – |
+| Fall deaths (accidental) | died | 2018–2025 | 48% | 48% | – | – |
+| Alcohol-induced deaths | lived | 1999–2025 | 57% | 59% | 36% (2014-2018) | – |
+| Alcohol-induced deaths | died | 2018–2025 | 55% | 54% | – | – |
+| Firearm suicides | lived | 2019–2024 | 62% | 63% | – | – |
+| Firearm homicides | lived | 2019–2024 | 43% | 44% | – | – |
+| Traffic crash deaths | died | 1975–2024 | 0% | 0% | – | – |
+| Weather deaths | died | 1950–2026 | 0% | 0% | – | – |
+| Drug poisoning (modeled) | lived | 2003–2021 | – | – | – | – |
+| Heart disease, adults 35+ (CDC atlas) | lived | 2015–2023 | – | – | – | no data 2021 |
+| Stroke, adults 35+ (CDC atlas) | lived | 2015–2023 | – | – | – | no data 2021 |
+| Life expectancy | lived | 2022–2022 | – | – | – | – |
+| Premature death rate (under 75) | lived | 2022–2022 | – | – | – | – |
+| Years of potential life lost | lived | 2022–2022 | – | – | – | – |
+| Injury deaths (all) | lived | 2022–2022 | – | – | – | – |
+| Child mortality (under 18) | lived | 2022–2022 | – | – | – | – |
+| Infant mortality | lived | 2022–2022 | – | – | – | – |
 
 ## Sources in use
 
@@ -96,6 +98,7 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [Detroit Police RMS crime incidents (homicide)](https://data.detroitmi.gov/) (`detroit_homicides`) | api | weekly | 2026-09-27 | – |
 | [NHTSA Fatality Analysis Reporting System](https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars) (`fars`) | download | yearly | 2024-12-31 | – |
 | [NOAA Storm Events Database](https://www.ncdc.noaa.gov/stormevents/) (`noaa`) | download | monthly | 2026-12-31 | – |
+| [WONDER UCD 1999-2018, county x 5-year totals](https://wonder.cdc.gov/ucd-icd10.html) (`wonder_ucd_5yr`) | wonder-manual | static | 2014-2018 | 2026-10-07 |
 
 ## Research queue (candidates)
 
@@ -103,8 +106,7 @@ Ranked by value ÷ effort. Each one has a GitHub issue labelled `candidate`.
 
 | Candidate | Value | Effort | Fills |
 |---|---|---|---|
-| `wonder_ucd_5yr` WONDER UCD 1999-2020, county x 5-year groups | 5 | 2 | About half of counties are hidden in any single year for suicide, firearm, overdose, homicide, liver, kidney, falls and alcohol. Five-year totals should un-hide most of them. |
-| `wonder_prov_5yr` WONDER Provisional, county x 2020-2024 (and rolling 5-year spans) | 5 | 2 | Same as wonder_ucd_5yr for recent years, and makes the "where they died" map readable in small counties. |
+| `wonder_prov_5yr` WONDER Provisional, county x 5-year totals (2019-2023, 2021-2025) | 5 | 2 | Same as wonder_ucd_5yr for recent years, and makes the "where they died" map readable in small counties. |
 | `mpv` Mapping Police Violence | 3 | 2 | Police killings after 2024, since the Washington Post database stopped. |
 | `ihme_county` IHME US county cause-specific mortality estimates | 4 | 3 | Modeled rates for every county and many causes, filling hidden cells (shown hatched as modeled). |
 | `more_me_portals` More medical examiner / coroner open-data portals | 4 | 3 | Death locations outside the 7 counties we have. Not held back like CDC counts. |
