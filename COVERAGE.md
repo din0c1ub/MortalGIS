@@ -1,11 +1,10 @@
 # MortalGIS data coverage
 
-Generated 2026-10-07 20:25 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
+Generated 2026-10-07 21:18 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
 
 ## Needs attention
 
-- **ct_ocme**: newest data is 645 days old for a yearly source
-- **nyc_homicides**: newest data is 646 days old for a yearly source
+Nothing due.
 
 ## County measures
 
@@ -19,11 +18,11 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | All deaths | died | 1968–2020 | 0% | 2% | – | large counties only 1989–2004; no data 2005–2019 |
 | Drug overdose deaths | lived | 1968–2024 | 49% | 42% | 24% (2021-2025) | – |
 | Drug overdose deaths | died | 1968–2004 | 20% | 36% | 27% (2021-2025) | large counties only 1989–2004 |
-| Suicide deaths | lived | 1968–2024 | 57% | 62% | 21% (2021-2025) | – |
+| Suicide deaths | lived | 1968–2024 | 56% | 61% | 21% (2021-2025) | – |
 | Suicide deaths | died | 1968–2004 | 4% | 38% | 21% (2021-2025) | large counties only 1989–2004 |
-| Homicide deaths | lived | 1968–2024 | 48% | 49% | 48% (2021-2025) | – |
+| Homicide deaths | lived | 1968–2024 | 47% | 48% | 48% (2021-2025) | – |
 | Homicide deaths | died | 1968–2004 | 51% | 45% | 50% (2021-2025) | large counties only 1989–2004 |
-| Firearm deaths | lived | 1968–2024 | 59% | 63% | 24% (2021-2025) | – |
+| Firearm deaths | lived | 1968–2024 | 58% | 62% | 24% (2021-2025) | – |
 | Firearm deaths | died | 1968–2004 | 20% | 43% | 26% (2021-2025) | large counties only 1989–2004 |
 | Heart disease deaths | lived | 1968–2025 | 7% | 5% | 1% (2021-2025) | – |
 | Heart disease deaths | died | 1968–2004 | 0% | 4% | 1% (2021-2025) | large counties only 1989–2004 |
@@ -31,21 +30,21 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | Stroke deaths | died | 1968–2004 | 0% | 16% | 13% (2021-2025) | large counties only 1989–2004 |
 | Cancer deaths | lived | 1999–2025 | 8% | 8% | 1% (2021-2025) | – |
 | Cancer deaths | died | 2018–2025 | 11% | 11% | 2% (2021-2025) | – |
-| Alzheimer's disease deaths | lived | 1999–2025 | 39% | 44% | 11% (2021-2025) | – |
+| Alzheimer's disease deaths | lived | 1999–2025 | 39% | 43% | 11% (2021-2025) | – |
 | Alzheimer's disease deaths | died | 2018–2025 | 38% | 38% | 13% (2021-2025) | – |
-| Diabetes deaths | lived | 1999–2025 | 43% | 48% | 10% (2021-2025) | – |
+| Diabetes deaths | lived | 1999–2025 | 43% | 47% | 10% (2021-2025) | – |
 | Diabetes deaths | died | 2018–2025 | 46% | 46% | 14% (2021-2025) | – |
-| Liver disease & cirrhosis deaths | lived | 1999–2025 | 55% | 58% | 20% (2021-2025) | – |
+| Liver disease & cirrhosis deaths | lived | 1999–2025 | 55% | 57% | 20% (2021-2025) | – |
 | Liver disease & cirrhosis deaths | died | 2018–2025 | 55% | 54% | 33% (2021-2025) | – |
 | Chronic lung disease deaths (COPD, asthma) | lived | 1999–2025 | 27% | 30% | 5% (2021-2025) | – |
 | Chronic lung disease deaths (COPD, asthma) | died | 2018–2025 | 32% | 32% | 7% (2021-2025) | – |
-| Flu & pneumonia deaths | lived | 1999–2025 | 55% | 56% | 21% (2021-2025) | – |
+| Flu & pneumonia deaths | lived | 1999–2025 | 55% | 55% | 21% (2021-2025) | – |
 | Flu & pneumonia deaths | died | 2018–2025 | 48% | 48% | 40% (2021-2025) | – |
 | Kidney disease deaths | lived | 1999–2025 | 54% | 57% | 20% (2021-2025) | – |
 | Kidney disease deaths | died | 2018–2025 | 53% | 54% | 32% (2021-2025) | – |
-| COVID-19 deaths | lived | 2020–2025 | 58% | 39% | 6% (2021-2025) | – |
+| COVID-19 deaths | lived | 2020–2025 | 58% | 38% | 6% (2021-2025) | – |
 | COVID-19 deaths | died | 2020–2025 | 43% | 41% | 21% (2021-2025) | – |
-| Fall deaths (accidental) | lived | 1999–2025 | 57% | 60% | 29% (2021-2025) | – |
+| Fall deaths (accidental) | lived | 1999–2025 | 57% | 59% | 29% (2021-2025) | – |
 | Fall deaths (accidental) | died | 2018–2025 | 48% | 48% | 47% (2021-2025) | – |
 | Alcohol-induced deaths | lived | 1999–2025 | 57% | 57% | 27% (2021-2025) | – |
 | Alcohol-induced deaths | died | 2018–2025 | 55% | 54% | 36% (2021-2025) | – |
@@ -89,7 +88,7 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [Sacramento County Coroner cases by ZIP](https://data.saccounty.gov/) (`sacramento_coroner`) | api | weekly | 2026-10-05 | – |
 | [Allegheny County fatal accidental overdoses](https://data.wprdc.org/dataset/allegheny-county-fatal-accidental-overdoses) (`allegheny_me`) | api | monthly | 2026-08-03 | – |
 | [Connecticut accidental drug-related deaths](https://data.ct.gov/d/rybz-nyjw) (`ct_ocme`) | api | yearly | 2024-12-31 | – |
-| [Fatal Encounters (2000-2021) + Washington Post Fatal Force (2022-2024)](https://fatalencounters.org/) (`police_killings`) | download | static | 2024-12-31 | – |
+| [Fatal Encounters (2000-2012) + Mapping Police Violence (2013-)](https://mappingpoliceviolence.org/methodology) (`police_killings`) | browser | monthly | 2026-09-23 | – |
 | [FRA rail accidents + MSHA mine accidents](https://data.transportation.gov/d/85tf-25kj) (`fra_msha`) | api | monthly | 2026-09-23 | – |
 | [Mother Jones US mass shootings database](https://www.motherjones.com/politics/2012/12/mass-shootings-mother-jones-full-data/) (`mother_jones`) | download | monthly | 2026-08-01 | – |
 | [Chicago homicides (CPD), before 2014](https://data.cityofchicago.org/d/gumc-mgzr) (`chicago_homicides`) | api | static | 2013-12-31 | – |
@@ -105,6 +104,9 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [WONDER UCD 1999-2018, county x 5-year totals](https://wonder.cdc.gov/ucd-icd10.html) (`wonder_ucd_5yr`) | wonder-manual | static | 2014-2018 | 2026-10-07 |
 | [WONDER Provisional, county x 5-year totals (2019-2023, 2021-2025)](https://wonder.cdc.gov/mcd-icd10-provisional.html) (`wonder_prov_5yr`) | wonder-manual | manual-yearly | 2021-2025 | 2026-10-07 |
 | [New York State vital statistics Table 38 (county deaths by selected cause, no small-number hiding)](https://healthweb-back.health.ny.gov/statistics/vital_statistics/2023/table38.htm) (`ny_vitals`) | download | yearly | – | – |
+| [New Mexico IBIS death queries (county x year, 15 leading causes + overdose)](https://ibis.doh.nm.gov/query/builder/mort/MortCnty/Count.html) (`nm_ibis`) | browser | manual-yearly | – | – |
+| [Pennsylvania EDDIE death statistics (county x year)](https://www.phaim.health.pa.gov/EDD/WebForms/DeathCntySt.aspx) (`pa_eddie`) | browser | manual-yearly | – | – |
+| [Mapping Police Violence](https://mappingpoliceviolence.org/methodology) (`mpv`) |  |  | – | – |
 
 ## Research queue (candidates)
 
@@ -112,10 +114,7 @@ Ranked by value ÷ effort. Each one has a GitHub issue labelled `candidate`.
 
 | Candidate | Value | Effort | Fills |
 |---|---|---|---|
-| `mpv` Mapping Police Violence | 3 | 2 | Police killings after 2024, since the Washington Post database stopped. |
 | `oh_odh` Ohio Public Health Data Warehouse, mortality | 4 | 3 | Ohio's disclosure rule doesn't hide small death counts, so all 88 counties x every cause could be filled, 2007 on. |
-| `nm_ibis` New Mexico IBIS death queries | 3 | 3 | Small-numbers rule says county counts by standard cause lists are not suppressed - fills New Mexico's many small counties. |
-| `pa_eddie` Pennsylvania EDDIE death statistics | 3 | 3 | Rules hide rates, not counts - may fill Pennsylvania's 67 counties. |
 | `nc_databook` North Carolina County Health Data Book (5-year counts) | 2 | 3 | 5-year county counts shown unsuppressed for 20 causes incl. suicide and homicide - fills NC cells in the 5-year view. |
 | `more_me_portals` More medical examiner / coroner open data | 2 | 3 | Death locations outside the counties we have. |
 
