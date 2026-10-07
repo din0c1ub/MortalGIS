@@ -511,6 +511,81 @@ def ct_drug_deaths():
     }
 
 
+IPOP = "https://github.com/UK-IPOP/open-data-pipeline/releases/{}/{}"
+
+
+def _ipop_rows(tag, name):
+    """Medical examiner tables republished by the UK-IPOP open data pipeline (GitHub releases)."""
+    csv.field_size_limit(10**9)
+    url = IPOP.format("latest/download" if tag == "latest" else f"download/{tag}", name)
+    return csv.DictReader(io.StringIO(get(url, timeout=600).decode("utf-8", "replace")))
+
+
+def _num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def milwaukee():
+    """Milwaukee County ME, every case 2002–Nov 2025, geocoded death address. Frozen: the county moved to a dashboard."""
+    log("• Milwaukee County medical examiner (UK-IPOP snapshot) …")
+    acc = Acc()
+    for r in _ipop_rows("2025-12-01", "milwaukee_county_wide_form.csv"):
+        y = int(_num(r.get("death_year")) or 0)
+        if y < 2002:
+            continue
+        cats = categories(r.get("mode"), f"{r.get('causea')} {r.get('causeb')} {r.get('causeother')}",
+                          gun_flag=(r.get("deathtype") == "Gunshot Injury"),
+                          extra=("drug" if r.get("deathtype") == "Drug Related" else "") + (" cardiovascular" if r.get("deathtype") == "Cardiovascular" else ""))
+        lat, lon = _num(r.get("geocoded_latitude")), _num(r.get("geocoded_longitude"))
+        died = (snap(lon), snap(lat)) if lat and lon and 42.6 < lat < 43.4 and -88.4 < lon < -87.6 else None
+        acc.add(y, cats, died, None, date=(r.get("deathdate") or "")[:10])
+    return layer("milwaukee", "Milwaukee County Medical Examiner", "Milwaukee County, WI", acc, kind="me", what="medical examiner",
+                 show=SHOW_ME, color=4, source="Milwaukee County Medical Examiner, via the UK-IPOP open data pipeline (snapshot, Dec 2025)",
+                 url="https://github.com/UK-IPOP/open-data-pipeline/releases/tag/2025-12-01",
+                 died_note="where the death happened (~1 km squares); snapshot ends Nov 2025")
+
+
+def pima():
+    """Pima County (Tucson) OME drug-related deaths, 2017–, geocoded death location + residence ZIP. Monthly."""
+    log("• Pima County drug deaths (UK-IPOP) …")
+    z = zcta_centroids()
+    acc = Acc()
+    for r in _ipop_rows("latest", "pima_county_wide_form.csv"):
+        y = int(_num(r.get("death_year")) or 0)
+        m = r.get("dc_worksheet_-_manner_of_death") or ""
+        cats = [0] + ([1] if not m.startswith("Natural") else []) + ([2] if m.startswith("Suicide") else [])
+        lat, lon = _num(r.get("composite_latitude")) or _num(r.get("geocoded_latitude")), _num(r.get("composite_longitude")) or _num(r.get("geocoded_longitude"))
+        died = (snap(lon), snap(lat)) if lat and lon and 31.2 < lat < 32.8 and -113.4 < lon < -110.4 else None
+        lived, llab = zip_pt(z, str(r.get("identification_-_zip") or "").split(".")[0])
+        acc.add(y, cats, died, lived, None, llab, (r.get("identification_-_date_of_death") or "")[:10])
+    return layer("pima", "Pima County drug deaths", "Pima County, AZ (Tucson)", acc, kind="me", what="medical examiner",
+                 show={"overdose": 1}, color=2, source="Pima County Office of the Medical Examiner, via the UK-IPOP open data pipeline",
+                 url="https://github.com/UK-IPOP/open-data-pipeline", died_note="where the death happened (~1 km squares)",
+                 lived_note="where the person lived (ZIP Codes)")
+
+
+def cuyahoga():
+    """Cuyahoga County (Cleveland) ME drug-related deaths, 2014–, residence ZIP only (no geocodes). Monthly."""
+    log("• Cuyahoga County drug deaths (UK-IPOP) …")
+    z = zcta_centroids()
+    acc = Acc()
+    for r in _ipop_rows("latest", "cuyahoga_county_wide_form.csv"):
+        y = int(_num(r.get("death_date_year")) or 0)
+        m = r.get("rc_app_manner") or ""
+        if m.startswith("Natural"):
+            continue
+        cats = [0, 1] + ([2] if m.startswith("Suicide") else [])
+        mo = int(_num(r.get("death_date_month")) or 0)
+        lived, llab = zip_pt(z, str(r.get("zip") or "").split(".")[0])
+        acc.add(y, cats, None, lived, None, llab, f"{y}-{mo:02d}" if mo else "")
+    return layer("cuyahoga", "Cuyahoga County drug deaths", "Cuyahoga County, OH (Cleveland)", acc, kind="zip", what="medical examiner",
+                 show={"overdose": 1}, color=3, source="Cuyahoga County Medical Examiner, via the UK-IPOP open data pipeline",
+                 url="https://github.com/UK-IPOP/open-data-pipeline", died_note="", lived_note="where the person lived (ZIP Codes)")
+
+
 def build_incidents(out_dir, status: dict):
     """Build every incident layer. A failing source keeps its previous file and is reported."""
     (out_dir / "points").mkdir(exist_ok=True)
@@ -531,6 +606,9 @@ def build_incidents(out_dir, status: dict):
         ("san_diego", san_diego),
         ("sacramento", sacramento),
         ("allegheny", allegheny),
+        ("milwaukee", milwaukee),
+        ("pima", pima),
+        ("cuyahoga", cuyahoga),
         ("ct_drug", ct_drug_deaths),
         ("police", police_killings),
         ("other_accidents", other_accidents),

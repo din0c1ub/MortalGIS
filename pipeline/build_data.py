@@ -450,6 +450,17 @@ def build(out_dir: Path, chr_year: int):
     pep_deaths, pep_pop, pep_vintage = census_pep()
     occ2020, res2020 = cdc_occurrence_residence()
     wonder = wonder_imports()
+    # Counts states publish without hiding 1-9 (used only to fill cells CDC hid; see statefill.py)
+    try:
+        import statefill
+        log("• State-published county counts …")
+        n2f = lambda st: {c["name"].lower().replace(".", "").replace("saint ", "st "): c["fips"] for c in counties if c["fips"].startswith(st)}  # noqa: E731
+        state_fills = {"MI": statefill.michigan(n2f("26")), "NY": statefill.new_york(n2f("36"))}
+    except Exception as e:  # noqa: BLE001
+        log(f"  ! state fills skipped: {e}")
+        state_fills = {}
+    STATE_NAMES = {"MI": "Michigan DHHS", "NY": "New York State DOH"}
+    fill_report = {}
     hpop = (hist("pop") or {}).get("pop", {})
     if not hpop:
         log("! site/data/hist/pop.json missing — run pipeline/history.py once to add 1968–2004 history")
@@ -613,6 +624,53 @@ def build(out_dir: Path, chr_year: int):
                 notes=("Rates use the county's population (NCI SEER estimates; Census for 2025). Counts of 1–9 are suppressed. "
                        "Cause definitions follow ICD-8 (1968–78), ICD-9 (1979–98) and ICD-10 (1999–); small jumps at those years are coding changes."),
             )
+            # Fill CDC-hidden cells (count -1) with counts the state publishes, if the state agrees with CDC elsewhere
+            mk = f"{key}_died" if died else key
+            if place == "res" and len(measures) > n_before:
+                v = values[mk]
+                for st, by_cause in state_fills.items():
+                    fl = by_cause.get(cause)
+                    if not fl:
+                        continue
+                    agree = tot = 0
+                    bad_years = set()
+                    for y, cells in fl.items():
+                        cnt = (v.get("count") or {}).get(y)
+                        if not cnt:
+                            continue
+                        ya = yt = 0
+                        for f, c in cells.items():
+                            i = idx.get(f)
+                            w = cnt[i] if i is not None else None
+                            if w is not None and w >= 10:
+                                yt += 1
+                                ya += abs(w - c) <= max(2, 0.1 * w)
+                        tot, agree = tot + yt, agree + ya
+                        if yt >= 5 and ya / yt < 0.8:
+                            bad_years.add(y)  # a year whose table doesn't line up with CDC (e.g. a changed layout)
+                    share = agree / tot if tot else 0
+                    if tot < 50 or share < 0.9:
+                        log(f"  ! {st} {cause}: state counts agree with CDC in {share:.0%} of {tot} county-years; not used")
+                        fill_report[f"{st}:{cause}"] = {"used": False, "agree": round(share, 3), "checked": tot}
+                        continue
+                    filled, n = v.setdefault("filled", {}), 0
+                    for y, cells in fl.items():
+                        cnt, rate = (v.get("count") or {}).get(y), v["rate"].get(y)
+                        if not cnt or rate is None or y in bad_years:
+                            continue
+                        for f, c in cells.items():
+                            i = idx.get(f)
+                            if i is None or cnt[i] != -1 or not 1 <= c <= 9:
+                                continue  # only cells CDC hid, and only values consistent with "1-9"
+                            p = pop_at(y, i)
+                            cnt[i], rate[i] = c, (r1(c / p * 1e5) if p else None)
+                            filled.setdefault(y, [0] * N)[i] = 1
+                            n += 1
+                    v["filledBy"] = " / ".join(sorted({*(v.get("filledBy") or "").split(" / "), STATE_NAMES[st]} - {""}))
+                    fill_report[f"{st}:{cause}"] = {"used": True, "agree": round(share, 3), "checked": tot, "filled": n, "skippedYears": sorted(bad_years)}
+                    log(f"  {st} {cause}: filled {n:,} hidden county-years (agrees with CDC in {share:.0%} of {tot})")
+                    if not filled:
+                        v.pop("filled")
             # Multi-year county totals (WONDER): far fewer counties hidden. Rate = deaths ÷ person-years × 100k (an average yearly rate).
             sp = getattr(wonder_imports, "spans", {}).get((cause, place))
             mk = f"{key}_died" if died else key
@@ -756,6 +814,7 @@ def build(out_dir: Path, chr_year: int):
         "counties": [[c["fips"], c["name"], c["state"]] for c in counties],
         "population": population,
         "measures": measures,
+        "stateFills": fill_report,
         "wonderFiles": sorted(f"{c}_{'residence' if p == 'res' else 'occurrence'}" for c, p in wonder),
         "monthly": {"months": [months[0], months[-1]], "asOf": monthly_as_of,
                     "source": "CDC NCHS VSRR Provisional County-Level Drug Overdose Death Counts",

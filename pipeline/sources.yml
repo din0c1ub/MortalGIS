@@ -545,6 +545,73 @@ sources:
     layer: noaa
     status: live
 
+  - id: milwaukee_me
+    name: Milwaukee County Medical Examiner case data (snapshot)
+    publisher: Milwaukee County ME, republished by the UK-IPOP open data pipeline
+    url: https://github.com/UK-IPOP/open-data-pipeline/releases/tag/2025-12-01
+    license: county public records; republished in a GPL-3.0 repository (terms for the data itself not stated)
+    access: download
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [all, overdose, suicide, homicide, firearm, heart]
+    years: 2002-2025
+    grain: day
+    cadence: static
+    layer: milwaukee
+    status: live
+    notes: Frozen at Nov 2025 - the county replaced its ArcGIS feed with a Power BI dashboard. Revisit if UK-IPOP or the county restores a download.
+
+  - id: pima_ome
+    name: Pima County OME drug-related deaths
+    publisher: Pima County OME, shared monthly with UK-IPOP
+    url: https://github.com/UK-IPOP/open-data-pipeline
+    license: shared by the office for open publication via UK-IPOP (GPL-3.0 repository)
+    access: download
+    kind: points
+    geography: grid-1km
+    place: [died, lived]
+    causes: [overdose]
+    years: 2017-
+    grain: day
+    cadence: monthly
+    layer: pima
+    status: live
+
+  - id: cuyahoga_me
+    name: Cuyahoga County ME drug-related deaths
+    publisher: Cuyahoga County ME, shared monthly with UK-IPOP
+    url: https://github.com/UK-IPOP/open-data-pipeline
+    license: shared by the office for open publication via UK-IPOP (GPL-3.0 repository)
+    access: download
+    kind: points
+    geography: zip
+    place: [lived]
+    causes: [overdose]
+    years: 2014-
+    grain: month
+    cadence: monthly
+    layer: cuyahoga
+    status: live
+    notes: Residence ZIP only (no geocoded death location). The source file has birth dates and occupations - never stored.
+
+  - id: mi_mdhhs
+    name: Michigan DHHS county death tables (no small-number hiding)
+    publisher: Michigan DHHS, Vital Records & Health Statistics
+    url: https://www.mdch.state.mi.us/osr/deaths/DeathNoTrends.asp
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alcohol, alzheimers, cancer, clrd, heart, stroke]
+    years: 1980-2023 (alcohol, Alzheimer's 2000-2023)
+    grain: year
+    hidden: none
+    cadence: yearly
+    status: live
+    notes: pipeline/statefill.py. Fills ONLY cells CDC hid (1-9), and only for causes where Michigan agrees with CDC (within 10% or 2 deaths) in 90%+ of county-years CDC publishes. Drug-induced and diabetes-related tables are not used (wider definitions than CDC's).
+
   # ------------------------------------------------------------ candidates (the research queue)
   - id: wonder_ucd_5yr
     name: WONDER UCD 1999-2018, county x 5-year totals
@@ -577,57 +644,92 @@ sources:
     grain: multi-year
     hidden: 1-9 deaths per county per span
     files: [wonder/wonder_prov_5yr_*.json]
-    status: candidate
-    gap: Same as wonder_ucd_5yr for recent years, and makes the "where they died" map readable in small counties.
-    value: 5
-    effort: 2
-    notes: "In progress 2026-10-07: residence 2019-2023 done for 12 causes (wonder_prov_5yr_residence_a.json). Still to pull - residence 2019-23 firearm, falls, overdose, alcohol; residence 2021-2025 all; occurrence both spans. WONDER rate-limits (HTTP 429) after ~12 quick queries, so pace them ~1 a minute. Set status: live when done."
+    license: public domain; WONDER data use restrictions
+    cadence: manual-yearly
+    status: live
+    notes: Pulled 2026-10-07 - residence and occurrence, spans 2019-2023 and 2021-2025, 16 causes (all but all-cause), one request per cause x span, ~1 a minute (WONDER returns HTTP 429 when rushed). 2025 is provisional; re-pull 2021-2025 once 2025 is final.
 
-  - id: ihme_county
-    name: IHME US county cause-specific mortality estimates
-    publisher: Institute for Health Metrics and Evaluation (GHDx)
-    url: https://ghdx.healthdata.org/
+  - id: ny_vitals
+    name: New York State vital statistics Table 38 (county deaths by selected cause, no small-number hiding)
+    publisher: NYS Department of Health
+    url: https://healthweb-back.health.ny.gov/statistics/vital_statistics/2023/table38.htm
+    license: public state statistics (no license stated)
     access: download
-    kind: model
+    kind: county-counts
     geography: county
     place: [lived]
-    years: verify (published series run 1980-2014 and later updates)
+    causes: [all, suicide, homicide, heart, cancer, stroke, diabetes, liver, clrd, covid]
+    years: 2001-2023
+    grain: year
+    hidden: none
+    cadence: yearly
+    status: live
+    notes: pipeline/statefill.py, same fill-and-check rules as mi_mdhhs plus a per-year check (years where under 80% of county-years agree are skipped - e.g. a changed table layout). Columns are matched by name and aligned from the right (2008-2021 tables have an unlabeled Total column). Not used - Alcohol Poisoning (narrower than alcohol-induced), Pneumonia (no flu). Homicide includes legal intervention; agreement 92%.
+
+  - id: oh_odh
+    name: Ohio Public Health Data Warehouse, mortality
+    publisher: Ohio Department of Health
+    url: https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/Mortality
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: all-17 (ICD-10 based)
+    years: 2007-
     status: candidate
-    gap: Modeled rates for every county and many causes, filling hidden cells (shown hatched as modeled).
+    gap: Ohio's disclosure rule doesn't hide small death counts, so all 88 counties x every cause could be filled, 2007 on.
     value: 4
     effort: 3
-    notes: Verify current release, years, cause list and the IHME license (non-commercial terms) before use.
+    notes: Interactive export, no API - a Chrome pull like WONDER. Unsuppressed small counts not yet confirmed in the live tool. Citation line required.
 
-  - id: state_portals
-    name: State vital statistics query portals with lower small-number thresholds
-    publisher: State health departments
+  - id: nm_ibis
+    name: New Mexico IBIS death queries
+    publisher: New Mexico Department of Health
+    url: https://ibis.doh.nm.gov
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: all-17 (NCHS 113 list, firearm by intent)
+    years: verify
+    status: candidate
+    gap: Small-numbers rule says county counts by standard cause lists are not suppressed - fills New Mexico's many small counties.
+    value: 3
+    effort: 3
+    notes: XLSX export. Cause-specific small counts unverified.
+
+  - id: pa_eddie
+    name: Pennsylvania EDDIE death statistics
+    publisher: Pennsylvania Department of Health
+    url: https://pa.gov/agencies/health/health-statistics/eddie-about/eddie-faqs
     access: browser
     kind: county-counts
     geography: county
     place: [lived]
     status: candidate
-    gap: Some states publish county counts below 10 (e.g. hide only 1-4 or 1-5), un-hiding small counties in those states.
+    gap: Rules hide rates, not counts - may fill Pennsylvania's 67 counties.
     value: 3
-    effort: 4
-    notes: Research sweep needed - list states, thresholds, years, causes and terms. One issue per promising state.
-
-  - id: more_me_portals
-    name: More medical examiner / coroner open-data portals
-    publisher: County MEs and coroners
-    access: api
-    kind: points
-    geography: grid-1km
-    place: [died, lived]
-    status: candidate
-    gap: Death locations outside the 7 counties we have. Not held back like CDC counts.
-    value: 4
     effort: 3
-    notes: Research sweep needed. Check each portal for case-level location, years, cause/manner fields and terms. Milwaukee County ME is a lead to verify.
+    notes: CSV export. Unsuppressed counts unverified in a live query.
+
+  - id: nc_databook
+    name: North Carolina County Health Data Book (5-year counts)
+    publisher: NC State Center for Health Statistics
+    url: https://schs.dph.ncdhhs.gov/data/databook/
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    grain: multi-year
+    status: candidate
+    gap: 5-year county counts shown unsuppressed for 20 causes incl. suicide and homicide - fills NC cells in the 5-year view.
+    value: 2
+    effort: 3
 
   - id: mpv
     name: Mapping Police Violence
-    publisher: Mapping Police Violence
-    url: https://mappingpoliceviolence.org/
+    publisher: Campaign Zero
+    url: https://mappingpoliceviolence.org/methodology
     access: download
     kind: points
     geography: point
@@ -638,23 +740,18 @@ sources:
     gap: Police killings after 2024, since the Washington Post database stopped.
     value: 3
     effort: 2
-    notes: Verify download terms and fields.
+    notes: 'The "Download CSV" button on the Airtable view linked from the methodology page; updated about every 2 weeks. Reported to include address, lat/lon, tract, county. No license stated ("should be public and free to access") - attribute, consider asking Campaign Zero.'
 
-  - id: gva
-    name: Gun Violence Archive
-    publisher: Gun Violence Archive
-    url: https://www.gunviolencearchive.org/
-    access: browser
+  - id: more_me_portals
+    name: More medical examiner / coroner open data
+    publisher: various
+    access: api
     kind: points
-    geography: point
-    place: [died]
-    causes: [homicide, firearm]
-    years: 2014-
     status: candidate
-    gap: Located gun deaths nationwide, beyond the 4 cities we have.
-    value: 4
-    effort: 4
-    notes: Verify whether the terms allow redistribution of incident locations; likely needs permission.
+    gap: Death locations outside the counties we have.
+    value: 2
+    effort: 3
+    notes: "2026-10-07 sweep: most large offices (King, Harris, Tarrant, Maricopa, Clark, LA, SF, Franklin, Montgomery OH, Wayne, Philadelphia, MD, VA, DC) publish only PDFs/dashboards. Remaining small leads: Arizona migrant deaths 1981-2025 (Humane Borders/Pima OME, lat/lon, names published - would need stripping, credit required); Lebanon County PA overdoses (ArcGIS, addresses, 192 rows); Marion County IN coroner overdoses 2010-17 (CC-BY, ZIP); Pierce County WA homeless deaths (city only); Mesa AZ heat deaths by tract 2020-23; Sacramento jail deaths layer (88 rows)."
 
   # ------------------------------------------------------------ looked at and set aside
   - id: nchs_restricted
@@ -672,6 +769,25 @@ sources:
     access: browser
     status: rejected
     notes: Public WISQARS views are state-level; case-level data is restricted.
+
+  - id: ihme_county
+    name: IHME US county cause-specific mortality estimates
+    publisher: Institute for Health Metrics and Evaluation (GHDx)
+    url: https://ghdx.healthdata.org/print/527397
+    status: rejected
+    notes: "Releases: 1980-2014 (21 causes, 5-yearly), 2000-2019 by race/ethnicity (19 causes, annual), single-cause follow-ups. License is non-commercial and forbids redistributing the data or derivative works (user agreement section 6); MortalGIS republishes per-county values in its JSON files, so it can't use them. Revisit only with written permission from IHME."
+
+  - id: gva
+    name: Gun Violence Archive
+    publisher: Gun Violence Archive
+    url: https://www.gunviolencearchive.org/explainer
+    status: rejected
+    notes: "Copyrighted, proprietary aggregation; use limited to the query tool or a licensing agreement. Scraped copies on GitHub/Kaggle are unlicensed. The Trace's data hub forbids redistribution too. No openly licensed nationwide located gun-death dataset exists; for gun suicides and totals use state sources."
+
+  - id: state_portals
+    name: State vital statistics portals with lower small-number thresholds
+    status: parked
+    notes: "Researched 2026-10-07 and split into per-state entries: mi_mdhhs (live), ny_vitals, oh_odh, nm_ibis, pa_eddie, nc_databook. Thresholds elsewhere: WI and MO hide under 5; KY overdose hides 1-4; MN, TX, IL hide under 10; WA CHAT not public."
 
   - id: okf
     name: Google Cloud Open Knowledge Format (dataset publishing)
