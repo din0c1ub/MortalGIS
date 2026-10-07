@@ -20,7 +20,10 @@ a source table; suppressed values stay suppressed.
 | Overdose, suicide, homicide, firearm — lived | 1968–now (overdose 1989–98: large counties only) | WONDER exports 1989–2020 · CDC Mapping Injury, Overdose & Violence 2021–now · NCHS death files |
 | Same four — where they died | 1968–2004 (2018–25 pending, see above) | WONDER export · NCHS death files |
 | Heart disease, stroke (all ages) — lived | 1968–2025 | WONDER exports (CMF, UCD, Provisional 2021–25) · NCHS death files |
-| Heart disease, stroke — where they died | 1968–2004 (2018–25 pending) | WONDER export · NCHS death files |
+| Heart disease, stroke — where they died | 1968–2004, 2018–2025 | WONDER Provisional (occurrence) · NCHS death files |
+| Cancer, Alzheimer's, diabetes, liver disease, chronic lung disease, flu & pneumonia, kidney disease, falls, alcohol-induced — lived | 1999–2025 | WONDER UCD 1999–2020 + Provisional 2021–25 |
+| Same — where they died | 2018–2025 | WONDER Provisional (occurrence) |
+| COVID-19 — lived / died | 2020–2025 | WONDER Provisional |
 | Heart disease, stroke, adults 35+ | 2015–2023 | CDC Atlas of Heart Disease and Stroke (each year = middle of a 3-year average) |
 | Firearm suicides / homicides | 2019–now | CDC Mapping Injury, Overdose & Violence |
 | Drug poisoning (modeled) | 2003–2021 | CDC NCHS small-area model |
@@ -57,10 +60,21 @@ numbering scheme (counties = 3 × alphabetical index, cities from 300). SEER com
 | Overdose, homicide, firearm, traffic | Sacramento County (CA) Coroner | 2021–now | incident ZIP | — |
 | Overdose | Allegheny County (PA) Medical Examiner, accidental overdoses (WPRDC, CC0) | 2007–now | incident ZIP | residence ZIP |
 | Overdose | Connecticut accidental drug-related deaths | 2012–2024 | town of injury | town of residence |
+| All deaths | Rail accidents (FRA, coordinates from ~2000) and mine accidents (MSHA, 2000–) | 2000–now | ~1 km squares | — |
+| All deaths, homicide, firearm | Mother Jones mass shootings database (newest rows placed at the city centroid from the Census places gazetteer) | 1982–now | ~1 km squares | — |
 | All deaths, firearm, traffic | People killed by police: Fatal Encounters 2000–21, Washington Post Fatal Force 2022–24 (CC BY-NC-SA) | 2000–2024 | ~1 km squares | — |
 | Homicide, firearm | Chicago Police (1991–2013; Cook ME covers later), NYPD murders (2006–24), Philadelphia fatal shootings (2015–now), Detroit Police homicides (2010–now, homicide only) | varies | ~1 km squares | — |
 
 Every layer keeps only counts per square/ZIP, year and category; names, case numbers, ages and addresses are dropped in the pipeline. Police killings are not shown on the homicide map because CDC counts them as legal intervention, not homicide.
+
+## Month by month
+
+The year slider has month buttons (J F M …) wherever monthly data is real:
+- **Overdose, where they lived (2020–):** county colors show deaths in the 12 months ending that month (CDC provisional county counts, `site/data/monthly/`).
+- **17 causes, 1999–:** the map switches to states, since monthly county counts are mostly under 10 and hidden. Data: WONDER state × month (`data_manual/wonder/*state_month*.json` → `site/data/state_month/`). The newest two provisional months are dropped while they fill in. The county panel shows the state's monthly line.
+- **Death locations:** every dated layer also has a `*_m.json` file, so dots step month by month in the "Where they died" view, and fatal crashes do the same.
+
+Links keep the view: `index.html#m=overdose&y=2023&w=lived&v=state&c=26049&mo=3`.
 
 ## Weekly refresh
 
