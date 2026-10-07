@@ -392,6 +392,8 @@ sources:
     cadence: yearly
     layer: ct_drug
     status: live
+    due_after: 760
+    notes: Checked 2026-10-07 - data.ct.gov rybz-nyjw ends 2024-12-31; the OCME publishes a year at a time.
 
   - id: police_killings
     name: Fatal Encounters (2000-2021) + Washington Post Fatal Force (2022-2024)
@@ -474,7 +476,8 @@ sources:
     cadence: yearly
     layer: nyc_homicides
     status: live
-    notes: Shootings only, so non-gun homicides are missing.
+    due_after: 760
+    notes: Shootings only, so non-gun homicides are missing. Checked 2026-10-07 - the historic file ends 2024-12-31; NYC adds a year once it is final (usually spring). The "Shootings (2006-Present)" dataset 5ucz-vwe8 runs to mid-2026 but has no murder flag, so it can't be used for deaths.
 
   - id: philly_homicides
     name: Philadelphia fatal shooting victims
