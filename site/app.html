@@ -237,7 +237,7 @@ details.sec .body{margin-top:8px}
     </div>
     <section class="county" id="county" aria-live="polite"></section>
     <details class="about sec"><summary>About the data &amp; sources</summary><ul class="srcs" id="srcs"></ul>
-      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
+      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where Michigan and New York publish them (outlined with dashes). The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
   </aside>
 
   <main>
@@ -399,6 +399,8 @@ function spanOf(m, p){
   return m.spans.find(sp=>{ const [a,b]=sp.split("-").map(Number); return +p>=a && +p<=b; }) || null;
 }
 const spanLbl = sp => sp.replace("-", "–");
+const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH"};  // states that publish counts CDC hides
+const fillName = i => FILLSRC[counties[i][0].slice(0,2)] || "the state health department";
 function cntArr(m, d, p){ const sp = spanOf(m,p); return sp ? (d.spans&&d.spans[sp]||{}).count : (d.count && d.count[p]); }
 function valArr(m, d, p){
   const sp = spanOf(m,p);
@@ -560,6 +562,7 @@ function drawLegend(b, cols, m, d, p){
   const mm = !!state.month && (monthChoro() || stateMonthOk());  // month maps: scale is per month, nothing hatched
   const ca = cntArr(m,d,p);
   if (!mm && ca && ca.some(v=>v===-1) && (spanOf(m,p) || !(d.modeled && d.modeled[p]))) keys.push(`<span><i class="hz" style="background-color:var(--nodata)"></i>Fewer than 10 deaths (hidden)</span>`);
+  if (!spanOf(m,p) && !mm && d.filled && d.filled[p]) keys.push(`<span><i style="background:var(--r2);outline:1.5px dashed var(--ink);outline-offset:-3px"></i>Small counts from the state health department (CDC hides 1–9)</span>`);
   if (!spanOf(m,p) && d.modeled && d.modeled[p]) keys.push(`<span><i class="hz" style="background-color:var(--r2)"></i>${m.flagLabel||"Modeled estimate"}</span>`);
   if (isCount(m)) keys.push(`<span>Color shows number of deaths</span>`);
   $("#legkeys").innerHTML = keys.join("") + (isCount(m) || mm ? "" : `<div class="views" role="group" aria-label="Color scale" style="margin-top:4px;width:100%"><button type="button" data-scale="year" aria-pressed="${state.scale==="year"}">Scale to this year</button><button type="button" data-scale="all" aria-pressed="${state.scale==="all"}">Same scale, all years</button></div>`);
@@ -571,7 +574,10 @@ function drawHatch(){
   const m = M.get(state.measure), sp = spanOf(m,p);
   const mod = !sp && d.modeled && d.modeled[p], cnt = cntArr(m,d,p);
   const pick = f => { const i = idx.get(f.id); return (mod && mod[i]) || (!mod && cnt && cnt[i]===-1); };
-  hatchG.selectAll("path").data(features.filter(pick)).join("path").attr("d",path).attr("fill","url(#hatch)");
+  hatchG.selectAll("path.h").data(features.filter(pick)).join("path").attr("class","h").attr("d",path).attr("fill","url(#hatch)");
+  const fl = !sp && d.filled && d.filled[p];  // small counts the state publishes (CDC hides 1-9)
+  hatchG.selectAll("path.f").data(fl ? features.filter(f=>fl[idx.get(f.id)]) : []).join("path").attr("class","f").attr("d",path)
+    .attr("fill","none").attr("stroke","var(--ink)").attr("stroke-width",.9).attr("stroke-dasharray","2 1.5").attr("vector-effect","non-scaling-stroke");
 }
 function drawSel(){ const f=features.find(f=>f.id===state.fips); selPath.datum(f||null).attr("d", f?path:null); }
 function drawCoverage(m, d){
@@ -630,7 +636,7 @@ function hover(e, f){
     placeTip(e); return;
   }
   const c = isCount(m) ? null : countText(d,i,p);
-  t.innerHTML = `<div>${label(counties[i])} · ${periodLabel(m,p)}</div><b>${getText(m,d,i,p)}</b> ${isCount(m)||((valArr(m,d,p)||[])[i]==null)?"":`<span style="color:var(--muted)">${m.unit}${spanOf(m,p)?" per year":""}</span>`}${c?`<div style="color:var(--muted)">Deaths${spanOf(m,p)?` in ${spanN(spanOf(m,p))} years`:""}: ${c}</div>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<div style="color:var(--accent)">Modeled estimate</div>`:""}`;
+  t.innerHTML = `<div>${label(counties[i])} · ${periodLabel(m,p)}</div><b>${getText(m,d,i,p)}</b> ${isCount(m)||((valArr(m,d,p)||[])[i]==null)?"":`<span style="color:var(--muted)">${m.unit}${spanOf(m,p)?" per year":""}</span>`}${c?`<div style="color:var(--muted)">Deaths${spanOf(m,p)?` in ${spanN(spanOf(m,p))} years`:""}: ${c}</div>`:""}${!spanOf(m,p)&&d.filled&&d.filled[p]&&d.filled[p][i]?`<div style="color:var(--accent)">Count from ${fillName(i)} (CDC hides 1–9)</div>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<div style="color:var(--accent)">Modeled estimate</div>`:""}`;
   placeTip(e);
 }
 function placeTip(e){
@@ -853,7 +859,7 @@ async function renderCounty(){
   const srcKey = d.src && d.src[p];
   let h = `<div><div class="cname">${c[1]} County, ${c[2]}</div><div class="csub">${pop?`Population ${fmtI(pop)} (2023) · `:""}FIPS ${c[0]}</div></div>
   <div><span class="lbl">${m.label}${m.place==="occurrence"&&m.pair?" (where they died)":""} · ${periodLabel(m,p)}</span><div class="big"><b>${getText(m,d,i,p)}</b><small>${isCount(m)?"":m.unit}</small></div></div>
-  <div class="chips">${spanOf(m,p)?`<span class="chip">${spanN(spanOf(m,p))}-year total, ${spanLbl(spanOf(m,p))}</span>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<span class="chip warn">Modeled: fewer than 10 deaths</span>`:""}${srcKey?`<span class="chip">${(SRC[srcKey]||{}).label||srcKey}</span>`:""}</div>
+  <div class="chips">${!spanOf(m,p)&&d.filled&&d.filled[p]&&d.filled[p][i]?`<span class="chip warn">Count from ${fillName(i)}</span>`:""}${spanOf(m,p)?`<span class="chip">${spanN(spanOf(m,p))}-year total, ${spanLbl(spanOf(m,p))}</span>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<span class="chip warn">Modeled: fewer than 10 deaths</span>`:""}${srcKey?`<span class="chip">${(SRC[srcKey]||{}).label||srcKey}</span>`:""}</div>
   <div id="pairline"></div>
   <dl class="facts">
     ${cnt?`<dt>Deaths</dt><dd>${cnt}</dd>`:""}
