@@ -91,6 +91,12 @@ def measure_rows(meta):
                     cell["modeled"] = True
             years[p] = cell
         hs = [c["hidden"] for c in years.values() if "hidden" in c]
+        spans = {}
+        for sp, o in (d.get("spans") or {}).items():
+            c = o.get("count") or []
+            hid = sum(1 for v in c if v == -1)
+            pub = sum(1 for v in c if v is not None and v != -1)
+            spans[sp] = round(hid / (hid + pub), 3) if hid + pub else None
         out.append({
             "key": m["key"], "label": m["label"], "place": m.get("place", "residence"),
             "first": nums[0], "last": nums[-1],
@@ -98,6 +104,7 @@ def measure_rows(meta):
             "partialYears": [int(y) for y, c in years.items() if c.get("partial")],
             "hiddenLatest": next((years[str(y)].get("hidden") for y in reversed(nums) if "hidden" in years.get(str(y), {})), None),
             "hiddenAvg": round(sum(hs) / len(hs), 3) if hs else None,
+            "spans": spans,
             "years": years,
         })
     return out
@@ -160,14 +167,18 @@ def markdown(cov):
         L.append("Nothing due.")
     L += ["", "## County measures", "",
           "Hidden = share of counties whose count is 1–9 and therefore not published (CDC confidentiality rule).", "",
-          "| Measure | Counted where | Years | Hidden, latest year | Hidden, average | Gaps |", "|---|---|---|---|---|---|"]
+          "5-year = the same share when deaths are added up over five-year spans (latest span shown).", "",
+          "| Measure | Counted where | Years | Hidden, latest year | Hidden, average | Hidden, 5-year | Gaps |", "|---|---|---|---|---|---|---|"]
     for m in cov["measures"]:
         gaps = []
         if m["partialYears"]:
             gaps.append(f"large counties only {span(m['partialYears'])}")
         if m["missingYears"]:
             gaps.append(f"no data {span(m['missingYears'])}")
-        L.append(f"| {m['label']} | {'died' if m['place'] == 'occurrence' else 'lived'} | {m['first']}–{m['last']} | {pct(m['hiddenLatest'])} | {pct(m['hiddenAvg'])} | {'; '.join(gaps) or '–'} |")
+        sp = max(m["spans"]) if m.get("spans") else None
+        five = f"{pct(m['spans'][sp])} ({sp})" if sp else "–"
+        where = "died" if m["place"] == "occurrence" else "lived"
+        L.append(f"| {m['label']} | {where} | {m['first']}–{m['last']} | {pct(m['hiddenLatest'])} | {pct(m['hiddenAvg'])} | {five} | {'; '.join(gaps) or '–'} |")
     L += ["", "## Sources in use", "", "| Source | Access | Cadence | Data through | Last pulled |", "|---|---|---|---|---|"]
     for s in cov["sources"]:
         if s.get("status") == "live":

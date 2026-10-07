@@ -78,7 +78,7 @@ sources:
     hidden: 1-9 deaths per county
     cadence: static
     src: [wonder]
-    files: [wonder/wonder_ucd_*.json]
+    files: [wonder/wonder_ucd_1999-2020.json, wonder/wonder_ucd_more_*.json]
     status: live
 
   - id: wonder_prov
@@ -96,7 +96,7 @@ sources:
     hidden: 1-9 deaths per county
     cadence: manual-yearly
     src: [wonder]
-    files: [wonder/wonder_prov_*.json]
+    files: [wonder/wonder_prov_occurrence_*.json, wonder/wonder_prov_residence_*.json, wonder/wonder_prov_more_*.json]
     status: live
     notes: The only source of "where they died" after 2004 (2018 on). Re-pull each spring when the prior year becomes final, and once or twice in between for the provisional year.
 
@@ -547,25 +547,25 @@ sources:
 
   # ------------------------------------------------------------ candidates (the research queue)
   - id: wonder_ucd_5yr
-    name: WONDER UCD 1999-2020, county x 5-year groups
+    name: WONDER UCD 1999-2018, county x 5-year totals
     publisher: CDC NCHS
     url: https://wonder.cdc.gov/ucd-icd10.html
+    license: public domain; WONDER data use restrictions
     access: wonder-manual
     kind: county-counts
     geography: county
     place: [lived]
-    causes: all-17
-    years: 1999-2020
+    causes: [overdose, suicide, homicide, firearm, heart, stroke, cancer, alzheimers, diabetes, liver, clrd, flu_pneumonia, kidney, falls, alcohol]
+    years: 1999-2018
     grain: multi-year
     hidden: 1-9 deaths per county per 5 years
-    status: candidate
-    gap: About half of counties are hidden in any single year for suicide, firearm, overdose, homicide, liver, kidney, falls and alcohol. Five-year totals should un-hide most of them.
-    value: 5
-    effort: 2
-    notes: Group By County + a 5-year span (run each span as its own request). Save the query in the bundle.
+    cadence: static
+    files: [wonder/wonder_ucd_5yr_*.json]
+    status: live
+    notes: Spans 1999-2003, 2004-08, 2009-13, 2014-18, one request per cause and span. Shown by the "5-year totals" switch. Big drops in hidden counties for suicide, firearm and the diseases; little change for rare causes (homicide, falls, early overdose), where zero-death counties move into the hidden 1-9 band.
 
   - id: wonder_prov_5yr
-    name: WONDER Provisional, county x 2020-2024 (and rolling 5-year spans)
+    name: WONDER Provisional, county x 5-year totals (2019-2023, 2021-2025)
     publisher: CDC NCHS
     url: https://wonder.cdc.gov/mcd-icd10-provisional.html
     access: wonder-manual
@@ -573,13 +573,15 @@ sources:
     geography: county
     place: [lived, died]
     causes: all-17
-    years: 2018-
+    years: 2019-2025
     grain: multi-year
     hidden: 1-9 deaths per county per span
+    files: [wonder/wonder_prov_5yr_*.json]
     status: candidate
     gap: Same as wonder_ucd_5yr for recent years, and makes the "where they died" map readable in small counties.
     value: 5
     effort: 2
+    notes: "In progress 2026-10-07: residence 2019-2023 done for 12 causes (wonder_prov_5yr_residence_a.json). Still to pull - residence 2019-23 firearm, falls, overdose, alcohol; residence 2021-2025 all; occurrence both spans. WONDER rate-limits (HTTP 429) after ~12 quick queries, so pace them ~1 a minute. Set status: live when done."
 
   - id: ihme_county
     name: IHME US county cause-specific mortality estimates

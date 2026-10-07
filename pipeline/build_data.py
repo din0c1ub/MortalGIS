@@ -309,6 +309,7 @@ def wonder_imports():
     or, failing that, from the query notes WONDER writes at the bottom of each file.
     Needs a county code column, a year column ("Year Code" or "Year") and "Deaths"."""
     out = defaultdict(lambda: defaultdict(dict))  # (cause, place) -> year -> fips -> count
+    spans = defaultdict(dict)  # (cause, place) -> "1999-2003" -> fips -> count (multi-year totals)
     report = []
     files = []
     if WONDER_DIR.exists():
@@ -325,6 +326,19 @@ def wonder_imports():
             if bundle.get("level") == "state":  # state × month bundles are read separately
                 continue
             place = bundle.get("place", "res")
+            if bundle.get("grain") == "multi-year":  # county totals over spans of years (fewer hidden counties)
+                for cause, by_span in (bundle.get("data") or {}).items():
+                    if cause not in CAUSES:
+                        continue
+                    for span, cells in by_span.items():
+                        cell = spans[(cause, place)].setdefault(span, {})
+                        for f, v in cells.items():
+                            f = CENSUS_MERGE.get(f.zfill(5), f.zfill(5))
+                            v = int(v)
+                            cell[f] = (cell[f] + v if (cell[f] >= 0 and v >= 0) else -1) if f in cell else v
+                    log(f"  WONDER {path.name}: {cause} multi-year totals for {', '.join(sorted(by_span))}")
+                report.append({"file": path.name, "cause": "multi-year", "place": place, "ok": True, "countyYears": sum(len(c) for b in bundle["data"].values() for c in b.values())})
+                continue
             for cause, years in (bundle.get("data") or {}).items():
                 if cause not in CAUSES:
                     continue
@@ -386,6 +400,7 @@ def wonder_imports():
         log(f"  WONDER {path.name}: {n:,} county-years ({cause}, {'residence' if place == 'res' else 'occurrence'})")
         report.append({"file": path.name, "cause": cause, "place": place, "ok": True, "countyYears": n})
     wonder_imports.report = report
+    wonder_imports.spans = spans
     return out
 
 
@@ -586,6 +601,7 @@ def build(out_dir: Path, chr_year: int):
                     if int(y) >= 1989:
                         s_.add(y, nb["rate"][y], nb["count"][y], "nber_partial")
             died = place == "occ"
+            n_before = len(measures)
             add_measure(
                 f"{key}_died" if died else key, s_,
                 label=labels[cause], group=groups_of[cause],
@@ -597,6 +613,24 @@ def build(out_dir: Path, chr_year: int):
                 notes=("Rates use the county's population (NCI SEER estimates; Census for 2025). Counts of 1–9 are suppressed. "
                        "Cause definitions follow ICD-8 (1968–78), ICD-9 (1979–98) and ICD-10 (1999–); small jumps at those years are coding changes."),
             )
+            # Multi-year county totals (WONDER): far fewer counties hidden. Rate = deaths ÷ person-years × 100k (an average yearly rate).
+            sp = getattr(wonder_imports, "spans", {}).get((cause, place))
+            mk = f"{key}_died" if died else key
+            if sp and len(measures) > n_before:
+                packed = {}
+                for span, cells in sorted(sp.items()):
+                    a, b = (int(x) for x in span.split("-"))
+                    c = aligned(cells, "spans")
+                    r = [None] * N
+                    for i, v in enumerate(c):
+                        if v is None or v < 0:
+                            continue
+                        pops = [pop_at(str(y), i) for y in range(a, b + 1)]
+                        if all(pops):
+                            r[i] = r1(v / sum(pops) * 1e5)
+                    packed[span] = {"count": c, "rate": r}
+                values[mk]["spans"] = packed
+                measures[-1]["spans"] = sorted(packed)
 
     # Firearm suicides / homicides (CDC 2019+ only)
     for intent, key, label, desc in [("FA_Suicide", "firearm_suicide", "Firearm suicides", "Suicides involving a firearm."),
