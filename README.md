@@ -88,6 +88,19 @@ Reliability: each source is fetched on its own. A failing medical examiner layer
 is marked stale; if the core CDC overdose table comes back nearly empty, the build stops and nothing is
 published. `site/data/validation.json` lists county coverage for every measure and year.
 
+## Sources, coverage and the research queue
+
+- `pipeline/sources.yml` is the registry: every source in use (access, years, place, what it hides,
+  refresh cadence, files) plus candidates we might add and ones set aside with the reason.
+- `pipeline/coverage.py` runs after each build and writes `COVERAGE.md` and `site/data/coverage.json`:
+  for every measure and year, which source filled it and what share of counties is hidden (1–9 deaths);
+  which sources are due for a new pull; and the ranked candidate list.
+- `pipeline/sync_issues.py` keeps GitHub Issues in step: one `candidate` issue per candidate source,
+  a `refresh-due` issue when a source falls behind or fails (closes itself when fixed), and a `registry`
+  issue if a data file isn't listed in the registry. To act on a candidate, change its `status` in
+  sources.yml; its issue closes on the next run.
+- WONDER pulls are recorded in `data_manual/wonder/manifest.jsonl` (`check_wonder.py --record`).
+
 ## Layout
 
 ```
@@ -117,4 +130,5 @@ To enable auto-deploy: add an `HF_TOKEN` repository secret (Hugging Face write t
 2. **Phase 2 (done):** "where they lived / where they died" switch; death-location layers.
 3. **Phase 3 (done):** history back to 1968 (NCHS death files), traffic deaths 1975+, weather deaths 1950+,
    one year slider for everything with coverage strip; all overlay checkboxes removed.
-4. **Next:** load the CDC WONDER exports (2005–2018); San Diego ME at ZIP level.
+4. **Phase 4 (done):** CDC WONDER exports 1989–2025, 17 causes, month view, 16 location layers, weekly auto-deploy.
+5. **Next:** multi-year county totals to un-hide small counties; work the research queue (see COVERAGE.md).
