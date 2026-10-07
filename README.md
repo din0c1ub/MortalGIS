@@ -1,18 +1,26 @@
-# MortalGIS
+# MortalGIS v2
 
 An atlas of US county death rates built only from official public data.
 
 **Live:** https://huggingface.co/spaces/dinoclub/mortal-gis
 
+## What changed from v1
+
+v1 showed ~15,800 "records" that were mostly not deaths: CDC article headlines pinned to San Francisco,
+the same items re-added every night, state totals turned into single dots with invented ages and genders,
+and a generated 1980s–2010s backlog. v2 throws all of that away. Every number on the map comes straight from
+a source table; suppressed values stay suppressed.
+
 ## How far back each measure goes
 
 | Measure | Years | Sources (in order of priority) |
 |---|---|---|
-| All deaths — where they lived | 1968–2025 (gap: 2010) | WONDER export · CDC 2020 table · NCHS death files 1968–88 · Census estimates 2001–25 · NCHS files 1989–99 (large counties) |
-| All deaths — where they died | 1968–2004, 2020 | WONDER export · CDC 2020 table · NCHS death files |
-| Overdose, suicide, homicide, firearm — lived | 1968–2004, 2019–now (gap 2005–18 until WONDER export) | WONDER export · CDC Mapping Injury, Overdose & Violence · NCHS death files |
-| Same four — where they died | 1968–2004 | WONDER export · NCHS death files |
-| Heart disease, stroke (all ages) — lived / died | 1968–2004 | WONDER export · NCHS death files |
+| All deaths — where they lived | 1968–2025 | WONDER exports (CMF 1989–98, UCD 1999–2020) · CDC 2020 table · NCHS death files 1968–88 · Census estimates 2021–25 |
+| All deaths — where they died | 1968–2004, 2020 (2018–25 once the Provisional occurrence file is added) | WONDER export · CDC 2020 table · NCHS death files |
+| Overdose, suicide, homicide, firearm — lived | 1968–now (overdose 1989–98: large counties only) | WONDER exports 1989–2020 · CDC Mapping Injury, Overdose & Violence 2021–now · NCHS death files |
+| Same four — where they died | 1968–2004 (2018–25 pending, see above) | WONDER export · NCHS death files |
+| Heart disease, stroke (all ages) — lived | 1968–2025 | WONDER exports (CMF, UCD, Provisional 2021–25) · NCHS death files |
+| Heart disease, stroke — where they died | 1968–2004 (2018–25 pending) | WONDER export · NCHS death files |
 | Heart disease, stroke, adults 35+ | 2015–2023 | CDC Atlas of Heart Disease and Stroke (each year = middle of a 3-year average) |
 | Firearm suicides / homicides | 2019–now | CDC Mapping Injury, Overdose & Violence |
 | Drug poisoning (modeled) | 2003–2021 | CDC NCHS small-area model |
@@ -42,9 +50,17 @@ numbering scheme (counties = 3 × alphabetical index, cities from 300). SEER com
 |---|---|---|---|---|
 | Traffic crash deaths | NHTSA FARS | 2001–2024 | crash coordinates (zoom in to a state) | — |
 | Weather deaths | NOAA Storm Events | 1950–now | event start point, where recorded | — |
-| All deaths, overdose, suicide, homicide, firearm | Cook County (IL) Medical Examiner | 2014–now | ~1 km squares | residence ZIP |
+| All deaths, overdose, suicide, homicide, firearm, heart | Cook County (IL) Medical Examiner | 2014–now | ~1 km squares | residence ZIP |
 | same | Santa Clara County (CA) Medical Examiner-Coroner | 2018–now | ~1 km squares | residence ZIP |
+| same | Orange County (FL) District 9 Medical Examiner (Orange + Osceola) | 2020–now | ~1 km squares | — |
+| same | San Diego County (CA) Medical Examiner | 1997–now | ZIP of death (often a hospital) | residence ZIP |
+| Overdose, homicide, firearm, traffic | Sacramento County (CA) Coroner | 2021–now | incident ZIP | — |
+| Overdose | Allegheny County (PA) Medical Examiner, accidental overdoses (WPRDC, CC0) | 2007–now | incident ZIP | residence ZIP |
 | Overdose | Connecticut accidental drug-related deaths | 2012–2024 | town of injury | town of residence |
+| All deaths, firearm, traffic | People killed by police: Fatal Encounters 2000–21, Washington Post Fatal Force 2022–24 (CC BY-NC-SA) | 2000–2024 | ~1 km squares | — |
+| Homicide, firearm | Chicago Police (1991–2013; Cook ME covers later), NYPD murders (2006–24), Philadelphia fatal shootings (2015–now), Detroit Police homicides (2010–now, homicide only) | varies | ~1 km squares | — |
+
+Every layer keeps only counts per square/ZIP, year and category; names, case numbers, ages and addresses are dropped in the pipeline. Police killings are not shown on the homicide map because CDC counts them as legal intervention, not homicide.
 
 ## Weekly refresh
 
