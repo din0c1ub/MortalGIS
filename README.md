@@ -1,15 +1,8 @@
-# MortalGIS v2
+# MortalGIS
 
 An atlas of US county death rates built only from official public data.
 
 **Live:** https://huggingface.co/spaces/dinoclub/mortal-gis
-
-## What changed from v1
-
-v1 showed ~15,800 "records" that were mostly not deaths: CDC article headlines pinned to San Francisco,
-the same items re-added every night, state totals turned into single dots with invented ages and genders,
-and a generated 1980s–2010s backlog. v2 throws all of that away. Every number on the map comes straight from
-a source table; suppressed values stay suppressed.
 
 ## How far back each measure goes
 
