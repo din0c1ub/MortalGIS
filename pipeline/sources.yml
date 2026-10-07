@@ -1,0 +1,678 @@
+# MortalGIS source registry: every source the site uses, plus candidates we might add.
+# pipeline/coverage.py reads this file after each build and writes site/data/coverage.json and COVERAGE.md.
+# The research-queue workflow turns candidate / due / broken entries into GitHub issues.
+#
+# Fields
+#   id          short unique id (also the GitHub issue key: "[source] <id>")
+#   name, publisher, url, license
+#   access      api | download | wonder-manual (a person clicks I Agree; pulled with the Chrome script) | browser
+#   kind        county-counts | state-counts | points | model | summary | population | geography
+#   geography   county | state | point | zip | grid-1km | town
+#   place       lived | died | location        (where the death is counted)
+#   causes      cause keys from build_data.CAUSES, or "all"
+#   years       "first-last" (as published; "-" = to present)
+#   grain       year | month | day | multi-year
+#   hidden      what the publisher holds back (e.g. "1-9 deaths per county")
+#   cadence     weekly | monthly | quarterly | yearly | static | manual-yearly
+#   src         keys this source writes into each measure's d.src (build_data.SOURCES)
+#   layer       incident layer key (incidents.py), for points
+#   files       data_manual files this entry owns (globs)
+#   status      live | candidate | rejected | parked
+#   gap         (candidates) the coverage gap it fills, in plain words
+#   value       (candidates) 1-5: counties x years un-hidden or deaths located, x reliability
+#   effort      (candidates) 1-5
+#   due_after   override: days after the newest data before the source counts as due
+#   notes
+
+sources:
+  # ------------------------------------------------------------ county death counts and rates
+  - id: nber
+    name: NCHS multiple-cause-of-death public-use files (via NBER)
+    publisher: CDC NCHS / NBER
+    url: https://www.nber.org/research/data/mortality-data-vital-statistics-nchs-multiple-cause-death-data
+    license: public domain (US government)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived, died]
+    causes: [all, overdose, suicide, homicide, firearm, heart, stroke, traffic]
+    years: 1968-2004
+    grain: year
+    hidden: "none in the files; MortalGIS hides 1-9 itself. 1989-2004 files name only counties of 100,000+"
+    cadence: static
+    src: [nber, nber_partial]
+    status: live
+    notes: pipeline/history.py; rebuilt only when NCHS or NBER revise files.
+
+  - id: wonder_cmf
+    name: CDC WONDER Compressed Mortality 1979-1998 (D16)
+    publisher: CDC NCHS
+    url: https://wonder.cdc.gov/cmf-icd9.html
+    license: public domain; WONDER data use restrictions (no re-identification)
+    access: wonder-manual
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, heart, stroke, suicide, homicide, firearm, overdose]
+    years: 1989-1998
+    grain: year
+    hidden: 1-9 deaths per county
+    cadence: static
+    src: [wonder]
+    files: [wonder/wonder_cmf_*.json]
+    status: live
+    notes: Fills every county for 1989-98, where the NBER files name only large counties.
+
+  - id: wonder_ucd
+    name: CDC WONDER Underlying Cause of Death 1999-2020 (D76)
+    publisher: CDC NCHS
+    url: https://wonder.cdc.gov/ucd-icd10.html
+    license: public domain; WONDER data use restrictions
+    access: wonder-manual
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, overdose, suicide, homicide, firearm, heart, stroke, cancer, alzheimers, diabetes, liver, clrd, flu_pneumonia, kidney, falls, alcohol]
+    years: 1999-2020
+    grain: year
+    hidden: 1-9 deaths per county
+    cadence: static
+    src: [wonder]
+    files: [wonder/wonder_ucd_*.json]
+    status: live
+
+  - id: wonder_prov
+    name: CDC WONDER Provisional Mortality 2018+ (D176), by county
+    publisher: CDC NCHS
+    url: https://wonder.cdc.gov/mcd-icd10-provisional.html
+    license: public domain; WONDER data use restrictions
+    access: wonder-manual
+    kind: county-counts
+    geography: county
+    place: [lived, died]
+    causes: all-17
+    years: 2018-
+    grain: year
+    hidden: 1-9 deaths per county
+    cadence: manual-yearly
+    src: [wonder]
+    files: [wonder/wonder_prov_*.json]
+    status: live
+    notes: The only source of "where they died" after 2004 (2018 on). Re-pull each spring when the prior year becomes final, and once or twice in between for the provisional year.
+
+  - id: wonder_state_month
+    name: CDC WONDER deaths by state x month (D76 1999-2020, D176 2018+)
+    publisher: CDC NCHS
+    url: https://wonder.cdc.gov/
+    license: public domain; WONDER data use restrictions
+    access: wonder-manual
+    kind: state-counts
+    geography: state
+    place: [lived]
+    causes: all-17
+    years: 1999-
+    grain: month
+    hidden: 1-9 deaths per state-month
+    cadence: manual-yearly
+    files: [wonder/wonder_state_month_*.json]
+    status: live
+    notes: Drives the month map for every cause except overdose. Re-pull every 2-3 months to keep the provisional months current.
+
+  - id: psx4
+    name: CDC Mapping Injury, Overdose, and Violence (county)
+    publisher: CDC NCIPC
+    url: https://data.cdc.gov/d/psx4-wq38
+    license: public domain
+    access: api
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [overdose, suicide, homicide, firearm, firearm_suicide, firearm_homicide]
+    years: 2019-
+    grain: year
+    hidden: 1-9 deaths per county (modeled rates offered for some)
+    cadence: weekly
+    src: [psx4]
+    status: live
+
+  - id: cdc2020
+    name: CDC provisional county death counts, 2020
+    publisher: CDC NCHS
+    url: https://data.cdc.gov/d/6vqh-esgs
+    license: public domain
+    access: api
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, covid]
+    years: 2020
+    grain: year
+    hidden: 1-9 deaths per county
+    cadence: static
+    src: [cdc2020]
+    status: live
+
+  - id: census_deaths
+    name: Census Bureau population estimates components (county deaths, Jul-Jun years)
+    publisher: US Census Bureau
+    url: https://www.census.gov/programs-surveys/popest/data/data-sets.html
+    license: public domain
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all]
+    years: 2010-
+    grain: year
+    hidden: none
+    cadence: yearly
+    src: [census]
+    status: live
+    notes: All-cause only, never hidden; also the county population denominators.
+
+  - id: cdc_monthly_overdose
+    name: CDC provisional county drug overdose deaths (12 months ending each month)
+    publisher: CDC NCHS (VSRR)
+    url: https://data.cdc.gov/d/gb4e-yj24
+    license: public domain
+    access: api
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [overdose]
+    years: 2020-
+    grain: month
+    hidden: 1-9 deaths per county-period
+    cadence: monthly
+    status: live
+    notes: The county month map for overdose.
+
+  # ------------------------------------------------------------ models and summaries
+  - id: rpvx
+    name: CDC NCHS drug poisoning mortality, county small-area model
+    publisher: CDC NCHS
+    url: https://data.cdc.gov/d/rpvx-m2md
+    license: public domain
+    access: api
+    kind: model
+    geography: county
+    place: [lived]
+    causes: [overdose]
+    years: 2003-2021
+    grain: year
+    hidden: none (modeled estimate for every county)
+    cadence: static
+    src: [rpvx]
+    status: live
+
+  - id: atlas
+    name: CDC Atlas of Heart Disease and Stroke (ages 35+, 3-year averages)
+    publisher: CDC DHDSP
+    url: https://www.cdc.gov/heart-disease-stroke-atlas/
+    license: public domain
+    access: api
+    kind: model
+    geography: county
+    place: [lived]
+    causes: [heart, stroke]
+    years: 2015-2023
+    grain: multi-year
+    hidden: spatially smoothed, so nearly every county has a value
+    cadence: yearly
+    src: [atlas]
+    status: live
+
+  - id: chr
+    name: County Health Rankings & Roadmaps (multi-year pooled measures)
+    publisher: University of Wisconsin Population Health Institute
+    url: https://www.countyhealthrankings.org/health-data/methodology-and-sources/data-documentation
+    license: free to use with attribution
+    access: download
+    kind: summary
+    geography: county
+    place: [lived]
+    causes: [life_expectancy, premature_aamr, ypll, injury, child_mortality, infant_mortality]
+    years: 2025 release
+    grain: multi-year
+    hidden: small counties missing where pooled counts are too small
+    cadence: yearly
+    src: [chr]
+    status: live
+
+  - id: cdc_occ_res
+    name: CDC occurrence vs residence county tables
+    publisher: CDC NCHS
+    url: https://data.cdc.gov/
+    license: public domain
+    access: api
+    kind: county-counts
+    geography: county
+    place: [lived, died]
+    causes: [all]
+    years: latest
+    grain: year
+    cadence: yearly
+    status: live
+    notes: build_data.cdc_occurrence_residence.
+
+  - id: seer_pop
+    name: SEER county population estimates 1969-2024
+    publisher: NCI SEER
+    url: https://seer.cancer.gov/popdata/
+    license: public domain
+    access: download
+    kind: population
+    geography: county
+    years: 1969-2024
+    grain: year
+    cadence: yearly
+    status: live
+    notes: Denominators for 1968-2004 history and state month rates.
+
+  - id: geo
+    name: Census county boundaries (us-atlas TopoJSON) and Gazetteer places/ZCTAs
+    publisher: US Census Bureau / us-atlas
+    url: https://www.census.gov/geographies/reference-files/time-series/geo/gazetteer-files.html
+    license: public domain
+    access: download
+    kind: geography
+    cadence: yearly
+    status: live
+
+  # ------------------------------------------------------------ death locations (dot layers)
+  - id: cook_me
+    name: Cook County Medical Examiner case archive
+    publisher: Cook County, IL
+    url: https://datacatalog.cookcountyil.gov/d/cjeq-bs86
+    license: open data (Cook County terms)
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died, lived]
+    causes: [overdose, suicide, homicide, firearm, traffic]
+    years: 2014-
+    grain: day
+    hidden: none (MortalGIS grids to ~1 km)
+    cadence: weekly
+    layer: cook_county
+    status: live
+
+  - id: santa_clara_me
+    name: Santa Clara County Medical Examiner-Coroner cases
+    publisher: Santa Clara County, CA
+    url: https://data.sccgov.org/d/s3fb-yrjp
+    license: open data
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died, lived]
+    causes: [overdose, suicide, homicide, firearm, traffic]
+    years: 2018-
+    grain: day
+    cadence: weekly
+    layer: santa_clara_county
+    status: live
+
+  - id: orange_fl_me
+    name: District Nine Medical Examiner (Orange & Osceola, FL)
+    publisher: Orange County, FL GIS
+    url: https://services1.arcgis.com/0U8EQ1FrumPeIqDb/arcgis/rest/services/Cases_DeathAddress/FeatureServer/0
+    license: open data
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [overdose, suicide, homicide, firearm, traffic]
+    years: 2020-
+    grain: day
+    cadence: weekly
+    layer: orange_fl
+    status: live
+
+  - id: san_diego_me
+    name: San Diego County Medical Examiner deaths by ZIP
+    publisher: San Diego County, CA
+    url: https://data.sandiegocounty.gov/d/jkvb-n4p7
+    license: open data
+    access: api
+    kind: points
+    geography: zip
+    place: [died]
+    causes: [overdose, suicide, homicide, traffic]
+    years: 1997-
+    grain: year
+    cadence: monthly
+    layer: san_diego
+    status: live
+
+  - id: sacramento_coroner
+    name: Sacramento County Coroner cases by ZIP
+    publisher: Sacramento County, CA
+    url: https://data.saccounty.gov/
+    license: open data
+    access: api
+    kind: points
+    geography: zip
+    place: [died]
+    causes: [overdose, suicide, homicide, traffic]
+    years: 2021-
+    grain: day
+    cadence: weekly
+    layer: sacramento
+    status: live
+
+  - id: allegheny_me
+    name: Allegheny County fatal accidental overdoses
+    publisher: Allegheny County OME via WPRDC
+    url: https://data.wprdc.org/dataset/allegheny-county-fatal-accidental-overdoses
+    license: CC0
+    access: api
+    kind: points
+    geography: zip
+    place: [died, lived]
+    causes: [overdose]
+    years: 2007-
+    grain: day
+    cadence: monthly
+    layer: allegheny
+    status: live
+
+  - id: ct_ocme
+    name: Connecticut accidental drug-related deaths
+    publisher: CT Office of the Chief Medical Examiner
+    url: https://data.ct.gov/d/rybz-nyjw
+    license: open data
+    access: api
+    kind: points
+    geography: town
+    place: [died, lived]
+    causes: [overdose]
+    years: 2012-2024
+    grain: day
+    cadence: yearly
+    layer: ct_drug
+    status: live
+
+  - id: police_killings
+    name: Fatal Encounters (2000-2021) + Washington Post Fatal Force (2022-2024)
+    publisher: Fatal Encounters / The Washington Post
+    url: https://fatalencounters.org/
+    license: FE free with attribution; WaPo CC BY-NC-SA
+    access: download
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2000-2024
+    grain: day
+    cadence: static
+    layer: police
+    status: live
+    notes: WaPo stopped updating after 2024. Candidate replacement - see mpv.
+
+  - id: fra_msha
+    name: FRA rail accidents + MSHA mine accidents
+    publisher: US DOT FRA / US DOL MSHA
+    url: https://data.transportation.gov/d/85tf-25kj
+    license: public domain
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [all]
+    years: 2000-
+    grain: day
+    cadence: monthly
+    layer: other_accidents
+    status: live
+
+  - id: mother_jones
+    name: Mother Jones US mass shootings database
+    publisher: Mother Jones
+    url: https://www.motherjones.com/politics/2012/12/mass-shootings-mother-jones-full-data/
+    license: free with attribution
+    access: download
+    kind: points
+    geography: point
+    place: [died]
+    causes: [homicide, firearm]
+    years: 1982-
+    grain: day
+    cadence: monthly
+    layer: mass_shootings
+    status: live
+
+  - id: chicago_homicides
+    name: Chicago homicides (CPD), before 2014
+    publisher: City of Chicago
+    url: https://data.cityofchicago.org/d/gumc-mgzr
+    license: open data
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide, firearm]
+    years: 1991-2013
+    grain: day
+    cadence: static
+    layer: chicago_homicides
+    status: live
+    notes: 2014 on comes from the Cook County ME layer.
+
+  - id: nyc_homicides
+    name: NYPD shooting incidents (murders)
+    publisher: City of New York
+    url: https://data.cityofnewyork.us/d/833y-fsy8
+    license: open data
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2006-
+    grain: day
+    cadence: yearly
+    layer: nyc_homicides
+    status: live
+    notes: Shootings only, so non-gun homicides are missing.
+
+  - id: philly_homicides
+    name: Philadelphia fatal shooting victims
+    publisher: City of Philadelphia
+    url: https://opendataphilly.org/datasets/shooting-victims/
+    license: open data
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2015-
+    grain: day
+    cadence: weekly
+    layer: philly_homicides
+    status: live
+
+  - id: detroit_homicides
+    name: Detroit Police RMS crime incidents (homicide)
+    publisher: City of Detroit
+    url: https://data.detroitmi.gov/
+    license: open data
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide]
+    years: 2003-
+    grain: day
+    cadence: weekly
+    layer: detroit_homicides
+    status: live
+
+  - id: fars
+    name: NHTSA Fatality Analysis Reporting System
+    publisher: US DOT NHTSA
+    url: https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars
+    license: public domain
+    access: download
+    kind: points
+    geography: point
+    place: [died]
+    causes: [traffic]
+    years: 2001-2024
+    grain: day
+    hidden: none
+    cadence: yearly
+    src: [fars]
+    layer: fars
+    status: live
+    notes: Each year's file arrives 18-21 months after the year ends.
+    due_after: 700
+
+  - id: noaa
+    name: NOAA Storm Events Database
+    publisher: NOAA NCEI
+    url: https://www.ncdc.noaa.gov/stormevents/
+    license: public domain
+    access: download
+    kind: points
+    geography: county
+    place: [died]
+    causes: [weather]
+    years: 1950-
+    grain: day
+    cadence: monthly
+    src: [noaa]
+    layer: noaa
+    status: live
+
+  # ------------------------------------------------------------ candidates (the research queue)
+  - id: wonder_ucd_5yr
+    name: WONDER UCD 1999-2020, county x 5-year groups
+    publisher: CDC NCHS
+    url: https://wonder.cdc.gov/ucd-icd10.html
+    access: wonder-manual
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: all-17
+    years: 1999-2020
+    grain: multi-year
+    hidden: 1-9 deaths per county per 5 years
+    status: candidate
+    gap: About half of counties are hidden in any single year for suicide, firearm, overdose, homicide, liver, kidney, falls and alcohol. Five-year totals should un-hide most of them.
+    value: 5
+    effort: 2
+    notes: Group By County + a 5-year span (run each span as its own request). Save the query in the bundle.
+
+  - id: wonder_prov_5yr
+    name: WONDER Provisional, county x 2020-2024 (and rolling 5-year spans)
+    publisher: CDC NCHS
+    url: https://wonder.cdc.gov/mcd-icd10-provisional.html
+    access: wonder-manual
+    kind: county-counts
+    geography: county
+    place: [lived, died]
+    causes: all-17
+    years: 2018-
+    grain: multi-year
+    hidden: 1-9 deaths per county per span
+    status: candidate
+    gap: Same as wonder_ucd_5yr for recent years, and makes the "where they died" map readable in small counties.
+    value: 5
+    effort: 2
+
+  - id: ihme_county
+    name: IHME US county cause-specific mortality estimates
+    publisher: Institute for Health Metrics and Evaluation (GHDx)
+    url: https://ghdx.healthdata.org/
+    access: download
+    kind: model
+    geography: county
+    place: [lived]
+    years: verify (published series run 1980-2014 and later updates)
+    status: candidate
+    gap: Modeled rates for every county and many causes, filling hidden cells (shown hatched as modeled).
+    value: 4
+    effort: 3
+    notes: Verify current release, years, cause list and the IHME license (non-commercial terms) before use.
+
+  - id: state_portals
+    name: State vital statistics query portals with lower small-number thresholds
+    publisher: State health departments
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    status: candidate
+    gap: Some states publish county counts below 10 (e.g. hide only 1-4 or 1-5), un-hiding small counties in those states.
+    value: 3
+    effort: 4
+    notes: Research sweep needed - list states, thresholds, years, causes and terms. One issue per promising state.
+
+  - id: more_me_portals
+    name: More medical examiner / coroner open-data portals
+    publisher: County MEs and coroners
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died, lived]
+    status: candidate
+    gap: Death locations outside the 7 counties we have. Not held back like CDC counts.
+    value: 4
+    effort: 3
+    notes: Research sweep needed. Check each portal for case-level location, years, cause/manner fields and terms. Milwaukee County ME is a lead to verify.
+
+  - id: mpv
+    name: Mapping Police Violence
+    publisher: Mapping Police Violence
+    url: https://mappingpoliceviolence.org/
+    access: download
+    kind: points
+    geography: point
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2013-
+    status: candidate
+    gap: Police killings after 2024, since the Washington Post database stopped.
+    value: 3
+    effort: 2
+    notes: Verify download terms and fields.
+
+  - id: gva
+    name: Gun Violence Archive
+    publisher: Gun Violence Archive
+    url: https://www.gunviolencearchive.org/
+    access: browser
+    kind: points
+    geography: point
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2014-
+    status: candidate
+    gap: Located gun deaths nationwide, beyond the 4 cities we have.
+    value: 4
+    effort: 4
+    notes: Verify whether the terms allow redistribution of incident locations; likely needs permission.
+
+  # ------------------------------------------------------------ looked at and set aside
+  - id: nchs_restricted
+    name: NCHS restricted-use mortality files with full geography
+    publisher: CDC NCHS (Research Data Center)
+    url: https://www.cdc.gov/rdc/
+    access: browser
+    status: rejected
+    notes: Researchers only, under a data-use agreement; results can't be published at small-count county level. Not usable for a public map.
+
+  - id: nvdrs
+    name: National Violent Death Reporting System
+    publisher: CDC NCIPC
+    url: https://www.cdc.gov/nvdrs/
+    access: browser
+    status: rejected
+    notes: Public WISQARS views are state-level; case-level data is restricted.
+
+  - id: okf
+    name: Google Cloud Open Knowledge Format (dataset publishing)
+    publisher: Google Cloud
+    status: parked
+    notes: Possible publishing format for the SNLd project. Revisit after the coverage file exists; the site already has schema.org Dataset markup.
