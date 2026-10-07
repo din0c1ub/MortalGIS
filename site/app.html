@@ -237,7 +237,7 @@ details.sec .body{margin-top:8px}
     </div>
     <section class="county" id="county" aria-live="polite"></section>
     <details class="about sec"><summary>About the data &amp; sources</summary><ul class="srcs" id="srcs"></ul>
-      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where Michigan and New York publish them (outlined with dashes). The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
+      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where Michigan, New York, New Mexico and Pennsylvania publish them (outlined with dashes). The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
   </aside>
 
   <main>
@@ -399,7 +399,7 @@ function spanOf(m, p){
   return m.spans.find(sp=>{ const [a,b]=sp.split("-").map(Number); return +p>=a && +p<=b; }) || null;
 }
 const spanLbl = sp => sp.replace("-", "–");
-const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH"};  // states that publish counts CDC hides
+const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH", "35":"New Mexico DOH", "42":"Pennsylvania DOH"};  // states that publish counts CDC hides
 const fillName = i => FILLSRC[counties[i][0].slice(0,2)] || "the state health department";
 function cntArr(m, d, p){ const sp = spanOf(m,p); return sp ? (d.spans&&d.spans[sp]||{}).count : (d.count && d.count[p]); }
 function valArr(m, d, p){
