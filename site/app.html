@@ -164,7 +164,7 @@ main{position:relative;min-width:0;min-height:0}
       <div class="covkey" id="covkey"></div>
       <div id="monthWrap" hidden>
         <div class="months" id="months" role="group" aria-label="Month for the death locations"></div>
-        <div class="note" id="monthNote">Dots by month. The county colors stay yearly: monthly county counts are mostly under 10 and hidden.</div>
+        <div class="desc" id="monthNote" style="margin-top:4px">Death locations by month; county colors stay yearly.</div>
       </div>
     </div>
     <div>
@@ -204,7 +204,7 @@ main{position:relative;min-width:0;min-height:0}
 (async function(){
 const $ = s => document.querySelector(s);
 const DEFAULT = {measure:"overdose", fips:"26049"};
-const state = {measure:null, year:null, fips:DEFAULT.fips, view:"state", playing:null, where:"lived", scale:"year", month:0};
+const state = {measure:null, year:null, fips:DEFAULT.fips, view:"us", playing:null, where:"lived", scale:"year", month:0};
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const cache = {};
 const fmt = v => Math.abs(v)>=1000 ? d3.format(",.0f")(v) : d3.format(",.1f")(v);
@@ -227,8 +227,20 @@ const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).
 const ramp = () => d3.range(7).map(i=>css(`--r${i}`));
 
 // ---------- controls
-const sel = $("#measure"); const groups = d3.group(meta.measures, m=>m.group);
-for (const [g, ms] of groups){ const og=document.createElement("optgroup"); og.label=g; ms.filter(m=>m.place!=="occurrence"||!m.pair).forEach(m=>og.append(new Option(m.label,m.key))); sel.append(og); }
+const sel = $("#measure");
+const MENU = [
+  ["All causes", ["all_deaths"]],
+  ["Overdose, violence & accidents", ["overdose","suicide","homicide","firearm","firearm_suicide","firearm_homicide","traffic","falls","alcohol","weather"]],
+  ["Diseases", ["heart","cancer","stroke","clrd","alzheimers","diabetes","kidney","liver","flu_pneumonia","covid"]],
+  ["Summary measures (County Health Rankings)", ["life_expectancy","premature_aamr","ypll","injury","child_mortality","infant_mortality"]],
+  ["Other estimates", ["overdose_modeled","heart35","stroke35"]],
+];
+{ const placed = new Set();
+  for (const [g, keys] of MENU){ const og=document.createElement("optgroup"); og.label=g;
+    for (const k of keys){ const m=M.get(k); if(!m) continue; placed.add(k); og.append(new Option(m.label,k)); }
+    if (og.children.length) sel.append(og); }
+  const rest = meta.measures.filter(m=>!placed.has(m.key) && (m.place!=="occurrence"||!m.pair));
+  if (rest.length){ const og=document.createElement("optgroup"); og.label="More"; rest.forEach(m=>og.append(new Option(m.label,m.key))); sel.append(og); } }
 $("#countylist").innerHTML = counties.map(c=>`<option value="${label(c)}"></option>`).join("");
 const byLabel = new Map(counties.map(c=>[label(c).toLowerCase(), c[0]]));
 
@@ -358,19 +370,27 @@ function writeHash(){
 function render(){
   writeHash(); drawMonths();
   const m = M.get(state.measure), d = cache[state.measure], p = state.year;
-  const vals = valArr(m, d, p), b = breaks(m, d, p), R = ramp();
+  let vals = valArr(m, d, p), b = breaks(m, d, p), R = ramp();
+  const moMode = !!state.month && monthChoro();
+  if (moMode){
+    if (!cache._moAll){ loadMonthlyAll().then(()=>render()); }
+    const mv = monthVals();
+    if (mv){ vals = mv; const pos = mv.filter(v=>v!=null&&v>0).sort(d3.ascending);
+      b = {q: d3.range(1,7).map(k=>+d3.quantile(pos, k/7).toFixed(1))}; }
+  }
   const cols = m.higherIsBetter ? R.slice().reverse() : R;
   const scale = d3.scaleThreshold().domain(b.q).range(cols);
   const nodata = css("--nodata");
   const cnt = d.count && d.count[p];
   cPaths.attr("fill", f=>{ const i=idx.get(f.id); const v = vals ? vals[i] : null;
     if (v==null) return nodata; if (v===0) return css("--r0"); return scale(v); });
-  $("#pval").textContent = periodLabel(m,p);
+  $("#pval").textContent = moMode ? `${MON[state.month-1]} ${p}` : periodLabel(m,p);
   drawLegend(b, cols, m, d, p);
-  drawHatch();
+  if (moMode) hatchG.selectAll("*").remove(); else drawHatch();
   const n = vals ? vals.filter(v=>v!=null).length : 0;
   const s = d.src && d.src[p];
-  $("#status").textContent = vals ? `${fmtI(n)} of ${fmtI(counties.length)} counties · ${periodLabel(m,p)}${s?` · ${(SRC[s]||{}).label||s}`:""}` : `No county data for ${p}`;
+  $("#status").textContent = moMode ? `${fmtI(n)} counties · 12 months ending ${MON[state.month-1]} ${p} · CDC provisional county overdose counts`
+    : (vals ? `${fmtI(n)} of ${fmtI(counties.length)} counties · ${periodLabel(m,p)}${s?` · ${(SRC[s]||{}).label||s}`:""}` : `No county data for ${p}`);
   const gap = $("#gapnote");
   if (!vals){
     const why = (m.place==="occurrence" && +p>=2005) ? "Counts by the county where the death happened aren't published for these years. Switch to \u201cWhere they lived\u201d for every year." : "This source doesn't cover this year.";
@@ -422,7 +442,7 @@ function drawCoverage(m, d){
   $("#covkey").innerHTML = [`<span><i style="background:var(--r5)"></i>Every county</span>`,
     hasPartial?`<span><i style="background:var(--r2)"></i>Large counties only</span>`:"",
     hasGap?`<span><i style="background:var(--line)"></i>No data</span>`:"",
-    (m.icdBreaks||[]).length?`<span>┊ cause-coding change</span>`:""].join("");
+    (m.icdBreaks||[]).some(y=>tl.includes(String(y)) && tl[0]!==String(y))?`<span>┊ cause-coding change</span>`:""].join("");
   markCoverage();
 }
 function markCoverage(){
@@ -508,13 +528,34 @@ function activeLayers(){
   return m.points.map(pt=>({pt, l:L.get(pt.layer)})).filter(({l})=>l && l.years.includes(y) && (state.where==="died" || l.hasLived || m.place==="occurrence"));
 }
 // ---------- month-by-month dots
-function monthCapable(){ return activeLayers().some(({l})=>l.hasMonthly || l.kind==="fars"); }
+// County colors by month exist for one series: CDC's provisional overdose counts, 12 months ending each month, 2020–.
+function moChoroYears(){ const r=(meta.monthly||{}).months; return r ? [+r[0].slice(0,4), +r[1].slice(0,4)] : null; }
+function monthChoro(){
+  const r = moChoroYears();
+  return !!r && state.measure==="overdose" && state.where==="lived" && state.year!=="TTM" && +state.year>=r[0] && +state.year<=r[1];
+}
+async function loadMonthlyAll(){
+  if (cache._moAll) return cache._moAll;
+  const sts = [...new Set(counties.map(c=>c[0].slice(0,2)))];
+  const parts = await Promise.all(sts.map(st=>fetch(`data/monthly/${st}.json`).then(r=>r.ok?r.json():null).catch(()=>null)));
+  const out = {months:null, series:{}};
+  for (const p of parts){ if(!p) continue; out.months = out.months || p.months; Object.assign(out.series, p.series); }
+  cache._moAll = out; return out;
+}
+function monthVals(){
+  const mo = cache._moAll; if(!mo || !mo.months) return null;
+  const k = mo.months.indexOf(`${state.year}-${String(state.month).padStart(2,"0")}`); if (k<0) return null;
+  return counties.map((c,i)=>{ const s=mo.series[c[0]], pop=meta.population[i]; const v=s&&s[k]; return (v==null||!pop) ? null : v/pop*1e5; });
+}
+function monthCapable(){ return monthChoro() || activeLayers().some(({l})=>(l.hasMonthly && state.where==="died") || l.kind==="fars"); }
 function drawMonths(){
   const w = $("#monthWrap"), cap = monthCapable() && state.year!=="TTM";
   w.hidden = !cap; if (!cap){ if(state.month){ state.month=0; } return; }
   $("#months").innerHTML = `<button type="button" class="all" data-m="0" aria-pressed="${!state.month}" title="Whole year">Year</button>` +
     MON.map((n,i)=>`<button type="button" data-m="${i+1}" aria-pressed="${state.month===i+1}" title="${n}">${n[0]}</button>`).join("");
   $("#months").querySelectorAll("button").forEach(b=>b.onclick=()=>{ state.month=+b.dataset.m; drawMonths(); render(); });
+  $("#monthNote").textContent = monthChoro() ? "By month: county colors show overdose deaths in the 12 months ending that month (CDC provisional)."
+    : "Death locations by month; county colors stay yearly.";
 }
 function drawPoints(){
   if (!W) return;
@@ -570,7 +611,7 @@ function drawPoints(){
     for (const r of rows){ if (r[2]!==yi) continue;
       const n = r[ci]; if(!n) continue;
       const p = projection([r[0],r[1]]); if(!p) continue;
-      const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-20||x>W+20||yy<-20||yy>H+20) { any++; continue; }
+      const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-20||x>W+20||yy<-20||yy>H+20) continue;
       any++;
       if (grid){
         ctx.globalAlpha = Math.min(.95, .2 + Math.log2(1+n)*.17);
@@ -618,7 +659,12 @@ async function renderCounty(){
   const i = idx.get(state.fips); const c = counties[i]; const m = M.get(state.measure), d = cache[state.measure], p = state.year;
   const vals = valArr(m,d,p) || []; const st = c[0].slice(0,2);
   const rU = vals.length ? rankOf(vals,i,m.higherIsBetter) : null, rS = vals.length ? rankOf(vals,i,m.higherIsBetter,j=>counties[j][0].slice(0,2)===st) : null;
-  const med = d3.median(vals.filter(v=>v!=null)), medS = d3.median(vals.filter((v,j)=>v!=null&&counties[j][0].slice(0,2)===st));
+  // When most counties are hidden (1–9 deaths) or zero, a plain median lands on 0 and says nothing.
+  // Then use the median of counties with a published, non-zero rate, and say so.
+  const sparse = vals.length && vals.filter(v=>v==null||v===0).length > vals.length*0.25 && !isCount(m);
+  const keep = v => v!=null && (!sparse || v>0);
+  const med = d3.median(vals.filter(keep)), medS = d3.median(vals.filter((v,j)=>keep(v)&&counties[j][0].slice(0,2)===st));
+  const medLbl = sparse ? " median*" : " median";
   const cnt = isCount(m) ? null : countText(d,i,p), pop = meta.population[i];
   const worst = m.higherIsBetter ? "lowest" : "highest";
   const srcKey = d.src && d.src[p];
@@ -630,8 +676,9 @@ async function renderCounty(){
     ${cnt?`<dt>Deaths</dt><dd>${cnt}</dd>`:""}
     ${rS?`<dt>Rank in ${c[2]}</dt><dd>${rS.rank} of ${rS.of} (1 = ${worst})</dd>`:""}
     ${rU?`<dt>Rank in US</dt><dd>${fmtI(rU.rank)} of ${fmtI(rU.of)}</dd>`:""}
-    <dt>${c[2]} median</dt><dd>${medS!=null?fmt(medS):"—"}</dd>
-    <dt>US county median</dt><dd>${med!=null?fmt(med):"—"}</dd>
+    <dt>${c[2]}${medLbl}</dt><dd>${medS!=null?fmt(medS):"—"}</dd>
+    <dt>US county${medLbl}</dt><dd>${med!=null?fmt(med):"—"}</dd>
+    ${sparse?`<dt style="grid-column:1/-1;font-size:11.5px;color:var(--muted)">* among counties with enough deaths to publish a rate</dt>`:""}
   </dl>
   <div class="chart" id="trend"></div><div class="chart" id="monthly"></div><div class="allm" id="allm"></div>`;
   $("#county").innerHTML = h;
@@ -686,14 +733,17 @@ async function drawMonthly(i, st){
 }
 async function drawAll(i){
   const rows=[];
-  for(const m of meta.measures){
-    if(["firearm_suicide","firearm_homicide"].includes(m.key)) continue;
-    const d=await load(m.key); const p=m.defaultPeriod; const vals=valArr(m,d,p); if(!vals) continue; const v=vals[i];
+  if (!cache._latest) cache._latest = await fetch("data/latest.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+  const order = MENU.flatMap(([,ks])=>ks);
+  const keys = Object.keys(cache._latest).sort((a,b)=>(order.indexOf(a)+1||99)-(order.indexOf(b)+1||99));
+  for(const k of keys){
+    const m=M.get(k); if(!m || ["firearm_suicide","firearm_homicide"].includes(k)) continue;
+    const {p, v:raw} = cache._latest[k]; const vals = raw.map(x=>x==null||x<0?null:x); const v=vals[i];
     let pc=null; if(v!=null){ const pool=vals.filter(x=>x!=null); pc = pool.filter(x=>x<v).length/pool.length; }
     rows.push({m,v,pc,p});
   }
   if(state.fips!==counties[i][0]) return;
-  $("#allm").innerHTML = `<h4>Every measure, latest year · position among US counties</h4><table>${rows.map(r=>`<tr data-k="${r.m.key}"><td>${r.m.label}${r.m.place==='occurrence'&&r.m.pair?' (where they died)':''}<div class="desc" style="margin:0">${periodLabel(r.m,r.p)}</div></td><td class="v">${r.v==null?"—":fmt(r.v)}</td><td class="p">${r.pc==null?"":`<div class="pbar" title="Higher than ${pct(r.pc)} of counties"><i style="left:calc(${(r.pc*100).toFixed(1)}% - 1px)"></i></div>`}</td></tr>`).join("")}</table><div class="desc">Tick = where this county sits from lowest (left) to highest (right).</div>`;
+  $("#allm").innerHTML = `<h4>Every measure, latest year · position among US counties</h4><table>${rows.map(r=>`<tr data-k="${r.m.key}"><td>${r.m.label}<div class="desc" style="margin:0">${periodLabel(r.m,r.p)}</div></td><td class="v">${r.v==null?"—":fmt(r.v)}</td><td class="p">${r.pc==null?"":`<div class="pbar" title="Higher than ${pct(r.pc)} of counties"><i style="left:calc(${(r.pc*100).toFixed(1)}% - 1px)"></i></div>`}</td></tr>`).join("")}</table><div class="desc">Tick = where this county sits from lowest (left) to highest (right).</div>`;
   $("#allm").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{ const m=M.get(tr.dataset.k); if(m.place==="occurrence"&&m.pair){ state.where="died"; } else if(m.pair){ state.where="lived"; } $("#wLived").setAttribute("aria-pressed", state.where==="lived"); $("#wDied").setAttribute("aria-pressed", state.where==="died"); setMeasure(tr.dataset.k); });
 }
 function renderSources(){
@@ -748,7 +798,7 @@ if (state.where==="died"){ $("#wLived").setAttribute("aria-pressed", false); $("
 await setMeasure(m0key, !!H0.y);
 drawSel();
 if (H0.c && idx.has(H0.c)) renderCounty();
-setTimeout(()=>setView(["us","state","county"].includes(H0.v) ? H0.v : "state"), 50);
+setTimeout(()=>setView(["us","state","county"].includes(H0.v) ? H0.v : "us"), 50);
 })();
 
 </script>
