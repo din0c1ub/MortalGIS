@@ -311,8 +311,31 @@ def wonder_imports():
     report = []
     files = []
     if WONDER_DIR.exists():
-        files = sorted(p for p in WONDER_DIR.iterdir() if p.suffix.lower() in (".txt", ".tsv", ".csv"))
+        files = sorted(p for p in WONDER_DIR.iterdir() if p.suffix.lower() in (".txt", ".tsv", ".csv", ".json"))
     for path in files:
+        if path.suffix.lower() == ".json":
+            # Bundle saved by the in-browser WONDER export script: {"data": {cause: {year: {fips: deaths}}}}
+            # (-1 = suppressed). County of residence.
+            try:
+                bundle = json.loads(path.read_text())
+            except ValueError:
+                log(f"  ! {path.name}: not valid JSON")
+                continue
+            place = bundle.get("place", "res")
+            for cause, years in (bundle.get("data") or {}).items():
+                if cause not in ("all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke"):
+                    continue
+                n = 0
+                for y, cells in years.items():
+                    cell = out[(cause, place)][str(y)]
+                    for f, v in cells.items():
+                        f = CENSUS_MERGE.get(f.zfill(5), f.zfill(5))
+                        v = int(v)
+                        cell[f] = (cell[f] + v if (cell[f] >= 0 and v >= 0) else -1) if f in cell else v
+                        n += 1
+                log(f"  WONDER {path.name}: {n:,} county-years ({cause}, {'residence' if place == 'res' else 'occurrence'})")
+                report.append({"file": path.name, "cause": cause, "place": place, "ok": True, "countyYears": n})
+            continue
         text = path.read_text(encoding="utf-8-sig", errors="replace")
         m = re.match(r"(all|overdose|suicide|homicide|firearm|heart|stroke)_(residence|occurrence)", path.stem.lower())
         if m:
