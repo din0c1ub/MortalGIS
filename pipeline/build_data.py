@@ -733,6 +733,20 @@ def build(out_dir: Path, chr_year: int):
         (out_dir / f"m_{k}.json").write_text(json.dumps(v, separators=(",", ":")))
     (out_dir / "counties-10m.json").write_text(json.dumps(topo, separators=(",", ":")))
 
+    # latest.json: each measure's default period only, so the county panel's "every measure" list
+    # doesn't have to download every measure file (~40 MB) when a county is clicked
+    latest = {}
+    for m in measures:
+        if m.get("place") == "occurrence" and m.get("pair"):
+            continue
+        v, p = values[m["key"]], m["defaultPeriod"]
+        arr = (v.get("rate") or {}).get(p)
+        if arr is None and m.get("colorBy") == "count":
+            arr = (v.get("count") or {}).get(p)
+        if arr is not None:
+            latest[m["key"]] = {"p": p, "v": arr}
+    (out_dir / "latest.json").write_text(json.dumps(latest, separators=(",", ":")))
+
     # ------------------------------------------------ validation report
     report = {"unmatched_fips": {k: sorted(v)[:50] for k, v in unmatched.items()}, "coverage": {}, "incident_sources": status}
     for m in measures:
