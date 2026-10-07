@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write   # research queue: candidate / refresh-due / registry issues
     env:
       HF_TOKEN: ${{ secrets.MF_MORTAL_TOKEN || secrets.HF_TOKEN }}  # MF_MORTAL_TOKEN: fine-grained, write access to the Space only
     steps:
@@ -22,14 +23,17 @@ jobs:
 
       - name: Build data (fails if a core source collapses)
         run: |
-          pip install -q pandas
+          pip install -q pandas pyyaml
           python pipeline/build_data.py && python pipeline/wrap_index.py
+
+      - name: Coverage report (what we have, what's hidden, what's due)
+        run: python pipeline/coverage.py
 
       - name: Commit refreshed data
         run: |
           git config user.name "MortalGIS bot"
           git config user.email "actions@users.noreply.github.com"
-          git add site/
+          git add site/ COVERAGE.md
           git diff --cached --quiet && echo "No data changes" || git commit -m "data: weekly refresh [skip ci]"
           git push
 
@@ -46,3 +50,10 @@ jobs:
           api.upload_folder(repo_id=os.environ["HF_SPACE"], repo_type="space", folder_path="site",
                             commit_message="Weekly data refresh", delete_patterns=["assets/*", "server.cjs*"])
           PY
+
+      - name: Sync the research queue to GitHub Issues
+        if: always() && hashFiles('site/data/coverage.json') != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python pipeline/sync_issues.py
