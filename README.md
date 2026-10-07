@@ -106,11 +106,13 @@ published. `site/data/validation.json` lists county coverage for every measure a
 CDC hides county counts of 1–9. Three things recover most of them:
 - **5-year totals** (switch under the year slider): WONDER county totals over 1999–2003 … 2021–2025. Suicide goes
   from ~57% of counties hidden to ~21%, firearm 59% → 27%, stroke 32% → 6%. Rare causes (homicide, falls) barely move.
-- **States that publish small counts** (`pipeline/statefill.py`): Michigan DHHS and New York State DOH. Used only for
+- **States that publish small counts** (`pipeline/statefill.py`): Michigan DHHS, New York State DOH, New Mexico DOH (IBIS)
+  and Pennsylvania DOH (EDDIE); NM and PA are Chrome pulls saved in `data_manual/states/`. Used only for
   cells CDC hid, only for causes whose definition matches CDC's, and only when the state's numbers agree with CDC's
   wherever CDC does publish (90%+ within 10% or 2 deaths). Filled counties get a dashed outline and say where the
   number came from.
-- **Death locations** from medical examiners and police, which aren't held back.
+- **Death locations** from medical examiners and police, which aren't held back. People killed by police: Fatal
+  Encounters 2000–2012 and Mapping Police Violence 2013– (trimmed copy in `data_manual/mpv/`, refreshed by hand).
 
 ## Layout
 
