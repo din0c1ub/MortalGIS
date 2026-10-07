@@ -14,6 +14,13 @@ bottom of each file. If you prefer, name them `<cause>_<residence|occurrence>_<a
 
 Check files before uploading: `python pipeline/check_wonder.py path/to/*.csv`. Every file should say OK.
 
+**Record every pull.** After adding or replacing a file, run `python pipeline/check_wonder.py --record`.
+It adds a line per new file version to `manifest.jsonl` (export date, the query when the bundle has one,
+causes, years, cells, hidden cells, checksum). `pipeline/coverage.py` uses it to say when a pull is due,
+and every file must be listed under `files:` for an entry in `pipeline/sources.yml`, or the weekly build
+opens a "[registry] Unregistered data files" issue. Bundles made by the Chrome script should carry a
+`query` object (dataset, groupings, codes, years) so the pull can be repeated exactly.
+
 ## Export A — where people lived, 1999–2020 (7 files, the important ones)
 
 1. Open <https://wonder.cdc.gov/ucd-icd10.html> → **I Agree** to the data use restrictions.
