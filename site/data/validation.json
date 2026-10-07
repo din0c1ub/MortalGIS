@@ -1738,6 +1738,18 @@
    "ok": true,
    "latest": "2026-08-03"
   },
+  "milwaukee": {
+   "ok": true,
+   "latest": "2025-11-30"
+  },
+  "pima": {
+   "ok": true,
+   "latest": "2026-07-28"
+  },
+  "cuyahoga": {
+   "ok": true,
+   "latest": "2026-07"
+  },
   "ct_drug": {
    "ok": true,
    "latest": "2024"
