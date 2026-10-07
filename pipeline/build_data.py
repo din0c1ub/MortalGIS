@@ -529,11 +529,7 @@ def build(out_dir: Path, chr_year: int):
     for cause in CAUSES:
         key = "all_deaths" if cause == "all" else cause
         nb_res, nb_occ = hist(f"nber_{cause}_res"), hist(f"nber_{cause}_occ")
-        pts = []
-        if cause in me_cat:
-            pts = [{"layer": "cook_county", "cat": me_cat[cause]}, {"layer": "santa_clara_county", "cat": me_cat[cause]}]
-            if cause == "overdose":
-                pts.append({"layer": "ct_drug", "cat": 1})
+        pts = []  # point layers are attached after the incident layers are built (see attach_points)
         for place in ("res", "occ"):
             s_ = Series()
             for y, counts in sorted(wonder.get((cause, place), {}).items()):
@@ -681,6 +677,14 @@ def build(out_dir: Path, chr_year: int):
                                 "years": sorted(int(y) for y in json.loads((pdir / "noaa.json").read_text())),
                                 "area": "United States", "diedNote": "deadly weather events with a recorded location",
                                 "source": SOURCES["noaa"]["label"], "sourceUrl": SOURCES["noaa"]["url"]})
+
+    # attach point layers to the measures they match, from each layer's "show" {cause: category}
+    for m in measures:
+        base = m["key"].removesuffix("_died")
+        cause = "all" if base == "all_deaths" else base
+        extra = [{"layer": l["key"], "cat": l["show"][cause]} for l in incident_layers if cause in (l.get("show") or {})]
+        if extra:
+            m["points"] = (m.get("points") or []) + extra
 
     population = aligned(chr_["population"], "population")
     meta = {
