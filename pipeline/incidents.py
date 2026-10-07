@@ -113,6 +113,7 @@ class Acc:
 
     def __init__(self):
         self.died, self.lived, self.labels = defaultdict(lambda: [0] * NC), defaultdict(lambda: [0] * NC), {}
+        self.monthly = defaultdict(lambda: [0] * NC)  # (lon, lat, year, month) for the place of death
         self.years, self.n, self.latest = set(), 0, ""
 
     def add(self, y, cats, died=None, lived=None, dlabel=None, llabel=None, date=""):
@@ -121,6 +122,11 @@ class Acc:
         self.n += 1
         self.years.add(y)
         self.latest = max(self.latest, str(date)[:10])
+        mo = str(date)[5:7]
+        if died and mo.isdigit() and 1 <= int(mo) <= 12 and str(date)[:4] == str(y):
+            c = self.monthly[(*died, y, int(mo))]
+            for k in cats:
+                c[k] += 1
         for pt, bucket, lab in ((died, self.died, dlabel), (lived, self.lived, llabel)):
             if pt:
                 c = bucket[(*pt, y)]
@@ -139,6 +145,7 @@ def layer(key, label, area, acc, *, kind, what, show, source, url, died_note, li
         "key": key, "label": label, "kind": kind, "what": what, "area": area, "years": years, "cats": CATS,
         "show": show, "hasLived": bool(acc.lived), "latest": acc.latest or str(years[-1]), "cases": acc.n, "color": color,
         "died": _pack(acc.died, years, acc.labels), "lived": _pack(acc.lived, years, acc.labels),
+        "monthly": [[lon, lat, years.index(y), m, *c] for (lon, lat, y, m), c in acc.monthly.items() if y in years],
         "diedNote": died_note, "livedNote": lived_note or "", "source": source, "sourceUrl": url,
     }
 
@@ -430,9 +437,12 @@ def build_incidents(out_dir, status: dict):
     for key, fn in jobs:
         try:
             layer = fn()
-            if True:
-                (out_dir / "points" / f"{layer['key']}.json").write_text(
-                    json.dumps({"died": layer.pop("died"), "lived": layer.pop("lived")}, separators=(",", ":")))
+            (out_dir / "points" / f"{layer['key']}.json").write_text(
+                json.dumps({"died": layer.pop("died"), "lived": layer.pop("lived")}, separators=(",", ":")))
+            monthly = layer.pop("monthly", None)
+            if monthly:  # month-by-month dots, loaded only when the viewer switches to months
+                (out_dir / "points" / f"{layer['key']}_m.json").write_text(json.dumps(monthly, separators=(",", ":")))
+                layer["hasMonthly"] = True
             layer["fetched"] = datetime.utcnow().strftime("%Y-%m-%d")
             layers.append(layer)
             status[key] = {"ok": True, "latest": layer.get("latest")}

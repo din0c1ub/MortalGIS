@@ -270,7 +270,8 @@ def cdc_occurrence_residence():
 
 # ---------------------------------------------------------------- WONDER drop-in
 WONDER_DIR = ROOT / "data_manual" / "wonder"
-CAUSES = ["all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke"]
+CAUSES = ["all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke",
+          "cancer", "alzheimers", "diabetes", "liver", "clrd", "flu_pneumonia", "kidney", "covid", "falls", "alcohol"]
 
 
 def wonder_cause_from_notes(text):
@@ -323,7 +324,7 @@ def wonder_imports():
                 continue
             place = bundle.get("place", "res")
             for cause, years in (bundle.get("data") or {}).items():
-                if cause not in ("all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke"):
+                if cause not in CAUSES:
                     continue
                 n = 0
                 for y, cells in years.items():
@@ -516,13 +517,30 @@ def build(out_dir: Path, chr_year: int):
 
     psx4_key = {"overdose": "Drug_OD", "suicide": "All_Suicide", "homicide": "All_Homicide", "firearm": "FA_Deaths"}
     labels = {"all": "All deaths", "overdose": "Drug overdose deaths", "suicide": "Suicide deaths", "homicide": "Homicide deaths",
-              "firearm": "Firearm deaths", "heart": "Heart disease deaths", "stroke": "Stroke deaths"}
+              "firearm": "Firearm deaths", "heart": "Heart disease deaths", "stroke": "Stroke deaths",
+              "cancer": "Cancer deaths", "alzheimers": "Alzheimer's disease deaths", "diabetes": "Diabetes deaths",
+              "liver": "Liver disease & cirrhosis deaths", "clrd": "Chronic lung disease deaths (COPD, asthma)",
+              "flu_pneumonia": "Flu & pneumonia deaths", "kidney": "Kidney disease deaths", "covid": "COVID-19 deaths",
+              "falls": "Fall deaths (accidental)", "alcohol": "Alcohol-induced deaths"}
     descs = {"all": "Deaths from any cause.", "overdose": "Drug overdose (poisoning) deaths of any intent.",
              "suicide": "Deaths by suicide, all methods.", "homicide": "Deaths by homicide, all methods.",
              "firearm": "Deaths involving a firearm, all intents.", "heart": "Deaths with heart disease as the underlying cause, all ages.",
-             "stroke": "Deaths with stroke as the underlying cause, all ages."}
+             "stroke": "Deaths with stroke as the underlying cause, all ages.",
+             "cancer": "Deaths with a malignant cancer (ICD-10 C00–C97) as the underlying cause.",
+             "alzheimers": "Deaths with Alzheimer's disease (G30) as the underlying cause.",
+             "diabetes": "Deaths with diabetes (E10–E14) as the underlying cause.",
+             "liver": "Chronic liver disease and cirrhosis (K70, K73–K74), including alcoholic liver disease.",
+             "clrd": "Chronic lower respiratory diseases (J40–J47): COPD, emphysema, chronic bronchitis and asthma.",
+             "flu_pneumonia": "Influenza and pneumonia (J09–J18) as the underlying cause.",
+             "kidney": "Nephritis, nephrotic syndrome and nephrosis (N00–N07, N17–N19, N25–N27): mostly kidney failure.",
+             "covid": "Deaths with COVID-19 (U07.1) as the underlying cause, 2020 onward.",
+             "falls": "Unintentional falls (W00–W19), counted where the person lived. Most are adults over 75.",
+             "alcohol": "Deaths caused directly by alcohol: alcoholic liver disease, alcohol poisoning and other alcohol-induced causes."}
     groups_of = {"all": "All causes", "overdose": "Injury & violence", "suicide": "Injury & violence", "homicide": "Injury & violence",
-                 "firearm": "Injury & violence", "heart": "Natural causes", "stroke": "Natural causes"}
+                 "firearm": "Injury & violence", "heart": "Natural causes", "stroke": "Natural causes",
+                 "cancer": "Natural causes", "alzheimers": "Natural causes", "diabetes": "Natural causes", "liver": "Natural causes",
+                 "clrd": "Natural causes", "flu_pneumonia": "Natural causes", "kidney": "Natural causes", "covid": "Natural causes",
+                 "falls": "Injury & violence", "alcohol": "Injury & violence"}
     me_cat = {"all": 0, "overdose": 1, "suicide": 2, "homicide": 3, "firearm": 4}
     ttm_label = {"TTM": f"Last 12 mo ({ttm_range})"} if ttm_range else {}
 
@@ -533,6 +551,8 @@ def build(out_dir: Path, chr_year: int):
         for place in ("res", "occ"):
             s_ = Series()
             for y, counts in sorted(wonder.get((cause, place), {}).items()):
+                if cause == "covid" and int(y) < 2020:  # the U07.1 code did not exist before 2020
+                    continue
                 c, r = from_counts(counts, y)
                 s_.add(y, r, c, "wonder")
             if place == "res":
@@ -677,6 +697,12 @@ def build(out_dir: Path, chr_year: int):
                                 "years": sorted(int(y) for y in json.loads((pdir / "noaa.json").read_text())),
                                 "area": "United States", "diedNote": "deadly weather events with a recorded location",
                                 "source": SOURCES["noaa"]["label"], "sourceUrl": SOURCES["noaa"]["url"]})
+
+    # drop "where they died" pairs whose partner measure had no data
+    keys = {m["key"] for m in measures}
+    for m in measures:
+        if m.get("pair") and m["pair"] not in keys:
+            m.pop("pair")
 
     # attach point layers to the measures they match, from each layer's "show" {cause: category}
     for m in measures:
