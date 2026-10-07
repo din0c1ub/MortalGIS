@@ -358,7 +358,7 @@ function render(){
   $("#status").textContent = vals ? `${fmtI(n)} of ${fmtI(counties.length)} counties · ${periodLabel(m,p)}${s?` · ${(SRC[s]||{}).label||s}`:""}` : `No county data for ${p}`;
   const gap = $("#gapnote");
   if (!vals){
-    const why = (+p>=2005 && +p<=2018 && m.hasCounts && m.icdBreaks) ? "Public county death files stop in 2004 and CDC's current tables start in 2019. A CDC WONDER export fills these years (see the README)." : "This source doesn't cover this year.";
+    const why = (m.place==="occurrence" && +p>=2005) ? "Counts by the county where the death happened aren't published for these years. Switch to \u201cWhere they lived\u201d for every year." : "This source doesn't cover this year.";
     gap.hidden=false; gap.innerHTML = `<b>No county data for ${p}.</b> ${why}`;
   } else if (s && SRC[s] && SRC[s].partial){
     gap.hidden=false; gap.innerHTML = `<b>${p}: large counties only.</b> NCHS public files from 1989 to 2004 identify only counties of 100,000+ people.`;
