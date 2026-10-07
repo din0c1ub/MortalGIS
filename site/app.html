@@ -69,6 +69,10 @@ details.about summary{cursor:pointer;font:500 11px var(--f-body);text-transform:
 .legkeys i{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
 .legkeys .hz{background-image:repeating-linear-gradient(45deg,var(--hatch) 0 1.5px,transparent 1.5px 4px)}
 #cov{display:block;width:100%;height:auto;margin-top:6px;overflow:visible}
+.months{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-top:8px}
+.months button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:3px 0;font-size:11px;cursor:pointer;font-family:var(--f-mono,inherit)}
+.months button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.months button.all{grid-column:span 1;font-size:10px}
 #cov text{font:400 9.5px var(--f-data);fill:var(--muted)}
 .covkey{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:2px}
 .covkey i{display:inline-block;width:10px;height:8px;margin-right:4px;vertical-align:0}
@@ -158,6 +162,10 @@ main{position:relative;min-width:0;min-height:0}
       </div>
       <svg id="cov" viewBox="0 0 320 22" role="img" aria-label="Years with data"></svg>
       <div class="covkey" id="covkey"></div>
+      <div id="monthWrap" hidden>
+        <div class="months" id="months" role="group" aria-label="Month for the death locations"></div>
+        <div class="note" id="monthNote">Dots by month. The county colors stay yearly: monthly county counts are mostly under 10 and hidden.</div>
+      </div>
     </div>
     <div>
       <span class="lbl">View</span>
@@ -196,7 +204,8 @@ main{position:relative;min-width:0;min-height:0}
 (async function(){
 const $ = s => document.querySelector(s);
 const DEFAULT = {measure:"overdose", fips:"26049"};
-const state = {measure:null, year:null, fips:DEFAULT.fips, view:"state", playing:null, where:"lived", scale:"year"};
+const state = {measure:null, year:null, fips:DEFAULT.fips, view:"state", playing:null, where:"lived", scale:"year", month:0};
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const cache = {};
 const fmt = v => Math.abs(v)>=1000 ? d3.format(",.0f")(v) : d3.format(",.1f")(v);
 const fmtN = v => Number.isInteger(v) ? d3.format(",")(v) : d3.format(",.1f")(v);
@@ -259,7 +268,7 @@ function zoomTo(gj, pad=.12){
   svg.transition().duration(650).call(zoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2));
 }
 function setView(v){
-  state.view=v;
+  state.view=v; writeHash();
   document.querySelectorAll("#views button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.view===v));
   const st = state.fips.slice(0,2);
   $("#views [data-view=state]").textContent = counties[idx.get(state.fips)][2] || "State";
@@ -331,7 +340,23 @@ function nearestYear(m, y){
   if (!y || y==="TTM" || !nums.length) return m.defaultPeriod;
   return nums.reduce((a,b)=>Math.abs(b-y)<Math.abs(a-y)?b:a, m.defaultPeriod);
 }
+// ---------- shareable links: #m=overdose&y=2024&w=lived&v=state&c=26049
+function readHash(){
+  try { return Object.fromEntries(new URLSearchParams(location.hash.slice(1))); } catch(e){ return {}; }
+}
+let hashTimer = null;
+function writeHash(){
+  clearTimeout(hashTimer);
+  hashTimer = setTimeout(()=>{
+    const m = M.get(state.measure); if(!m) return;
+    const base = (m.place==="occurrence" && m.pair) ? m.pair : state.measure;
+    const h = new URLSearchParams({m: base, y: state.year, w: state.where, v: state.view, c: state.fips});
+    if (state.month) h.set("mo", state.month);
+    try { history.replaceState(null, "", "#"+h.toString()); } catch(e){}
+  }, 250);
+}
 function render(){
+  writeHash(); drawMonths();
   const m = M.get(state.measure), d = cache[state.measure], p = state.year;
   const vals = valArr(m, d, p), b = breaks(m, d, p), R = ramp();
   const cols = m.higherIsBetter ? R.slice().reverse() : R;
@@ -482,6 +507,15 @@ function activeLayers(){
   if (!m || !m.points || !y) return [];
   return m.points.map(pt=>({pt, l:L.get(pt.layer)})).filter(({l})=>l && l.years.includes(y) && (state.where==="died" || l.hasLived || m.place==="occurrence"));
 }
+// ---------- month-by-month dots
+function monthCapable(){ return activeLayers().some(({l})=>l.hasMonthly || l.kind==="fars"); }
+function drawMonths(){
+  const w = $("#monthWrap"), cap = monthCapable() && state.year!=="TTM";
+  w.hidden = !cap; if (!cap){ if(state.month){ state.month=0; } return; }
+  $("#months").innerHTML = `<button type="button" class="all" data-m="0" aria-pressed="${!state.month}" title="Whole year">Year</button>` +
+    MON.map((n,i)=>`<button type="button" data-m="${i+1}" aria-pressed="${state.month===i+1}" title="${n}">${n[0]}</button>`).join("");
+  $("#months").querySelectorAll("button").forEach(b=>b.onclick=()=>{ state.month=+b.dataset.m; drawMonths(); render(); });
+}
 function drawPoints(){
   if (!W) return;
   ctx.clearRect(0,0,W,H); drawn = [];
@@ -490,12 +524,13 @@ function drawPoints(){
   for (const {pt, l} of act){
     const col = css(lcol(l));
     if (l.kind==="fars"){
-      keyBits.push({col, text:`Fatal crashes in ${y} (NHTSA)`, hint: t.k<2.2});
+      keyBits.push({col, text:`Fatal crashes in ${state.month?MON[state.month-1]+" ":""}${y} (NHTSA)`, hint: t.k<2.2});
       if (t.k < 2.2){ zoomHint = true; continue; }
       ctx.fillStyle = col; ctx.globalAlpha = .55;
       for (const st of visibleStates(t)){
         const data = cache["pt_fars_"+st]; if (data===undefined){ loadPts("fars_"+st); continue; } if(!data) continue;
         for (const r of (data[y]||[])){
+          if (state.month && r[3]!==state.month) continue;
           const p = projection([r[0],r[1]]); if(!p) continue;
           const x=t.applyX(p[0]), yy=t.applyY(p[1]); if(x<-5||x>W+5||yy<-5||yy>H+5) continue;
           const rad = Math.min(1.2+Math.sqrt(t.k)*0.45, 4) * Math.sqrt(r[2]);
@@ -519,9 +554,13 @@ function drawPoints(){
       }
       continue;
     }
+    const useM = state.month && l.hasMonthly && !lived;
+    if (state.month && !useM) continue;  // no monthly breakdown for this layer / view
     const data = cache["pt_"+l.key]; if (data===undefined){ loadPts(l.key); continue; } if(!data) continue;
+    let mrows = null;
+    if (useM){ mrows = cache["pt_"+l.key+"_m"]; if (mrows===undefined){ loadPts(l.key+"_m"); continue; } if(!Array.isArray(mrows)) continue; }
     const yi = l.years.indexOf(y); if (yi<0) continue;
-    const rows = lived ? data.lived : data.died;
+    const rows = useM ? mrows.filter(r=>r[3]===state.month).map(r=>[r[0],r[1],r[2],...r.slice(4)]) : (lived ? data.lived : data.died);
     const ci = 3 + (pt.cat||0), li = 3 + (l.cats||[]).length;
     const grid = l.kind==="me" && !lived;
     let cw=2, ch=2;
@@ -544,7 +583,7 @@ function drawPoints(){
       }
     }
     if (any){ const cn = CATNAME[pt.cat||0], lab = l.label + (l.label.toLowerCase().includes(cn.split(" ")[0].replace(/s$/,"")) ? "" : ` — ${cn}`);
-      keyBits.push({col, text:`${lab}, ${y}: ${lived ? l.livedNote : l.diedNote}`}); }
+      keyBits.push({col, text:`${lab}, ${state.month?MON[state.month-1]+" ":""}${y}: ${lived ? l.livedNote : l.diedNote}`}); }
   }
   ctx.globalAlpha = 1;
   const k = $("#dotkey");
@@ -562,7 +601,7 @@ function hoverPoint(e){
   else if (i.kind==="noaa") t.innerHTML = `<div>${i.ev||"Weather event"} · ${i.y}</div><b>${i.n}</b> ${i.n>1?"deaths":"death"}<div style="color:var(--muted)">NOAA Storm Events</div>`;
   else {
     const where = state.where==="lived" ? (i.label||"Residence area") : (i.l.kind==="me" ? "~1 km area" : (i.label||"Area"));
-    t.innerHTML = `<div>${i.l.label} · ${where}</div><b>${fmtI(i.n)}</b> ${CATNAME[i.cat]} in ${i.y} <span style="color:var(--muted)">(${state.where==="lived"?"lived here":"died here"})</span>`;
+    t.innerHTML = `<div>${i.l.label} · ${where}</div><b>${fmtI(i.n)}</b> ${CATNAME[i.cat]} in ${state.month?MON[state.month-1]+" ":""}${i.y} <span style="color:var(--muted)">(${state.where==="lived"?"lived here":"died here"})</span>`;
   }
   placeTip(e);
   return true;
@@ -668,7 +707,7 @@ function renderSources(){
 
 function select(fips, fromMap){
   if(!idx.has(fips)) return;
-  state.fips = fips; drawSel();
+  state.fips = fips; drawSel(); writeHash();
   $("#views [data-view=state]").textContent = counties[idx.get(fips)][2];
   renderCounty();
   if(!fromMap) setView("county");
@@ -684,7 +723,13 @@ $("#play").onclick = ()=>{
   if(state.playing){ clearInterval(state.playing); state.playing=null; $("#play").textContent="▶"; return; }
   const m=M.get(state.measure), tl=timeline(m); let k=tl.indexOf(state.year); if(k>=tl.length-1) k=-1;
   $("#play").textContent="❚❚";
-  state.playing=setInterval(()=>{ k++; if(k>=tl.length){ clearInterval(state.playing); state.playing=null; $("#play").textContent="▶"; return;} state.year=tl[k]; $("#period").value=k; markCoverage(); render(); }, tl.length>30?450:900);
+  const stop = ()=>{ clearInterval(state.playing); state.playing=null; $("#play").textContent="▶"; };
+  if (state.month){  // month mode: step through months, rolling into the next year
+    state.playing=setInterval(()=>{ if (state.month<12){ state.month++; } else { k=tl.indexOf(state.year)+1; if(k>=tl.length || tl[k]==="TTM"){ stop(); return; } state.year=tl[k]; $("#period").value=k; state.month=1; markCoverage(); }
+      render(); if(!monthCapable()) stop(); }, 500);
+    return;
+  }
+  state.playing=setInterval(()=>{ k++; if(k>=tl.length){ stop(); return;} state.year=tl[k]; $("#period").value=k; markCoverage(); render(); }, tl.length>30?450:900);
 };
 $("#q").addEventListener("change", e=>{ const f=byLabel.get(e.target.value.trim().toLowerCase()); if(f){ select(f); e.target.blur(); } });
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{ drawCoverage(M.get(state.measure), cache[state.measure]); render(); });
@@ -693,9 +738,17 @@ new ResizeObserver(()=>{ layout(); }).observe($("#map"));
 
 layout();
 renderSources();
-await setMeasure(DEFAULT.measure, false);
+const H0 = readHash();
+if (H0.c && idx.has(H0.c)) state.fips = H0.c;
+if (H0.w==="died" || H0.w==="lived") state.where = H0.w;
+if (H0.y) state.year = String(H0.y);
+if (+H0.mo>=1 && +H0.mo<=12) state.month = +H0.mo;
+const m0key = (H0.m && M.has(H0.m)) ? H0.m : DEFAULT.measure;
+if (state.where==="died"){ $("#wLived").setAttribute("aria-pressed", false); $("#wDied").setAttribute("aria-pressed", true); }
+await setMeasure(m0key, !!H0.y);
 drawSel();
-setTimeout(()=>setView("state"), 50);
+if (H0.c && idx.has(H0.c)) renderCounty();
+setTimeout(()=>setView(["us","state","county"].includes(H0.v) ? H0.v : "state"), 50);
 })();
 
 </script>
