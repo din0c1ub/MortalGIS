@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write
     env:
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_TOKEN: ${{ secrets.MF_MORTAL_TOKEN || secrets.HF_TOKEN }}  # MF_MORTAL_TOKEN: fine-grained, write access to the Space only
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
