@@ -21,6 +21,13 @@ jobs:
       - name: Check the WONDER importer
         run: python tests/test_wonder_parse.py
 
+      - name: Check the ledger gate, 1-4 bands, NBER small counts and historical series
+        run: |
+          python tests/test_ledger_gate.py
+          python tests/test_band_cells.py
+          python tests/test_nber_small.py
+          python tests/test_hist_state.py
+
       - name: Build data (fails if a core source collapses)
         run: |
           pip install -q pandas pyyaml

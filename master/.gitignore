@@ -1,0 +1,3 @@
+*.duckdb
+*.duckdb.gz
+*.duckdb.wal

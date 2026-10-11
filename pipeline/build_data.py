@@ -270,6 +270,7 @@ def cdc_occurrence_residence():
 
 # ---------------------------------------------------------------- WONDER drop-in
 WONDER_DIR = ROOT / "data_manual" / "wonder"
+FILL_RATE_MIN = 20  # deaths needed before a state-filled cell also gets a rate (filled counts are 1-9, so they stay count-only)
 CAUSES = ["all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke",
           "cancer", "alzheimers", "diabetes", "liver", "clrd", "flu_pneumonia", "kidney", "covid", "falls", "alcohol"]
 
@@ -450,18 +451,32 @@ def build(out_dir: Path, chr_year: int):
     pep_deaths, pep_pop, pep_vintage = census_pep()
     occ2020, res2020 = cdc_occurrence_residence()
     wonder = wonder_imports()
-    # Counts states publish without hiding 1-9 (used only to fill cells CDC hid; see statefill.py)
+    # Counts states publish without hiding 1-9 (used only to fill cells CDC hid; see statefill.py).
+    # master/ledger.csv decides which sources may be used: a source is read only when its ledger row is approved or released.
+    import statefill
+    ledger = statefill.read_ledger()  # a missing or malformed ledger stops the build (it is not swallowed below)
+    staged_names, staged_bands = {}, {}
     try:
-        import statefill
         log("• State-published county counts …")
         n2f = lambda st: {statefill.norm(c["name"]): c["fips"] for c in counties if c["fips"].startswith(st)}  # noqa: E731
         state_fills = {"MI": statefill.michigan(n2f("26")), "NY": statefill.new_york(n2f("36")), "NM": statefill.from_bundles("nm_ibis", n2f("35")),
                        "PA": statefill.from_bundles("pa_eddie", n2f("42"))}
+        staged_fills, staged_names, staged_notes = statefill.staged(counties, ledger)
+        state_fills.update(staged_fills)
+        staged_bands, band_notes = statefill.staged_bands(counties, ledger)  # 1-4 bands (WISH, MICA, MSTAHRS, SCAN); same ledger gate
+        for note in staged_notes + band_notes:
+            log(f"  ! {note}")
+        log(f"  Approved staged bundles: {', '.join(sorted(staged_fills)) or 'none'}")
     except Exception as e:  # noqa: BLE001
         log(f"  ! state fills skipped: {e}")
         state_fills = {}
-    STATE_NAMES = {"MI": "Michigan DHHS", "NY": "New York State DOH", "NM": "New Mexico DOH", "PA": "Pennsylvania DOH"}
+    STATE_NAMES = {"MI": "Michigan DHHS", "NY": "New York State DOH", "NM": "New Mexico DOH", "PA": "Pennsylvania DOH", **staged_names}
     fill_report = {}
+    # Exact 1-9 counts from the NCHS files the 1968-2004 series come from (ledger source nber_small; only approved measure/place pairs are returned)
+    nber_cells, nber_notes = statefill.nber_small(ledger)
+    for note in nber_notes:
+        log(f"  ! {note}")
+    nber_report = {}
     hpop = (hist("pop") or {}).get("pop", {})
     if not hpop:
         log("! site/data/hist/pop.json missing — run pipeline/history.py once to add 1968–2004 history")
@@ -654,6 +669,12 @@ def build(out_dir: Path, chr_year: int):
                         log(f"  ! {st} {cause}: state counts agree with CDC in {share:.0%} of {tot} county-years; not used")
                         fill_report[f"{st}:{cause}"] = {"used": False, "agree": round(share, 3), "checked": tot}
                         continue
+                    if st in statefill.LIVE_SOURCE:  # staged bundles were already filtered by the ledger in statefill.staged()
+                        ok, why = statefill.allowed(ledger, statefill.LIVE_SOURCE[st], "live", key)
+                        if not ok:
+                            log(f"  ! {st} {cause}: passes the CDC check but not used ({why})")
+                            fill_report[f"{st}:{cause}"] = {"used": False, "agree": round(share, 3), "checked": tot, "ledger": why}
+                            continue
                     filled, n = v.setdefault("filled", {}), 0
                     for y, cells in fl.items():
                         cnt, rate = (v.get("count") or {}).get(y), v["rate"].get(y)
@@ -664,14 +685,66 @@ def build(out_dir: Path, chr_year: int):
                             if i is None or cnt[i] != -1 or not 1 <= c <= 9:
                                 continue  # only cells CDC hid, and only values consistent with "1-9"
                             p = pop_at(y, i)
-                            cnt[i], rate[i] = c, (r1(c / p * 1e5) if p else None)
+                            # a filled cell shows its count; a rate on fewer than FILL_RATE_MIN deaths is not shown (NCHS: rates need 20+ deaths to be reliable)
+                            cnt[i], rate[i] = c, (r1(c / p * 1e5) if p and c >= FILL_RATE_MIN else None)
                             filled.setdefault(y, [0] * N)[i] = 1
                             n += 1
+                    # 1-4 bands: a cell CDC still hides after the exact fills, where this state says "1-4". Same gate as the fills (the cause passed the
+                    # CDC agreement test, the year is not one of the skipped years); the count stays hidden, only the tooltip gains the band.
+                    hits = statefill.band_hits(v.get("count") or {}, (staged_bands.get(st) or {}).get(cause), bad_years, idx)
+                    nb = sum(len(h) for h in hits.values())
+                    if hits:
+                        statefill.merge_bands(v.setdefault("band", {}), hits)  # states share a measure and a year: merge, never replace
                     v["filledBy"] = " / ".join(sorted({*(v.get("filledBy") or "").split(" / "), STATE_NAMES[st]} - {""}))
-                    fill_report[f"{st}:{cause}"] = {"used": True, "agree": round(share, 3), "checked": tot, "filled": n, "skippedYears": sorted(bad_years)}
-                    log(f"  {st} {cause}: filled {n:,} hidden county-years (agrees with CDC in {share:.0%} of {tot})")
+                    fill_report[f"{st}:{cause}"] = {"used": True, "agree": round(share, 3), "checked": tot, "filled": n, "skippedYears": sorted(bad_years), **({"band": nb} if nb else {})}
+                    log(f"  {st} {cause}: filled {n:,} hidden county-years" + (f" and marked {nb:,} as a 1-4 band" if nb else "") + f" (agrees with CDC in {share:.0%} of {tot})")
                     if not filled:
                         v.pop("filled")
+            # Exact 1-9 counts from the NCHS files (ledger source nber_small). Only cells the map hides today (count -1) in years the map takes
+            # from those files (src nber / nber_partial); years it takes from CDC keep CDC's suppression. A cell the state fill above already
+            # filled is left alone. filled = 2 marks these (1 = a state's count), so the app and the master name the right source.
+            nb_cells = nber_cells.get((cause, place))
+            if nb_cells and len(measures) > n_before:
+                v = values[mk]
+                srcs = v.get("src") or {}
+                filled, n, other_src, not_hidden = v.setdefault("filled", {}), 0, 0, 0
+                for y, cells in sorted(nb_cells.items()):
+                    if srcs.get(y) not in ("nber", "nber_partial"):
+                        other_src += len(cells)
+                        continue
+                    cnt, rate = (v.get("count") or {}).get(y), v["rate"].get(y)
+                    if not cnt or rate is None:
+                        other_src += len(cells)
+                        continue
+                    for f, c in cells.items():
+                        i = idx.get(f)
+                        if i is None or cnt[i] != -1 or not 1 <= c <= 9:
+                            not_hidden += 1
+                            continue
+                        cnt[i], rate[i] = c, None  # fewer than FILL_RATE_MIN deaths: the count is shown, a rate is not
+                        filled.setdefault(y, [0] * N)[i] = 2
+                        n += 1
+                for y in list((v.get("band") or {})):  # a cell that now has an exact count is no longer a band
+                    cnt = (v.get("count") or {}).get(y) or []
+                    keep = [i for i in v["band"][y] if i < len(cnt) and cnt[i] == -1]
+                    if keep:
+                        v["band"][y] = keep
+                    else:
+                        v["band"].pop(y)
+                if "band" in v and not v["band"]:
+                    v.pop("band")
+                v["filledBy"] = " / ".join(sorted({*(v.get("filledBy") or "").split(" / "), statefill.NBER_SMALL_LABEL} - {""})) if n else v.get("filledBy")
+                if not v.get("filledBy"):
+                    v.pop("filledBy", None)
+                if not filled:
+                    v.pop("filled")
+                if n:
+                    m_ = measures[-1]
+                    m_["notes"] = m_["notes"].replace(
+                        "Counts of 1–9 are suppressed.",
+                        "Counts of 1–9 are hidden in the published tables; where the map takes a year from the NCHS death-certificate files it shows the exact small counts (outlined cells).")
+                nber_report[f"{cause}:{place}"] = {"used": bool(n), "filled": n, "yearsFromOtherSource": other_src, "notHidden": not_hidden}
+                log(f"  NCHS files {cause} {place}: filled {n:,} hidden county-years ({other_src:,} cells in years the map takes from CDC, {not_hidden:,} not hidden)")
             # Multi-year county totals (WONDER): far fewer counties hidden. Rate = deaths ÷ person-years × 100k (an average yearly rate).
             sp = getattr(wonder_imports, "spans", {}).get((cause, place))
             mk = f"{key}_died" if died else key
@@ -816,6 +889,7 @@ def build(out_dir: Path, chr_year: int):
         "population": population,
         "measures": measures,
         "stateFills": fill_report,
+        "nberSmall": nber_report,
         "wonderFiles": sorted(f"{c}_{'residence' if p == 'res' else 'occurrence'}" for c, p in wonder),
         "monthly": {"months": [months[0], months[-1]], "asOf": monthly_as_of,
                     "source": "CDC NCHS VSRR Provisional County-Level Drug Overdose Death Counts",

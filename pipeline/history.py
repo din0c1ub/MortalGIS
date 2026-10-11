@@ -12,7 +12,10 @@ Sources
 - NOAA Storm Events 1950–present: direct + indirect deaths by county (zone events via NWS
   zone–county correlation, split evenly across a zone's counties) and event points.
 
-Privacy: county counts of 1–9 are suppressed (CDC/NCHS standard). Rates are not shown for them.
+NBER files are never downloaded by this script (data.nber.org refuses bots); see nber_local() for where to save them by hand.
+
+Privacy: county counts of 1–9 are hidden in these series (CDC/NCHS standard) and rates are not shown for them. Where the ledger approves the
+source nber_small, build_data.py shows the exact 1–9 counts for the years the map takes from these files (see statefill.nber_small).
 """
 from __future__ import annotations
 
@@ -20,6 +23,7 @@ import csv
 import gzip
 import io
 import json
+import os
 import re
 import sys
 import zipfile
@@ -47,6 +51,18 @@ CACHE = Path(__file__).resolve().parents[1] / ".cache"
 
 NBER = "https://data.nber.org/mortality/{y}/mort{y}.csv.zip"
 XWALK = "https://data.nber.org/mortality/nchs2fips_county1990.csv"
+# data.nber.org answers automated requests with "Prevent Bots from data downloads" (HTTP 403; seen 2026-10-10), so this script never fetches
+# from it. Save each file by hand in a browser (page: https://www.nber.org/research/data/mortality-data-vital-statistics-nchs-multiple-cause-death-data)
+# into .cache/ (or the folder in MORTALGIS_NBER_DIR) under the names below. Years already summed in .cache/nber_counts_<year>.json need no file.
+NBER_DIR = Path(os.environ.get("MORTALGIS_NBER_DIR") or CACHE)
+
+
+def nber_local(name: str, url: str) -> Path:
+    """Path of a hand-saved NBER file, or stop with the address to save it from. Nothing is downloaded from data.nber.org."""
+    for d in (NBER_DIR, CACHE):
+        if (d / name).exists():
+            return d / name
+    raise SystemExit(f"! {name} is not in {NBER_DIR}. data.nber.org refuses scripted downloads: open {url} in a browser, save the file as {name} in that folder, then run again.")
 SEER = "https://seer.cancer.gov/popdata/yr1969_2024.20ages/us.1969_2024.20ages.adjusted.txt.gz"
 
 MEASURES = ["all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke"]
@@ -144,10 +160,7 @@ def cause_flags_icd10(ucod: pd.Series) -> dict:
 
 # ---------------------------------------------------------------- NBER
 def nber_year(y: int, atlas: set, xw: dict):
-    path = CACHE / f"mort{y}.zip"
-    if not path.exists():
-        CACHE.mkdir(exist_ok=True)
-        path.write_bytes(get(NBER.format(y=y), timeout=900))
+    path = nber_local(f"mort{y}.zip", NBER.format(y=y))
     z = zipfile.ZipFile(path)
     name = next(n for n in z.namelist() if n.lower().endswith(".csv"))
     head = pd.read_csv(z.open(name), nrows=1, dtype=str, encoding="latin-1").columns
@@ -202,10 +215,7 @@ def build_crosswalk() -> dict:
     - Virginia used an older scheme before 1982: counties = 3 × alphabetical index (003–285),
       independent cities = 300 + 3 × alphabetical index (excluding Manassas, Manassas Park, Poquoson).
       Verified against 1982 death counts county by county."""
-    path = CACHE / "nchs2fips.csv"
-    if not path.exists():
-        CACHE.mkdir(exist_ok=True)
-        path.write_bytes(get(XWALK))
+    path = nber_local("nchs2fips.csv", XWALK)
     rows = list(csv.DictReader(open(path)))
     xw = {r["nchs_state"] + r["nchs_county"]: r["fipsco"].strip().zfill(5) for r in rows if r["fipsco"].strip().isdigit()}
     xw["09001"] = "11001"

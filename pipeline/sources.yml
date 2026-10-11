@@ -41,8 +41,27 @@ sources:
     hidden: "none in the files; MortalGIS hides 1-9 itself. 1989-2004 files name only counties of 100,000+"
     cadence: static
     src: [nber, nber_partial]
+    files: [hist_state/*.json]  # also claims the two state-level historical sets (Miller 1900-1936, infant deaths 1920-1945) that pipeline/hist_state.py reads
     status: live
-    notes: pipeline/history.py; rebuilt only when NCHS or NBER revise files.
+    notes: pipeline/history.py; rebuilt only when NCHS or NBER revise files. data.nber.org refuses automated downloads (seen 2026-10-10), so history.py reads files saved by hand into .cache/ (or MORTALGIS_NBER_DIR) and never fetches them; the committed site/data/hist files are the output.
+
+  - id: nber_small
+    name: NCHS public-use death certificate files, exact counts of 1-9 (via NBER)
+    publisher: CDC NCHS / NBER
+    url: https://www.nber.org/research/data/mortality-data-vital-statistics-nchs-multiple-cause-death-data
+    license: "NCHS data use rules (statistical reporting and analysis only; no identification, no linking); no minimum cell size is stated; the CDC WONDER wording for the same data advises not publishing sub-national counts of 9 or fewer (terms status stated_review)"
+    access: download (saved by hand; data.nber.org refuses automated downloads)
+    kind: county-counts
+    geography: county
+    place: [lived, died]
+    causes: [all, overdose, suicide, homicide, firearm, heart, stroke]
+    years: "1968-2004 (shown only in years the map takes from these files, mostly 1968-88; years CDC WONDER supplies keep CDC suppression)"
+    grain: year
+    hidden: "none in the files; pipeline/history.py hides 1-9 and this entry shows them again"
+    cadence: static
+    files: [nber_exact_small_1968-2004.json]
+    status: live
+    notes: "Owner decision 2026-10-10 (chat): don't hide 1-9 where no source forbids it; asked about the CDC WONDER advisory, answered 'Build it and approve now'. 330,740 exact cells in the file (residence 1968-88 156,597; place of death 1968-88 159,305; place of death 1989-2004 7,555, counties of 100,000 or more only). The build (pipeline/build_data.py, ledger rows nber_small / nber_small / <measure> / residence|occurrence) fills a cell only when it is hidden (count -1) in a year whose series source is nber or nber_partial; a cell a state source has already filled is left alone. Filled cells are marked 2 in the site data's filled arrays (1 = a state's count) and carry no rate (under 20 deaths). Not pushed."
 
   - id: wonder_cmf
     name: CDC WONDER Compressed Mortality 1979-1998 (D16)
@@ -462,6 +481,91 @@ sources:
     status: live
     notes: 2014 on comes from the Cook County ME layer.
 
+  - id: lapd_homicides
+    name: Los Angeles Police Department criminal homicide, 2010-2023
+    publisher: City of Los Angeles (LAPD)
+    url: https://data.lacity.org/d/2nrs-mtv8
+    license: CC0 1.0 (dataset metadata); attribution Los Angeles Police Department
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2010-2023
+    grain: day
+    cadence: static
+    layer: lapd_homicides
+    status: live
+    notes: "City of Los Angeles only (LAPD area, about 40% of the county's people). Two frozen sets, Crime Data from 2010 to 2019 (63jg-8b9z) and from 2020 to Present (2nrs-mtv8), criminal homicide (Crm Cd 110) only, 2024 left out (incomplete in the source). Locations are the source's hundred-block points snapped to the 1 km grid; only counts per cell, year and homicide/firearm are kept, no victim age, sex or descent. The 2015 count is about 60 below its neighbours in the source. Owner approved 2026-10-10."
+
+  - id: cincinnati_homicides
+    name: Cincinnati Police murders, 2011-
+    publisher: City of Cincinnati (Cincinnati Police Department)
+    url: https://data.cincinnati-oh.gov/d/k59e-2pvf
+    license: Public Domain (dataset metadata); attribution City of Cincinnati
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide]
+    years: 2011-
+    grain: day
+    cadence: weekly
+    layer: cincinnati_homicides
+    status: live
+    notes: "Two files in a row: the old RMS file k59e-2pvf to 2024-06-02 and the new STARS-category file 7aqy-xrv9 from 2024-06-03 (the city changed record systems). Offenses counted: murder, aggravated murder (and its felony/premeditated variants) and voluntary manslaughter; involuntary manslaughter, reckless and negligent homicide are left out. The old file repeats each incident several times with coordinates jittered by a few metres (same instanceid), so it is counted once per instanceid. 2010 is a part-year (27,488 records against 49,017 in 2011) and is left out. 18% of the rows have no coordinates in the source and are not on the map. No weapon field in the new file, so no firearm split. Only date and coordinates are requested; no victim age or sex. Preview built 2026-10-10; approved by the owner in chat 2026-10-10 (live in the repo copy, not pushed)."
+
+  - id: charlotte_homicides
+    name: Charlotte-Mecklenburg Police homicide victims, 2015-
+    publisher: City of Charlotte (CMPD)
+    url: https://gis.charlottenc.gov/arcgis/rest/services/ODP/CMPD_Homicide/MapServer/0
+    license: none stated on the service item (licenseInfo blank); cite City of Charlotte / CMPD
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide, firearm]
+    years: 2015-
+    grain: day
+    cadence: weekly
+    layer: charlotte_homicides
+    status: live
+    notes: "UCR murder and non-negligent manslaughter victims in the CMPD jurisdiction, January 2015 to date (1,059 victims, one request, no paging). Year is the year reported (CALENDAR_YEAR matches DATE_REPORTED in every row). Firearm = the weapon field names a handgun, rifle, shotgun or firearm. The public coordinates are snapped to the 1 km grid; only date, weapon and coordinates are requested (no age, sex, race, circumstances or clearance). Yearly counts run 60-118 and sit within about 10% of the CDC county figures for Mecklenburg (2019 102 vs 104-126). Preview built 2026-10-10; approved by the owner in chat 2026-10-10 (live in the repo copy, not pushed)."
+
+  - id: atlanta_homicides
+    name: Atlanta Police Department homicides, 1997-
+    publisher: City of Atlanta (Atlanta Police Department)
+    url: https://opendata.atlantapd.org/
+    license: none stated on the service items; the portal shows a free-use / accuracy disclaimer (owner reviews the wording before approval)
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide]
+    years: 1997-
+    grain: day
+    cadence: weekly
+    layer: atlanta_homicides
+    status: live
+    notes: "Three APD files in a row (ArcGIS services under services3.arcgis.com/Et5Qfajgiyosiw4d): Crime_Data_1997_2008 (UCR code 110 'homicide'; negligent manslaughter 120 left out), 2009_2020CrimeData (APD's own HOMICIDE crime type, whose local codes 901-912 the portal does not define, so a few non-murder records may be included; no weapon field) and OpenDataWebsite_Crime_view (NIBRS 09A, 2021-, one count per victim: 157, 171, 136, 125, 100 for 2021-2025). Year is the year the offence occurred. City of Atlanta only (Fulton County has more). Only year, date and coordinates are requested. The portal's robots.txt (opendata.atlantapd.org) asks for a 60-second crawl delay; only three requests went to that host (robots.txt, the catalog feed and the home page, a few minutes apart, so closer than 60 s) and every data request went to the ArcGIS service host instead. Preview built 2026-10-10; approved by the owner in chat 2026-10-10 (live in the repo copy, not pushed)."
+
+  - id: denver_homicides
+    name: Denver Police murders, 2021-
+    publisher: City and County of Denver (Denver Police Department)
+    url: https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime
+    license: Open Data License (free to copy, distribute, transmit and adapt; see the catalog terms of use); attribution Denver Police Department
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide]
+    years: 2021-
+    grain: day
+    cadence: weekly
+    layer: denver_homicides
+    status: live
+    notes: "NIBRS offenses file (ODC_CRIME_OFFENSES_P, the previous five calendar years plus the current year to date). Category 'murder', types homicide-family (0902) and homicide-other (0912), one count per victim (VICTIM_COUNT). Negligent homicide (0910) and police killings by gun (0907, in the police-killings layer) left out. 375 victims 2021-2026; 2021 84 and 2025 39 against CDC deaths-in-Denver 85 and 40. The catalog also lists annual CSVs for 2010-2021 (large downloads, not fetched; a file download needs the owner's yes). Locations are approximate by the publisher. Preview built 2026-10-10; approved by the owner in chat 2026-10-10 (live in the repo copy, not pushed)."
+
   - id: nyc_homicides
     name: NYPD shooting incidents (murders)
     publisher: City of New York
@@ -615,6 +719,444 @@ sources:
     cadence: yearly
     status: live
     notes: pipeline/statefill.py. Fills ONLY cells CDC hid (1-9), and only for causes where Michigan agrees with CDC (within 10% or 2 deaths) in 90%+ of county-years CDC publishes. Drug-induced and diabetes-related tables are not used (wider definitions than CDC's).
+
+  # ------------------------------------------------------------ state fills approved by the owner on 2026-10-10 (bundles in data_manual/states/)
+  # Each one fills only CDC-hidden cells (1-9), after build_data.py re-checks it against CDC's published counts, and only for measures whose
+  # master/ledger.csv row is approved or released. Terms status per source: master/sources_terms.csv.
+  - id: mi_fatal_injuries
+    name: Michigan DHHS fatal injuries by county (suicide, homicide, falls)
+    publisher: Michigan DHHS, Division for Vital Records & Health Statistics (Community Health Information)
+    url: https://www.mdch.state.mi.us/OSR/Chi/fatal2/Trends/
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [suicide, homicide, falls]
+    years: 2000-2024 (falls 2004-2024)
+    grain: year
+    hidden: none stated (counts 1-9 are published; only the rate is starred as unreliable)
+    cadence: yearly
+    files: [states/mi_injury_county_2000-2024.json]
+    status: live
+    notes: "Agreement 97-99%; about 3,148 CDC-hidden cells (falls 1,084, homicide 842, suicide 1,222). Raw pages: sources/mi_dhhs_fatal_injuries_county_html.zip. Complements mi_mdhhs (different causes, no overlap)."
+
+  - id: nc_schs_lcd
+    name: North Carolina SCHS Vital Statistics Volume 2, Leading Causes of Death by county
+    publisher: NC DHHS, State Center for Health Statistics
+    url: https://schs.dph.ncdhhs.gov/data/vital/lcd/
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, flu_pneumonia, heart, homicide, kidney, liver, stroke, suicide]
+    years: 2019-2023 single years, plus the 5-year total ending each year (2015-2019 ... 2019-2023)
+    grain: year + multi-year
+    hidden: none stated for counts (death RATES are flagged with an asterisk when the numerator is small)
+    cadence: yearly
+    files: [states/nc_vital_stats_county_2019-2023.json]
+    status: live
+    notes: "xlsx originals with SHA-256 in sources/nc_schs_vital_stats_v2/. Agreement 99.6-100%; about 1,495 single-year fills plus about 47 five-year-span fills (spans are not wired in statefill.py yet). Non-browser clients get 403 from schs.dph.ncdhhs.gov, so pulls go through the user's own Chrome. Probably supersedes the nc_databook candidate for the single-year and 5-year fills (not checked against the Data Book itself)."
+
+  - id: il_idph_causes
+    name: Illinois IDPH causes of death by resident county
+    publisher: Illinois Department of Public Health, Vital Statistics
+    url: https://dph.illinois.gov/content/dam/soi/en/web/idph/publications/idph/data-and-statistics/vital-statistics/death-statistics/death-causes-by-county-2023.pdf   # one PDF per year; every URL is in sources/il_idph/urls.txt
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, flu_pneumonia, heart, kidney, liver, stroke, suicide]
+    years: 2008-2023 (each cause only in the years it ranks in the state's top 10)
+    grain: year
+    hidden: none stated (counts 0-9 are published exactly)
+    cadence: yearly
+    files: [states/il_causes_county_2008-2023.json]
+    status: live
+    notes: "PDFs saved in sources/il_idph/ (19 files). Agreement 99.8-100%; about 5,191 fills (suicide 417 of them overlap il_idph_injury). 2011 suicide column is wrong in the PDF (Cook 336 vs CDC 365) and was removed; suicide comes from il_idph_injury. Chicago and Suburban Cook sub-rows ignored."
+
+  - id: il_idph_injury
+    name: Illinois IDPH injury deaths by resident county and intent
+    publisher: Illinois Department of Public Health
+    url: https://dph.illinois.gov/content/dam/soi/en/web/idph/publications/idph/data-and-statistics/vital-statistics/death-statistics/injury-death-counties-2020-2023.pdf   # plus a 2010-2019 PDF; see sources/il_idph/urls.txt
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [suicide, homicide]
+    years: 2010-2023
+    grain: year
+    hidden: none stated
+    cadence: yearly
+    files: [states/il_injury_county_2010-2023.json]
+    status: live
+    notes: "PDFs in sources/il_idph/. Agreement 100% (suicide 341 checked, homicide 158); about 1,501 fills (suicide 947, homicide 554). Accidents and all-injury sections are in the bundle but have no MortalGIS measure."
+
+  - id: in_isdh_mortality
+    name: Indiana ISDH annual Mortality Report, tables 5 and 9 by county
+    publisher: Indiana Department of Health (ISDH), Epidemiology Resource Center
+    url: https://www.in.gov/health/reports/mortality/
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, diabetes, flu_pneumonia, heart, homicide, kidney, liver, stroke, suicide, falls]
+    years: 2000-2017 (Table 5); Table 9 injury causes 2000-2010 and 2014-2017 for all counties
+    grain: year
+    hidden: "Table 5 none stated. Table 9: 2010 edition masks whole county rows with ** (stated: numbers under 5, including 0, for at least one age grouping); 2011-2013 editions publish only the 17 counties over 100,000 population (publisher's scope)."
+    cadence: static
+    files: [states/in_injury_county_2000-2002.json, states/in_injury_county_2000-2017.json, states/in_mortality_county_2000-2002.json, states/in_mortality_county_2000-2017.json]
+    status: live
+    notes: "Raw pages: sources/in_isdh_mortality_report_tables5_9_2000-2017_html.zip. Agreement 99.5-100% (Table 5), falls 97.7%, suicide 99.7%, homicide 100% (Table 9). About 5,366 + 728 (Table 5, 2003-2017 and 2000-2002) and 2,013 + 197 (Table 9) fills. Merge the 2000-2002 file with the 2003-2017 file per cause before the build, otherwise the 50-county-year agreement check fails for the small causes. 2014 Wayne page missing on the site. No Table 5 edition after 2017 at this address."
+
+  - id: tn_health_county
+    name: Tennessee Department of Health deaths by county (annual PDFs 2009-2017, Excel 2018-2022)
+    publisher: Tennessee Department of Health, Division of Vital Records and Statistics / Office of Policy, Planning and Assessment
+    url: https://www.tn.gov/health/pha/statistics.html
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, heart, cancer, stroke, diabetes, alzheimers, suicide, homicide]
+    years: 2009-2022 (suicide, homicide, cancer only to 2018)
+    grain: year
+    hidden: "Stated: county-total counts may be shown irrespective of the number of events (TN Health Data Release Policy, 2003). The 2019-2022 Excel tables hide some counts with '*' under the department's own release guideline; those cells stay hidden."
+    cadence: yearly
+    files: [states/tn_county_2009-2022.json]
+    status: live
+    notes: "116 originals plus the release policy PDF in sources/tn_health/ (one link, AccidentDeaths_County_2022.xlsx, is a 404 on TN's own page). Agreement 98.5-100%; about 1,909 fills. Accidents and motor-vehicle tables are in the bundle but have no MortalGIS measure. A 2014-2017 four-year county workbook (LCD-AllCounties2014-17.xlsx, about 30 causes) is saved but not parsed."
+
+  - id: wi_wish
+    name: Wisconsin WISH mortality module, broad causes by county of residence
+    publisher: Wisconsin DHS, Division of Public Health, Office of Health Informatics
+    url: https://www.dhs.wisconsin.gov/wish/index.htm
+    license: public state statistics; cite WISH
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, flu_pneumonia, heart, homicide, kidney, liver, stroke, suicide]
+    years: 1999-2024 (COVID 2020-2024)
+    grain: year
+    hidden: "Stated: 'X' = a value less than 5 (but more than zero) suppressed to protect confidentiality; '.' = zero; all-zero rows or columns are not displayed. So only 1-4 is hidden."
+    cadence: manual-yearly
+    files: [states/wi_wish_county_1999-2024.json]
+    status: live
+    notes: "Query-result pages saved verbatim in sources/wi_wish/. Agreement 98.6-100%; about 3,291 exact fills (homicide has only 47 checked county-years, so the 50-cell gate skips it; 100% agreement on those). Plus about 4,342 CDC-hidden cells where WISH masks only 1-4, so they can show 1-4 instead of 1-9 (bundle key `masked`; not wired). FLAG: 2014 disagrees with CDC in 15-25% of county-years in every cause while other years disagree 0-3% (CDC and WISH differ on 2014 county assignment); the build gate skips 2014 only for Alzheimer's, CLRD, heart and stroke, so skip 2014 for WI altogether."
+
+  - id: mo_mica
+    name: Missouri MICA (Death MICA), county by cause by year
+    publisher: Missouri Department of Health and Senior Services, MOPHIMS
+    url: https://healthapps.dhss.mo.gov/MoPhims/QueryBuilder?qbc=DM&q=1&m=1
+    license: public state statistics; cite DHSS MOPHIMS
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, flu_pneumonia, heart, homicide, kidney, liver, stroke, suicide, falls, firearm, overdose]
+    years: 1999-2024 (COVID 2020-2024)
+    grain: year
+    hidden: "Stated (health.mo.gov, Confidentiality and Suppression in the MOPHIMS System): threshold four; values 1-4 (zero excluded) trigger suppression of the whole row; when one or two rows trigger it the three lowest-total rows are also suppressed. The table shows 'x'. Profiles are not suppressed."
+    cadence: manual-yearly
+    files: [states/mo_mica_county_1999-2024.json]
+    status: live
+    notes: "MICA hides whole county rows when one cell is 1-4, so it is pulled one cause and one year at a time (499 queries, 20 cause definitions). Raw per-query results: sources/mo_mica/mo_mica_death_county_year_raw.json. Agreement 98.3-100% for 13 causes and 93.6% for overdose (three low years, 2001, 2004 and 2007, are skipped by the build rule); about 6,631 unique exact fills (suicide 641, homicide 169, liver 435, kidney 874, flu 874, Alzheimer's 766, diabetes 862, CLRD 629, stroke 717, COVID 85, firearm 138, overdose 430, cancer 45, heart 43). Falls fail the check (83% agreement; MICA's Falls node is not the CDC definition) and are not usable. Plus about 10,500 CDC-hidden cells that MICA shows as x in tables where every x is a true 1-4 (bundle key `narrow_1_4`), so they could show 1-4 instead of 1-9. x cells from tables with 1-5 x rows can include complementary-suppressed larger values and are NOT narrowed. St. Louis city and county are both named St. Louis in CDC's list; the bundle carries `fips_alias`. The Confidentiality page does not mention the x symbol; the rule was verified on the data (min shown count 5, explicit zeros shown, x rows consistent with state totals)."
+
+  - id: fl_charts
+    name: Florida CHARTS deaths by county (113 selected causes)
+    publisher: Florida Department of Health, Division of Public Health Statistics & Performance Management
+    url: https://www.flhealthcharts.gov/FLQUERY_New/Death/Count
+    license: "terms stated, under review: Florida Health disclaimer says reproduction may be prohibited under federal/state copyright law; counts are facts but read it before upload (master/sources_terms.csv)"
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [cancer, diabetes, falls, firearm, homicide, stroke, suicide]
+    years: 1970-2024
+    grain: year
+    hidden: none stated for counts (exact integers 0, 1, 2... published; rates flagged when counts < 5)
+    cadence: manual-yearly
+    files: [states/fl_charts_county_1970-2024.json]
+    status: live
+    notes: "Raw query text dumps (128 causes x 67 counties x 1970-2024) in scratch_crawl/fl_raw/*.txt, packaged in staging/fl_charts_county_1970-2024.json. Verified 2026-10-09: three causes re-parsed from the raw dumps match the bundle; the live FLHealthCHARTS site was not re-queried. Against CDC (1999-2024 overlap): 12,165 county-years checked, 98.0% within tolerance, 77% of CDC counts of 10-19 reproduced exactly (falls 76%, stroke 70%, homicide 73%, suicide 73% fall below the 80% warning line). Low-agreement years are skipped by the build rule. 6,315 exact fills if approved (homicide 1,907, suicide 1,405, firearm 1,408, falls 688, stroke 538, diabetes 365, cancer 4); the bundle holds seven populated causes (Alzheimer's and COVID are empty in it; all-deaths, heart, CLRD and the rest were not pulled). Three state-years are off the WONDER total (year 2000, 2-7% over). Accidental poisoning (X40-X49) is separate from CDC all-intent poisoning, so overdose was not used. Earlier note (2,423 fills, agreement 94.2-96.3%) was from the old snapshot and is superseded."
+
+  - id: md_vsa
+    name: Maryland Department of Health Vital Statistics Administration Annual Reports (Table 48/43)
+    publisher: Maryland Department of Health, Vital Statistics Administration
+    url: https://health.maryland.gov/vsa/Pages/reports.aspx
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, suicide, homicide, motor_vehicle, covid]
+    years: 1999-2024
+    grain: year
+    hidden: none stated for counts (exact integers 0, 1, 2... published across all 24 jurisdictions; rates only flagged for small numbers)
+    cadence: yearly
+    files: [states/md_vsa_county_1999-2024.json]
+    status: live
+    notes: "Annual report PDFs 1996-2024 in scratch_crawl/md_raw/; Table 48 (43 in 2021-2024) parsed by staging/scripts/md_parse.py, which hard-codes page numbers and column positions, so re-check it each year. Verified 2026-10-09: a 2022 spot-check of the bundle against the PDF is clean. Against CDC: 3,132 county-years checked, 97.9% within tolerance, 66% of CDC counts of 10-19 reproduced exactly (homicide 53%, stroke 52%, suicide 74%; homicide 92.0% and suicide 94.5% agreement sit under 95%). 582 exact fills if approved (homicide 343, suicide 214, COVID 16, stroke 9). All-deaths, cancer and heart have no hidden cells in CDC's Maryland data (0 of 624 county-years), so they fill nothing. Motor vehicle has no CDC measure. 9 of 161 state-years are off the WONDER total (up to 10% short). Baltimore City (24510) and Baltimore County (24005) resolved via fips_alias. Earlier note (163 fills) was from the old snapshot and is superseded."
+
+  - id: al_dph
+    name: Alabama DPH Center for Health Statistics 113 Selected Causes of Death by County of Residence
+    publisher: Alabama Department of Public Health, Center for Health Statistics
+    url: https://www.alabamapublichealth.gov/healthstats/assets/113causes_2024.pdf
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, firearm, suicide, homicide, cancer, heart, stroke, diabetes, alzheimers, clrd, liver, kidney, covid]
+    years: 2015-2024 (firearm, all 2015-2024; other causes 2019-2024; covid 2022-2024)
+    grain: year
+    hidden: none stated for counts (exact counts published down to 0, 1, 2... for all 67 counties; rates flagged with asterisk if < 20)
+    cadence: yearly
+    files: [states/al_113causes_county_2015-2024.json]
+    status: live
+    notes: "Annual '113 Selected Causes of Death by County of Residence, Race and Sex' PDFs in scratch_crawl/al_raw/. Only 2015-2024 are real files (about 285 pages each); 13 of the 1999-2014 downloads are identical 39,250-byte error pages and nothing before 2015 was read. Parsed by staging/scripts/al_parse.py. Verified 2026-10-09: 1,608 bundle values re-parsed from the PDFs match. Against CDC: 3,471 county-years checked, 100% within tolerance, 95% of CDC counts of 10-19 reproduced exactly. 1,350 exact fills if approved, all 2019-2024 (homicide 304, suicide 229, liver 204, kidney 202, diabetes 142, COVID 89, Alzheimer's 86, CLRD 54, stroke 40). FIREARM IS SKIP: the bundle holds zeros for 2015-2018 (cause not traced), agreement is 61% and four state-years sit 100% under WONDER; its 215 fills are not used. Earlier note (748 fills, firearm 215 counted) is superseded."
+
+  - id: ga_oasis
+    name: Georgia DPH OASIS Mortality Data Table Tool
+    publisher: Georgia Department of Public Health, Office of Health Indicators for Planning (OHIP)
+    url: https://oasis.state.ga.us/dtt/mortality
+    license: public state statistics (cite OASIS/DPH)
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, suicide, homicide, cancer, heart, stroke, diabetes, alzheimers, clrd, flu_pneumonia, liver, kidney, covid, motor_vehicle, falls]
+    years: 1999-2024 (COVID 2020-2024)
+    grain: year
+    hidden: none stated for counts (exact integer counts 0, 1, 2... published across all 159 counties without small cell suppression)
+    cadence: yearly
+    files: [states/ga_oasis_county_1999-2024.json]
+    status: live
+    notes: "Automated pull (staging/scripts/ga_oasis_pull.js) of the OASIS mortality table tool's JSON endpoint, 159 counties x 1999-2024. Verified 2026-10-09: re-pulled from the live site and matches the bundle. Against CDC: 25,506 county-years checked, 94.3% within tolerance (cause range about 90-97%: flu/pneumonia 90.1%, homicide 90.6%, heart 92.3%, cancer 93.4%), and only 52% of CDC counts of 10-19 reproduced exactly (cause range 37-62%). So GA's small counts are typically right to within a few deaths, not exact. 23,442 exact fills if approved, about 60% of everything the six new sources add. 61 of 343 comparable state-years are off the WONDER total (median 2.7% short; flu/pneumonia 1999 and 2000 are 35% and 20% short). Motor vehicle has no CDC measure. Treat as the source to review first: consider approving cause by cause, or not at all. Earlier note (1,181 fills; heart and stroke 100% agreement) was from the old snapshot and is superseded."
+
+  - id: sc_scan
+    name: South Carolina DPH SCAN Mortality Query System
+    publisher: South Carolina Department of Public Health (SC DPH), Division of Biostatistics
+    url: https://apps.dhec.sc.gov/Health/SCAN_BDP/tables/death2table.aspx
+    license: "terms stated, under review: SCAN home page carries a copyright notice (c) 2000 SC DPH, all rights reserved, plus a confidentiality disclaimer; no reuse terms. Counts are facts but read it before upload (master/sources_terms.csv)"
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, suicide, homicide, cancer, heart, stroke, diabetes, alzheimers, clrd, flu_pneumonia, liver, kidney, covid, injury]
+    years: 1999-2024 (COVID 2020-2024)
+    grain: year
+    hidden: "# indicates that the value was suppressed due to <5 observations. Zeroes and counts >= 5 are published."
+    cadence: yearly
+    files: [states/sc_scan_county_1999-2024.json]
+    status: live
+    notes: "Automated pull (staging/scripts/sc_scan_pull.js) of the SCAN ASP.NET table generator, 46 counties x 1999-2024. Verified 2026-10-09: re-pulled from the live site and matches the bundle. Against CDC: 9,984 county-years checked, 99.7% within tolerance, 91% of CDC counts of 10-19 reproduced exactly. 2,090 exact fills if approved (homicide 299, suicide 249, kidney 301, flu/pneumonia 295, liver 285, diabetes 223, Alzheimer's 212, CLRD 124, stroke 76, COVID 26) plus 1,912 cells where CDC shows 1-9 and SCAN shows only that the count is under 5 (1-4 band, not wired into the map). The '#' mask means under 5. No state-year is off the WONDER total (319 compared). SC's 'Unknown' county row (364 bundle rows) is not assigned to a county. Earlier note (153 fills) was from the old snapshot and is superseded."
+
+  - id: ms_mstahrs
+    name: Mississippi State Department of Health MSTAHRS Mortality Query Tool
+    publisher: Mississippi State Department of Health (MSDH), Public Health Statistics (MSTAHRS)
+    url: https://mstahrs.msdh.ms.gov/forms/morttable.html
+    license: public state statistics (cite MSDH MSTAHRS)
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, suicide, homicide, cancer, heart, stroke, diabetes, alzheimers, clrd, flu_pneumonia, liver, kidney, covid, motor_vehicle, overdose, falls]
+    years: 1999-2024 (Homicide 1999-2022)
+    grain: year
+    hidden: "Cells under 5 events are suppressed as **** (hidden range 1-4; the earlier staging text said 'five or fewer', which is wrong: a count of 5 is published in the data). Counts of 5 to 9 are published exactly."
+    cadence: yearly
+    files: [states/ms_mstahrs_county_1999-2024.json]
+    status: live
+    notes: "Automated pull (staging/scripts/ms_mstahrs_pull.js) of the MSTAHRS query tool, 82 counties x 1999-2024 (homicide ends 2022; the publisher holds 2023-2024). Verified 2026-10-09: re-pulled from the live site and matches the bundle. Against CDC: 13,084 county-years checked, 99.8% within tolerance, 91% of CDC counts of 10-19 reproduced exactly (homicide 75% is under the 80% warning line). 4,987 exact fills if approved (flu/pneumonia 694, kidney 737, diabetes 638, Alzheimer's 485, suicide 422, stroke 433, liver 408, CLRD 416, homicide 365, falls 313, COVID 61, others fewer) plus 7,904 band cells (CDC 1-9 narrowed to 1-4; not wired into the map). OVERDOSE IS SKIP (65% agreement; 111 fills not used). Known data gaps: Alzheimer's 2023 and 2024 are about 95% under the WONDER total, and COVID 2018-2019 carries counts where WONDER has none. Motor vehicle has no CDC measure. Earlier note (199 fills) was from the old snapshot and is superseded."
+
+  - id: ok_ok2share
+    name: Oklahoma State Department of Health OK2SHARE detailed mortality (ICD-10, final trend form)
+    publisher: Oklahoma State Department of Health (OSDH), Center for Health Statistics, Health Care Information
+    url: https://www.health.state.ok.us/stats/Vital_Statistics/Death/Final/Statistics21Trend.shtml
+    license: Appropriate Use Agreement (statistical reporting and analysis only; no identification) accepted 2026-10-09 under the owner's standing permission
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [stroke, alzheimers, diabetes, flu_pneumonia, clrd, liver, kidney, suicide, homicide]
+    years: 2010-2024
+    grain: year
+    hidden: "A cell under 5 deaths is shown as '.' (zero is also '.'); counts of 5 and above are exact. Counts 1-4 stay hidden; no band is possible."
+    cadence: yearly
+    files: [states/ok_ok2share_county_2010-2024.json]
+    status: live
+    notes: "One query per year (2010-2024), rows county of residence by the 39-cause ICD-10 list, counts only, pulled 2026-10-10 UTC in headless Chrome after the agreement was accepted (terms_log/). Raw result pages and SHA-256 in sources/ok_ok2share/. Agreement 95.3-100% per cause; kidney 2022 and 2023 fall under 80% and the build skips them (OK2SHARE is lower than CDC in 2-4 counties a year, 2022-2024). About 2,119 unique exact fills, all counts of 5-9. Cancer, heart, falls, firearm and overdose are not in the 39-cause list (Oklahoma splits cancer and heart into parts); a 2019 test pull of the 113-cause list has falls only."
+
+  - id: co_cdphe
+    name: Colorado CDPHE Vital Statistics, leading causes of death by county of residence, 2025
+    publisher: Colorado Department of Public Health and Environment, Vital Statistics Program
+    url: https://cdphe.colorado.gov/center-for-health-and-environmental-data/registries-and-vital-statistics/vital-statistics-program
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, alzheimers, diabetes, liver, clrd, flu_pneumonia, kidney, covid, suicide, homicide]
+    years: 2025
+    grain: year
+    hidden: "Only ranked causes are published, with counts of 3 and up; 1-2 and uncategorised deaths are in 'Other'. A cause missing for a county is not zero."
+    cadence: yearly
+    files: [states/co_cdphe_county_2025.json]
+    status: live
+    notes: "One xlsx (159,130 bytes, SHA-256 89f35887...), downloaded 2026-10-10 UTC with the owner's yes. Every county's listed causes plus 'Other' equal its All Causes row. One year only, so the build's 50-checked gate fails for every cause except all deaths (62 checked, 100%); the per-cause agreement is 83-100% (cancer, heart, CLRD, stroke, diabetes, COVID at 100%). Up to 165 CDC-hidden 2025 cells could fill (counts 3-9) if the owner approves cause by cause; 2025 is not yet in CDC's final data. Earlier years need the CoHID dashboard or a data request."
+
+  # ------------------------------------------------------------ state fills approved by the owner on 2026-10-10, second batch: NJ, MN, WV, VA (bundles in data_manual/states/)
+  # Each one fills only CDC-hidden cells (1-9), after build_data.py re-checks it against CDC's published counts, and only for measures whose
+  # master/ledger.csv row is approved or released. Terms status per source: master/sources_terms.csv.
+  - id: nj_shad
+    name: New Jersey NJSHAD mortality count query (county of residence x cause, 2000-2024)
+    publisher: New Jersey Department of Health, Center for Health Statistics (NJSHAD)
+    url: https://www-doh.nj.gov/doh-shad/query/builder/mort/Mort/Count.html
+    license: NJSHAD Data Use Agreement (statistical reporting and analysis only; use "designed solely to enhance the well-being of a specific community"; no identification) accepted 2026-10-10 under the owner's standing permission; stated_review
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, heart, flu_pneumonia, kidney, liver, homicide, suicide, stroke, alcohol, firearm, falls]
+    years: 2000-2024 (covid 2020-2024)
+    grain: year
+    hidden: "none stated for counts (the technical notes suppress only rates on fewer than 20 deaths); a county-year with no deaths is simply absent from the result"
+    cadence: yearly
+    files: [states/nj_shad_county_2000-2024.json]
+    status: live
+    notes: "Sixteen queries (Year x County, one cause group each), parsed in the browser and saved as a payload with SHA-256 ffd9771f160d2c3e05606f0d7896daaf24c3523bbad767bf1d8de7b743fd93fa (sources/nj_shad/). Against CDC: 99% of checked county-years agree on every cause except alcohol (96.6%) and suicide (96.0%); both are below CDC in about a dozen counties in 2009 only, and the build skips that year. The master ledger counts 674 CDC-hidden cells that would fill (homicide 214, firearm 154, falls 124, alcohol 77, suicide 47, liver 42, kidney 11, others 5). Small gain because New Jersey counties are large and CDC hides few of them. 2001 homicide includes the September 11 deaths; CDC's 2001 homicide counts agree with it. The raw result pages were not saved, only the parsed payload; NJSHAD cannot be queried by county-year totals beyond what the 16 queries return."
+
+  - id: mn_mdh_county
+    name: Minnesota County Annual Health Statistics Dashboard (leading causes of death, county counts, 2021-2024)
+    publisher: Minnesota Department of Health, Center for Health Statistics (Minnesota County Annual Health Statistics Dashboard)
+    url: https://mdh-vital-stats-county.web.health.state.mn.us/
+    license: none stated on the dashboard (no terms of use; no agreement to accept)
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, heart, liver, homicide, stroke, suicide, accidents]
+    years: 2021-2024 (homicide 2023-2024, COVID-19 2021-2023)
+    grain: year
+    hidden: "none for counts: MDH suppresses only rates and percents for deaths under 10; county death counts are shown, zeros as 0"
+    cadence: yearly
+    files: [states/mn_mdh_county_2021-2024.json]
+    status: live
+    notes: "Table tab of the dashboard (Leading causes of death, 1-year crude mortality rate rows, Count column, all 87 counties) read in the page and saved with SHA-256 c5d9f959...2f9f77; all deaths are the twelve monthly county counts of Deaths by month added up (SHA-256 2c10ae3f...cfd19). Against CDC: 97.7-100% agreement on every cause with at least 50 CDC cells checked; about 1,250 CDC-hidden cells would fill (suicide 248, liver 239, diabetes 188, alzheimers 146, stroke 145, clrd 143, covid 119, heart 11, cancer 11). Homicide only has 2023-2024 (5 CDC cells to check, SKIP; 65 fills unused). Only four years because the dashboard starts at 2021; older years are available from MDH on request (health.healthstats@state.mn.us), a candidate follow-up. The Download Data button was not used."
+
+  - id: wv_hsc_vital
+    name: West Virginia Vital Statistics annual report web tables (selected causes of resident deaths by county, 1999-2000, 2002-2006 and 2016-2020)
+    publisher: West Virginia Department of Health and Human Resources, Health Statistics Center (West Virginia Vital Statistics Annual Report)
+    url: https://www.wvdhhr.org/bph/hsc/pubs/vital/2004/vs_44x.htm
+    license: none stated on the report pages (contact line only; the Data Access page mentions data use agreements only for restricted-use research files)
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, diabetes, alzheimers, heart, stroke, flu_pneumonia, clrd, liver, kidney, falls, suicide, homicide, accidents]
+    years: 1999, 2000, 2002-2006 (Alzheimer's from 2000), 2016-2020 (second bundle wv_hsc_recent, PDF Table 67 of the annual reports)
+    grain: year
+    hidden: "none: every cell is an exact count, zeros printed as 0; the pages state no small-number rule"
+    cadence: one-off (historic editions)
+    files: [states/wv_hsc_vital_1999-2006.json, states/wv_hsc_vital_2016-2020.json]
+    status: live
+    notes: "55 county pages per year (vs_44_01 to vs_44_55; 2005-2006 use vs_46_NN), read in Chrome from the public web pages (no file downloaded); every page header was checked against county and year (385 of 385). Extract saved with SHA-256 b0c09262...ad00dc4 (15,469 chars, rebuilt from the page after a hash mismatch showed two mistyped arrays, which were corrected). Against CDC: USE all (100%), cancer (100%), clrd (96.8%), diabetes (98.0%), heart (97.9%), suicide (100%): about 568 CDC-hidden cells would fill (suicide 298, diabetes 175, clrd 94, heart 1). SKIP by the gate: stroke 88.1%, Alzheimer's 89.5%, liver 86.1%, kidney 83.0%, flu and pneumonia 48.4% (the state groups causes differently; its flu and pneumonia counts are about half CDC's), falls and homicide (only 12 and 8 CDC cells to check, the gate needs 50). The report states no suppression. Later editions: 2011-2020 are PDFs (Table 67, 'Selected Causes of Resident Deaths, Number and Rate by County' from 2015 at least; county tables were dropped from the 2021 PDF and moved to suppressed Excel workbooks for 2021-2023), 2007-2010 and 2001 were not found online. 2026-10-10 evening: 2016-2020 added as bundle wv_hsc_recent (annual-report PDFs, Table 67 style 'Selected Causes of Resident Deaths: Number and Rate by County', downloaded with the owner's yes, five files, SHA-256 in sources/wv_hsc_vital/SOURCES.tsv). The reports state the material is in the public domain and may be copied without permission (cite the Health Statistics Center). Twelve USE rows approved by the owner in chat (all deaths, Alzheimer's, cancer, CLRD, diabetes, falls, flu and pneumonia, heart, kidney, liver, stroke, suicide; 98.6-100% agreement with CDC; 1,380 exact fills); COVID-19 and homicide stay SKIP on sample size. Editions 2011-2015 are still not located. Pulling the PDFs needs the owner's download permission."
+
+  - id: va_vdh_profiles
+    name: Virginia VDH City/County Health Profiles (locality deaths by leading cause, 1997-2013)
+    publisher: Virginia Department of Health, Office of Vital Records and Health Statistics (Health Statistics)
+    url: https://apps.vdh.virginia.gov/HealthStats/stats.htm
+    license: none stated on the stats page or the profile pages; the stats page says the counts apply to Virginia residents only unless otherwise noted
+    access: browser
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, clrd, flu_pneumonia, diabetes, suicide, kidney, alzheimers, liver, homicide, accidents]
+    years: 1997-2013 (homicide 1997-2004 only)
+    grain: year
+    hidden: "none: every cell is an exact count, zeros printed as 0; no small-number rule is stated"
+    cadence: one-off (historic editions)
+    files: [states/va_vdh_profiles_1997-2013.json]
+    status: live
+    notes: "One page per locality and year (134 names x 17 years = 2,278 pages), read in Chrome from the public pages (no file downloaded); page layouts differ by year and were parsed by header. Extract saved with SHA-256 7d23d668...c8ab64 (79,185 chars, 28,408 values, transcribed in four chunks each hash-checked). Quality screen against CDC all-deaths: Bedford City added to Bedford Co. (CDC folds the city into the county; sums match within 0.7%); Bristol, Fairfax City, Falls Church and Norton left out (agree with CDC in 29-59% of years); Washington County left out (cause-specific agreement 85%); 17 other locality-years left out (Alleghany 1997-2001 plus single years); cancer 2008 removed (the pages' locality values are scrambled; they sum to the state total). Against CDC after the screen: USE all (100%), cancer (99.3%), heart (99.6%), stroke (98.6%), clrd (99.0%), flu and pneumonia (99.3%), diabetes (99.6%), suicide (99.8%), kidney (98.9%), Alzheimer's (99.7%), liver (99.6%), homicide (91.4%; 1998 fails the year gate and is skipped). About 9,400 CDC-hidden cells would fill (suicide ~1,500, liver ~1,400, kidney ~1,250, flu and pneumonia ~1,150, diabetes ~1,150, Alzheimer's ~1,100, clrd ~700, homicide ~550, stroke ~540). The 1997-98 profiles use ICD-9 groupings (COPD for clrd). Profiles stop at 2013."
+
+  - id: vt_vdh_annual
+    name: Vermont Annual Vital Statistics Report, table C-12 "County of Residence by 113 Selected Causes of Death" (2009-2024 read)
+    publisher: Vermont Department of Health, Health Statistics and Informatics
+    url: https://www.healthvermont.gov/stats/vital-records/annual-vital-statistics-reports
+    license: none stated in the reports; the department's pages carry a footer "Copyright Vermont Department of Health" with no reuse terms (terms status stated_review)
+    access: pdf (downloaded 2026-10-10 with the owner's yes)
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, alzheimers, cancer, clrd, covid, diabetes, heart, flu_pneumonia, kidney, liver, homicide, suicide, stroke, firearm, falls]
+    years: 2009-2024 and 2000-2005 (2006-2008 are downloaded image scans, not read)
+    grain: year
+    hidden: "none: every cell is an exact count and zeros print as 0 (every row of every year was checked: its 14 county counts plus unknown county equal the printed total)"
+    cadence: yearly
+    files: [states/vt_vdh_annual_2009-2024.json, states/vt_vdh_early_county_2000-2005.json]
+    status: live
+    notes: "16 reports (SHA-256 in sources/vt_vdh/SOURCES.tsv). Against CDC, 9 of 15 causes pass the build's gate (all, alzheimers, cancer, clrd, diabetes, falls, heart, stroke, suicide; diabetes skips 2012 and 2014 on low agreement) and would fill 471 hidden cells (suicide 145, falls 106, diabetes 78, alzheimers 50, stroke 50, clrd 38, heart 4). SKIP: covid (26 checked, 2020 on), firearm (24), flu_pneumonia (21, also under 80% exact), homicide (no CDC-published cell to check), kidney (5), liver (39). Report 2024 numbers the table C-10. 2006-2008 are scans with sideways tables; OCR was tried on 2006 and is noisy, so they were not read. firearm = the four firearm rows of the table added per county; overdose and alcohol cannot be separated; the all-accidents row is not kept. 2026-10-10 night: the 2000-2005 reports were also read (scans, five OCR variants, rows accepted only when the 14 counties add to the printed total and two variants agree) and staged as the separate bundle vt_vdh_early (1,064 values) and the owner approved its five USE rows in chat that night (all deaths, cancer, heart, CLRD, stroke; 100% agreement with CDC on 84, 53, 70, 56 and 56 checked cells, all under the sample-size warning; 30 exact fills); the bundle is listed under files:."
+
+  - id: ne_dhhs_vital_report
+    name: Nebraska DHHS annual Vital Statistics Report 2008-2016 (county-of-residence tables of the leading causes of death)
+    publisher: Nebraska Department of Health and Human Services, Office of Health Statistics
+    url: https://dhhs.ne.gov/Pages/vital-Statistics.aspx
+    license: no terms in the reports; the DHHS General Disclaimer has no reuse rule; the Nebraska.gov policies page (personal non-commercial use, no republishing, bots need written permission) is not confirmed to govern dhhs.ne.gov (terms status stated_review)
+    access: pdf (nine reports 2008-2016 downloaded 2026-10-10 with the owner's yes, 72.7 MB; 2005-2007 downloaded later the same night, 27.6 MB; SHA-256 in sources/ne_dhhs/SOURCES.tsv)
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, alzheimers, diabetes, kidney, suicide]
+    years: 2005-2016 (kidney 2005-2011, 2014, 2015; suicide 2006, 2008, 2010, 2012, 2016)
+    grain: year
+    hidden: "none: every cell is an exact count, zeros print as 0, all 93 counties in every table"
+    cadence: one-off (the page says the complete report is not available after 2016)
+    files: [states/ne_dhhs_vital_report_county_2008-2016.json, states/ne_dhhs_vital_early_county_2005-2007.json]
+    status: live
+    notes: "88 of 89 county tables add up exactly to the statewide figure in the same report's Table 37; the one miss is a 1-death difference for 2013 hypertension (not a map cause). The 2011 cancer table's printed STATE row repeats the 2010 figure (3,437); the county sum 3,403 matches Table 37. Chronic lung disease (J44, J47) and pneumonia (J12-J18) are narrower than CDC's chronic lower respiratory disease (J40-J47) and influenza and pneumonia (J09-J18), so they are kept raw and not used to fill. Reports for 2005, 2006 and 2007 (dhhs.ne.gov/Reports/Vital Statistics Report YYYY.pdf, 27.6 MB, downloaded with the owner's yes) were read the same night and staged as the separate bundle ne_dhhs_vital_early (3,069 values; 32 of 33 tables add up exactly to Table 37, the exception being all deaths 2007: county sum 15,255, equal to the report's own Table 43 total, Table 37 says 15,256; suicide appears in 2006 only). Against CDC four causes pass the gate (all deaths 31 fills, cancer 79, heart 65, stroke 169: 344 fills); Alzheimer's (38 checked) and diabetes (28) fail the 50-sample gate. The owner approved the four USE rows in chat the same night (same DHHS condition: ask before any public push); the bundle is listed under files:. Reports before 2005 sit under other names (the Reports/ naming answers 404). Reports are not published after 2016; the Top Causes dashboard hides counts of 1-5. 2026-10-10 night: the owner approved the six USE rows (all deaths, Alzheimer's, cancer, diabetes, heart, stroke; 99.4-100% agreement with CDC, about 2,110 exact fills) with the condition that DHHS Vital Records is asked before any public push, because the Nebraska.gov portal text (personal non-commercial use, no derivative works, bots need written permission) may or may not apply to dhhs.ne.gov. Kidney and suicide stay SKIP on the gate; accidents, hypertension, chronic lung (J44, J47) and pneumonia (J12-J18) are kept raw."
+
+  - id: ks_kdhe_d25
+    name: Kansas KDHE Table D25, deaths by selected causes of death by county of residence (2016 read; 2013 and 2001-2021 annual summaries exist)
+    publisher: Kansas Department of Health and Environment, Bureau of Epidemiology and Public Health Informatics (Office of Vital Statistics)
+    url: https://kic.kdheks.gov/OHA/reports/pdf/YYYY_D25.pdf
+    license: none stated (the Kansas Information for Communities Notes and Definitions page has no terms of use or citation wording; terms status none_stated)
+    access: xlsx (the 2016 set of Fast Stats tables D01, D02, D05-D08, D25, D26 saved by the owner from the KIC site on 2026-10-10; the site's robots rules and the Chrome tool block automated reads)
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, alzheimers, diabetes, flu_pneumonia, clrd, liver, kidney, suicide, homicide]
+    years: 2016
+    grain: year
+    hidden: "none: every cell is an exact count and zeros print as 0 (105 counties plus N.S.)"
+    cadence: yearly (one year so far)
+    files: [states/ks_kdhe_d25_county_2016.json]
+    status: live
+    notes: "Workbook D25 (40 cause rows x 105 counties, report prepared July 11, 2017). In every county the cause rows add up to the county total and the county totals equal those of Tables D01, D05 and D07 (105 of 105). Cancer = rows 04-14, heart = rows 17+18+19. The KIC query system suppresses counts under 6, but the printed tables carry exact counts. Other years: the department's Annual Summary of Vital Statistics full reports (kdhe.ks.gov DocumentCenter, 2001-2021) carry the same table (E27 in 2021); downloading them needs the owner's yes. Headroom for all years 20,713. 2026-10-10 late night: the owner approved the three USE rows (all deaths 0 fills, cancer 26, heart 21: 47 fills) in chat. Against CDC (2016 only): all deaths 97.1% of 105 checked, cancer 97.5% of 79, heart 98.8% of 83; every other cause fails the 50-checked gate on one year. The table is a July 2017 run: Kansas sits 1-2 below CDC in most counties and well below in Kingman (102 vs 142), Greeley (15 vs 23) and Brown (111 vs 118); among the 47 fills the largest all-cause gaps to CDC are Greeley (KDHE 15 vs CDC 23; a cancer fill of 5) and Edwards (28 vs 32; cancer 3, heart 9), so those few values may read low. The 22 Annual Summary full reports (2001-2024) were downloaded the same night (118.3 MB, SHA-256 in sources/ks_kdhe/SOURCES.tsv) and are being read."
+
+  - id: ks_kdhe_annual
+    name: "Kansas Annual Summary of Vital Statistics, county table 'Selected Causes of Death by County of Residence' (23 reports: 2001-2015, 2017-2024)"
+    publisher: Kansas Department of Health and Environment, Office of Vital Statistics
+    url: https://www.coronavirus.kdheks.gov/DocumentCenter/ (full-report PDFs; each file's address and SHA-256 in sources/ks_kdhe/SOURCES.tsv)
+    license: "none stated (the reports' text carries no copyright, citation or reuse wording; the KIC Notes and Definitions page has none either; terms status none_stated)"
+    access: "pdf (24 reports downloaded 2026-10-10 with the owner's yes, 135.7 MB; the county table has a text layer; read by scripts/ks_parse.py, ks_parse2001.py and ks_dump_extra.py)"
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, alzheimers, diabetes, flu_pneumonia, clrd, liver, kidney, suicide, homicide]
+    years: "2001-2015, 2017-2024 (2016 comes from the D25 workbook)"
+    grain: year
+    hidden: "none: every cell is an exact count and zeros print as 0 (105 counties plus a not-stated row from 2010)"
+    cadence: yearly
+    files: [states/ks_kdhe_annual_county_2001-2024.json]
+    status: live
+    notes: "33,810 county-year-cause values (23 reports). Checks on every county row: cancer, heart and major cardiovascular disease equal the sum of their printed parts (100% of rows); the 105 county columns add up to the Kansas row for all 37 columns in every year (except the all-other-causes column in 2008-2010, which is unused); the 2016 report matches the 2016 D25 workbook on all 1,470 cells. Against CDC all 12 causes pass the build gate (97.0-99.8% agree; 13,536 hidden cells fillable). Known gaps: CDC and KDHE disagree for a few counties every year (Kingman counts about half of CDC's from 2017 on, Edwards, Greeley, Rush, Hodgeman and Kiowa run low; in 2020 the all-causes column and the cause columns differ by 1-2 deaths in five counties), and the 2024 report sits below CDC in Wyandotte and Shawnee (flu/pneumonia and liver fail the per-year gate for 2024 and are skipped). Approved by the owner as is on 2026-10-10 (12 USE rows; 12,332 cells for the 21-report version, then 13,536 cells after the 2020 and 2023 reports were added); no county screen was applied."
 
   # ------------------------------------------------------------ candidates (the research queue)
   - id: wonder_ucd_5yr

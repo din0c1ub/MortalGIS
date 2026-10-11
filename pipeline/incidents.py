@@ -156,13 +156,31 @@ def zip_pt(z, code):
     return (z[code], f"ZIP {code}") if code in z else (None, None)
 
 
-def arcgis_all(url, where="1=1", fields="*", geometry=True, page=2000):
+def _arcgis_json(url, tries=3):
+    """One ArcGIS query as JSON. ArcGIS servers sometimes answer a good query with {"error": "Unable to complete operation"} (code 400)
+    and accept it a moment later (seen on Charlotte's service during the 2026-10-10 verification build), so retry before giving up."""
+    import time
+    for i in range(tries):
+        try:
+            j = json.loads(get(url))
+        except Exception:
+            if i == tries - 1:
+                raise
+            time.sleep(5 * (i + 1))
+            continue
+        if "error" in j and i < tries - 1:
+            time.sleep(5 * (i + 1))
+            continue
+        return j
+
+
+def arcgis_all(url, where="1=1", fields="*", geometry=True, page=2000, order=None):
     import urllib.parse
     off = 0
     while True:
         q = urllib.parse.urlencode({"where": where, "outFields": fields, "returnGeometry": str(geometry).lower(), "outSR": 4326,
-                                    "resultOffset": off, "resultRecordCount": page, "orderByFields": "OBJECTID" if fields == "*" else "", "f": "json"})
-        j = json.loads(get(f"{url}/query?{q}"))
+                                    "resultOffset": off, "resultRecordCount": page, "orderByFields": order or ("OBJECTID" if fields == "*" else ""), "f": "json"})
+        j = _arcgis_json(f"{url}/query?{q}")
         if "error" in j:
             raise RuntimeError(j["error"])
         feats = j.get("features", [])
@@ -455,17 +473,28 @@ def mass_shootings():
                  died_note="public mass shootings, sized by people killed")
 
 
-def city_homicides(key, city, fetch, url, source, cats_fn, color=2, show=None, before=None, note=""):
+def city_homicides(key, city, fetch, url, source, cats_fn, color=2, show=None, before=None, note="", report_missing=False):
     log(f"• {city} homicides …")
     acc = Acc()
+    total = missing = 0
     for y, lon, lat, extra, d in fetch():
+        if before and y and y >= before:
+            continue
+        total += 1
         try:
             pt = (snap(float(lon)), snap(float(lat)))
         except (TypeError, ValueError):
+            missing += 1
             continue
-        if not (-180 < pt[0] < -60 and 15 < pt[1] < 72) or (before and y and y >= before):
+        if not (-180 < pt[0] < -60 and 15 < pt[1] < 72):
+            missing += 1
             continue
         acc.add(y, cats_fn(extra), pt, None, date=d)
+    if report_missing:
+        log(f"  {missing:,} of {total:,} records have no usable location")
+        if missing:
+            share = f"{missing / max(total, 1):.0%}" if missing / max(total, 1) >= 0.01 else "under 1%"
+            note += f" — {missing:,} of {total:,} records ({share}) have no usable location in the source and are not on the map"
     return layer(key, f"{city} homicides", city, acc, kind="me", what="police-recorded", show=show or {"homicide": 3, "firearm": 4},
                  color=color, source=source, url=url, died_note="where the homicide happened (~1 km squares)" + note)
 
@@ -486,6 +515,116 @@ def _philly():
     for r in json.loads(get("https://phl.carto.com/api/v2/sql?q=" + urllib.parse.quote(q)))["rows"]:
         if r.get("date_"):
             yield int(r["date_"][:4]), r.get("point_x"), r.get("point_y"), "YES", r["date_"]
+
+
+# LAPD weapon codes that are firearms (Crm Cd 101-107, 109, 110, 115, 116, 122); starter pistols (111) and air/BB guns (114) are not.
+_LAPD_FIREARM = {"101", "102", "103", "104", "105", "106", "107", "109", "110", "115", "116", "122"}
+
+
+def _lapd():
+    """Los Angeles Police Department criminal homicide (Crm Cd 110) from the two frozen public sets, 2010-2019 and 2020-2024.
+    The NIBRS sets (from March 2024) need a login and are not used. Exact duplicate rows (66 in 2016) are dropped by DR number.
+    Only date, coordinates and weapon code are requested: no victim age, sex or descent, no MO codes."""
+    seen = set()
+    for ds in ("63jg-8b9z", "2nrs-mtv8"):
+        for r in socrata_all("data.lacity.org", ds, "dr_no,date_occ,lat,lon,weapon_used_cd", "crm_cd='110'"):
+            if r["dr_no"] in seen or not r.get("date_occ"):
+                continue
+            seen.add(r["dr_no"])
+            yield int(r["date_occ"][:4]), r.get("lon"), r.get("lat"), "YES" if str(r.get("weapon_used_cd") or "") in _LAPD_FIREARM else "", r["date_occ"]
+
+
+_CIN_MURDER = ("MURDER", "AGGRAVATED MURDER", "AGGRAVATED MURDER - FELONY", "AGGRAVATED MURDER - PREMEDITATED", "VOLUNTARY MANSLAUGHTER")
+
+
+def _cincinnati():
+    """Cincinnati Police murders from two datasets: the old RMS file to 2024-06-02 (k59e-2pvf) and the new STARS-category file from
+    2024-06-03 (7aqy-xrv9). Murder, aggravated murder and voluntary manslaughter only; involuntary manslaughter, reckless and negligent
+    homicide are left out. The old file repeats each incident once per spatial-join match (same instanceid, coordinates jittered by
+    a few metres), so rows are counted once per instanceid. 2010 is a part-year in the old file and is left out. Only date and
+    coordinates are requested: no victim age or sex, no weapon (the new file has none, so there is no firearm split)."""
+    seen = {}
+    names = ",".join("'%s'" % o for o in _CIN_MURDER)
+    for r in socrata_all("data.cincinnati-oh.gov", "k59e-2pvf", "instanceid,date_from,longitude_x,latitude_x",
+                         f"offense in ({names}) AND date_from >= '2011-01-01' AND date_from < '2024-06-03'"):
+        k = r["instanceid"]
+        if k not in seen or (not seen[k][1] and r.get("longitude_x")):
+            seen[k] = (r["date_from"], r.get("longitude_x"), r.get("latitude_x"))
+    for d, lon, lat in seen.values():
+        yield int(d[:4]), lon, lat, "", d
+    for r in socrata_all("data.cincinnati-oh.gov", "7aqy-xrv9", "incident_no,datefrom,longitude_x,latitude_x",
+                         "stars_category='Homicide' AND datefrom >= '2024-06-03'"):
+        yield int(r["datefrom"][:4]), r.get("longitude_x"), r.get("latitude_x"), "", r["datefrom"]
+
+
+_CLT_GUN = re.compile(r"handgun|firearm|rifle|shotgun", re.I)
+
+
+def _charlotte():
+    """Charlotte-Mecklenburg Police homicide victims (UCR murder and non-negligent manslaughter), 2015-. The layer does not
+    support paging (it returns all ~1,000 rows in one reply, under its 2,000 limit), so it is read in one request.
+    Only year, date reported, weapon and the public coordinates are requested: no age, sex, race, circumstances or clearance."""
+    import urllib.parse
+    base = "https://gis.charlottenc.gov/arcgis/rest/services/ODP/CMPD_Homicide/MapServer/0"
+    q = urllib.parse.urlencode({"where": "1=1", "outFields": "ID,CALENDAR_YEAR,DATE_REPORTED,WEAPON,LATITUDE_PUBLIC,LONGITUDE_PUBLIC",
+                                "returnGeometry": "false", "f": "json"})
+    j = _arcgis_json(f"{base}/query?{q}")
+    if "error" in j:
+        raise RuntimeError(j["error"])
+    if j.get("exceededTransferLimit"):
+        raise RuntimeError("Charlotte homicide layer now exceeds one page; add per-year requests")
+    for f in j["features"]:
+        a = f["attributes"]
+        d = datetime.utcfromtimestamp(a["DATE_REPORTED"] / 1000).strftime("%Y-%m-%d") if a.get("DATE_REPORTED") else ""
+        try:
+            y = int(a.get("CALENDAR_YEAR") or d[:4])
+        except ValueError:
+            continue
+        yield y, a.get("LONGITUDE_PUBLIC"), a.get("LATITUDE_PUBLIC"), "YES" if _CLT_GUN.search(a.get("WEAPON") or "") else "", d
+
+
+def _atlanta():
+    """Atlanta Police Department homicides from three open-data files that follow each other: 1997-2008 (UCR code 110, murder; negligent
+    manslaughter 120 is left out), 2009-2020 (APD's own 'HOMICIDE' crime type, whose local offense codes the portal does not define,
+    so a few non-murder records may be included) and 2021- (NIBRS 09A murder and non-negligent manslaughter, one count per victim).
+    Only the year, date and coordinates are requested: no victim, weapon or address fields."""
+    base = "https://services3.arcgis.com/Et5Qfajgiyosiw4d/arcgis/rest/services"
+    iso = lambda ms: datetime.utcfromtimestamp(ms / 1000).strftime("%Y-%m-%d") if ms else ""  # noqa: E731
+    for f in arcgis_all(f"{base}/Crime_Data_1997_2008/FeatureServer/0", where="UCR__=110 AND UPPER(UC2literal)='HOMICIDE' AND CrmYear<=2008",
+                        fields="CrmYear,Date_From1,Longitude,Latitude", geometry=False, order="ObjectId"):
+        a = f["attributes"]
+        if a.get("CrmYear"):
+            yield int(a["CrmYear"]), a.get("Longitude"), a.get("Latitude"), "", iso(a.get("Date_From1"))
+    for f in arcgis_all(f"{base}/2009_2020CrimeData/FeatureServer/0", where="Crime_Type='HOMICIDE'",
+                        fields="Report_Date,Occur_Date,Longitude,Latitude", geometry=False, order="ObjectId"):
+        a = f["attributes"]
+        m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})$", a.get("Occur_Date") or "")
+        d = f"{m[3]}-{int(m[1]):02d}-{int(m[2]):02d}" if m else iso(a.get("Report_Date"))
+        if d and 2009 <= int(d[:4]) <= 2020:
+            yield int(d[:4]), a.get("Longitude"), a.get("Latitude"), "", d
+    for f in arcgis_all(f"{base}/OpenDataWebsite_Crime_view/FeatureServer/0", where="NIBRS_Bucket='Homicide'",
+                        fields="OccurredFromDate,ReportDate,Vic_Count,Longitude,Latitude", geometry=False, order="OBJECTID"):
+        a = f["attributes"]
+        d = iso(a.get("OccurredFromDate") or a.get("ReportDate"))
+        for _ in range(max(1, int(a.get("Vic_Count") or 1))):
+            yield int(d[:4]), a.get("Longitude"), a.get("Latitude"), "", d
+
+
+def _denver():
+    """Denver Police murders from the NIBRS offenses file (previous five calendar years plus the current year, so 2021-): offense category
+    'murder', types homicide-family (0902) and homicide-other (0912), one count per victim (VICTIM_COUNT). Negligent homicide (0910)
+    and police killings by gun (0907, covered by the police-killings layer) are left out. Only date and coordinates are requested."""
+    base = "https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/arcgis/rest/services/ODC_CRIME_OFFENSES_P/FeatureServer/324"
+    seen = set()
+    for f in arcgis_all(base, where="OFFENSE_CATEGORY_ID='murder' AND OFFENSE_TYPE_ID IN ('homicide-family','homicide-other')",
+                        fields="OFFENSE_ID,FIRST_OCCURRENCE_DATE,VICTIM_COUNT,GEO_LON,GEO_LAT", geometry=False, order="OBJECTID"):
+        a = f["attributes"]
+        if a["OFFENSE_ID"] in seen or not a.get("FIRST_OCCURRENCE_DATE"):
+            continue
+        seen.add(a["OFFENSE_ID"])
+        d = datetime.utcfromtimestamp(a["FIRST_OCCURRENCE_DATE"] / 1000).strftime("%Y-%m-%d")
+        for _ in range(max(1, int(round(a.get("VICTIM_COUNT") or 1)))):
+            yield int(d[:4]), a.get("GEO_LON"), a.get("GEO_LAT"), "", d
 
 
 def _detroit():
@@ -600,6 +739,38 @@ def cuyahoga():
                  url="https://github.com/UK-IPOP/open-data-pipeline", died_note="", lived_note="where the person lived (ZIP Codes)")
 
 
+def _live_layers():
+    """Layer keys whose pipeline/sources.yml entry has status `live`."""
+    import yaml
+    from pathlib import Path
+    reg = yaml.safe_load((Path(__file__).parent / "sources.yml").read_text())["sources"]
+    return {r["layer"] for r in reg if r.get("layer") and r.get("status") == "live"}
+
+
+def new_city_jobs():
+    """Homicide layers added 2026-10-10 (owner choice: Cincinnati, Charlotte, Atlanta, Denver). Homicide victims only, ~1 km squares."""
+    only_homicide = lambda v: [3]  # noqa: E731
+    yes = lambda v: [3] + ([4] if str(v).upper() in ("YES", "Y", "TRUE") else [])  # noqa: E731
+    return [
+        ("cincinnati_homicides", lambda: city_homicides("cincinnati_homicides", "Cincinnati", _cincinnati,
+            "https://data.cincinnati-oh.gov/d/k59e-2pvf", "Cincinnati Police Department via City of Cincinnati Open Data (public domain)",
+            only_homicide, color=2, show={"homicide": 3}, before=None, report_missing=True,
+            note=" — murder, aggravated murder and voluntary manslaughter, 2011 on, one count per incident ID; no firearm split (the new records have no weapon field)")),
+        ("charlotte_homicides", lambda: city_homicides("charlotte_homicides", "Charlotte (CMPD)", _charlotte,
+            "https://gis.charlottenc.gov/arcgis/rest/services/ODP/CMPD_Homicide/MapServer/0",
+            "Charlotte-Mecklenburg Police Department via City of Charlotte Open Data", yes, color=2, report_missing=True,
+            note=" — Charlotte-Mecklenburg Police jurisdiction, 2015 on, by year reported; firearm = a weapon field that names a handgun, rifle, shotgun or firearm")),
+        ("atlanta_homicides", lambda: city_homicides("atlanta_homicides", "Atlanta (APD)", _atlanta,
+            "https://opendata.atlantapd.org/", "Atlanta Police Department via APD Open Data", only_homicide, color=2, show={"homicide": 3},
+            report_missing=True,
+            note=" — City of Atlanta, 1997 on, by year occurred; no firearm split (the 2009-2020 file has no weapon field); 2009-2020 uses APD's own homicide type, so a few non-murder records may be included")),
+        ("denver_homicides", lambda: city_homicides("denver_homicides", "Denver (DPD)", _denver,
+            "https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime", "Denver Police Department via Denver Open Data Catalog",
+            only_homicide, color=2, show={"homicide": 3}, report_missing=True,
+            note=" — City and County of Denver, 2021 on (the source keeps five years), murder offenses counted per victim; negligent homicide and police shootings left out; no firearm split")),
+    ]
+
+
 def build_incidents(out_dir, status: dict):
     """Build every incident layer. A failing source keeps its previous file and is reported."""
     (out_dir / "points").mkdir(exist_ok=True)
@@ -634,6 +805,10 @@ def build_incidents(out_dir, status: dict):
             "https://data.cityofnewyork.us/d/833y-fsy8", "NYPD shooting incidents (murders) via NYC Open Data", yes, color=2)),
         ("philly_homicides", lambda: city_homicides("philly_homicides", "Philadelphia", _philly,
             "https://opendataphilly.org/datasets/shooting-victims/", "Philadelphia Police fatal shootings via OpenDataPhilly", yes, color=2)),
+        ("lapd_homicides", lambda: city_homicides("lapd_homicides", "Los Angeles (LAPD)", _lapd,
+            "https://data.lacity.org/d/2nrs-mtv8", "Los Angeles Police Department via City of Los Angeles Open Data", yes, color=2,
+            before=2024, note=" — City of Los Angeles only (LAPD area, about 40% of the county's people), 2010–2023; the 2015 count is about 60 below its neighbours in the source")),
+        *[(k, f) for k, f in new_city_jobs() if k in _live_layers()],  # a new city layer is built only once its registry entry is `live` (owner approval)
         ("detroit_homicides", lambda: city_homicides("detroit_homicides", "Detroit", _detroit,
             "https://data.detroitmi.gov/", "Detroit Police Department via Detroit Open Data", lambda v: [3], color=2, show={"homicide": 3})),
     ]

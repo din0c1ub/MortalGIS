@@ -148,6 +148,26 @@ details.sec .body{margin-top:8px}
 .mbar{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+
+/* Historical mode: states, 1900-1945 (shown only when data/hist_state/ exists; see pipeline/hist_state.py) */
+.modesw{width:auto;margin-left:8px;font-size:13px}
+.modesw[hidden]{display:none}
+.modesw button{padding:5px 12px;white-space:nowrap}
+body[data-mode="hist"] .co{display:none!important}
+body:not([data-mode="hist"]) .ho{display:none!important}
+body[data-mode="hist"] #pts, body[data-mode="hist"] #dotchip, body[data-mode="hist"] #gapnote{display:none!important}
+#map .hs{stroke:var(--stroke);stroke-width:.6;vector-effect:non-scaling-stroke;cursor:pointer}
+#map .hs:hover,#map .hs:focus-visible{stroke:var(--ink);stroke-width:1.4;outline:none}
+#map .hs.np{cursor:default}
+#map .hsel{fill:none;stroke:var(--focus);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
+#map .hh path,#map .hi path,#map .hm path{pointer-events:none}
+#map .hm path{fill:var(--ink);stroke:var(--panel);stroke-width:1}
+#hCov text{font:400 9.5px var(--f-data);fill:var(--muted)}
+#hCov{display:block;width:100%;height:auto;margin-top:6px;overflow:visible}
+.hnote p{margin:0 0 6px} .hnote p:last-child{margin-bottom:0}
+.gchip{display:inline-block;font:600 11px var(--f-data);padding:1px 7px;border-radius:999px;border:1px solid var(--line);margin-right:6px;color:var(--ink)}
+.hlist{margin:0;padding-left:16px;font-size:12.5px;color:var(--muted)}
+
 @media (max-width:760px){
   .app{grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto}
   /* Phones: the map sticks to the top while the controls and county panel scroll under it */
@@ -171,15 +191,44 @@ details.sec .body{margin-top:8px}
 <div class="app">
   <header>
     <div class="brand">Mortal<span>GIS</span></div>
-    <div class="tag">US county death rates, 1968 to today</div>
-    <div class="search">
+    <div class="tag" id="tagline">US county death rates, 1968 to today</div>
+    <div class="seg modesw" id="modesw" role="group" aria-label="Map mode" hidden><button type="button" id="modeCo" aria-pressed="true">Counties 1989–2024</button><button type="button" id="modeHi" aria-pressed="false">States 1900–1945</button></div>
+    <div class="search co">
       <input id="q" list="countylist" placeholder="Find a county, e.g. Genesee, MI" autocomplete="off" aria-label="Find a county">
       <datalist id="countylist"></datalist>
     </div>
   </header>
 
   <aside>
-    <div>
+    <div class="ho">
+      <span class="lbl" id="hSerLbl">Cause of death, as the printed volumes named it</span>
+      <select id="hSeries" aria-labelledby="hSerLbl"></select>
+      <div class="chips" id="hGrade" style="margin-top:8px"></div>
+    </div>
+    <div class="ho">
+      <span class="lbl" id="hMeaLbl">Show</span>
+      <div class="views" id="hMeasures" role="group" aria-labelledby="hMeaLbl"></div>
+      <div class="desc" id="hMeaDesc"></div>
+    </div>
+    <div class="ho">
+      <label class="lbl" for="hYear">Year</label>
+      <div class="period">
+        <button class="iconbtn" id="hPlay" type="button" aria-label="Play through years">▶</button>
+        <input type="range" id="hYear" min="0" max="0" step="1" value="0">
+        <span class="pval" id="hPval"></span>
+      </div>
+      <svg id="hCov" viewBox="0 0 320 34" role="img" aria-label="States reporting in each year"></svg>
+      <div class="covkey" id="hCovKey"></div>
+    </div>
+    <div class="ho legend">
+      <span class="lbl" id="hLegTitle">Deaths</span>
+      <svg id="hLegend" viewBox="0 0 320 34" role="img" aria-label="Map legend"></svg>
+      <div class="legkeys" id="hLegKeys"></div>
+    </div>
+    <div class="note hnote ho" id="hNote"></div>
+    <section class="county ho" id="hState" aria-live="polite"></section>
+    <details class="about sec ho"><summary>About these numbers &amp; sources</summary><div class="body hnote" id="hAbout"></div></details>
+    <div class="co">
       <span class="lbl" id="mLbl">Cause of death</span>
       <div class="picker">
         <button type="button" class="pbtn" id="mBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mLbl mBtnLbl"><span id="mBtnLbl"></span><span class="car" aria-hidden="true">▾</span></button>
@@ -192,7 +241,7 @@ details.sec .body{margin-top:8px}
       <div class="desc" id="mdesc"></div>
       <details class="sec" style="margin-top:8px" id="about"><summary>About this measure</summary><div class="body" id="src"></div></details>
     </div>
-    <div>
+    <div class="co">
       <span class="lbl" id="whereLbl">Count deaths by</span>
       <div class="seg" role="group" aria-labelledby="whereLbl">
         <button type="button" id="wLived" aria-pressed="true">Where they lived</button>
@@ -200,7 +249,7 @@ details.sec .body{margin-top:8px}
       </div>
       <div class="note" id="whereNote" hidden></div>
     </div>
-    <div id="periodWrap">
+    <div id="periodWrap" class="co">
       <label class="lbl" for="period">Year</label>
       <div class="period">
         <button class="iconbtn" id="play" type="button" aria-label="Play through years">▶</button>
@@ -221,7 +270,7 @@ details.sec .body{margin-top:8px}
         <div class="desc" id="monthNote" style="margin-top:4px">Death locations by month; county colors stay yearly.</div>
       </div>
     </div>
-    <div>
+    <div class="co">
       <span class="lbl">View</span>
       <div class="views" id="views">
         <button type="button" data-view="us" aria-pressed="false">United States</button>
@@ -229,15 +278,15 @@ details.sec .body{margin-top:8px}
         <button type="button" data-view="county" aria-pressed="false">Selected county</button>
       </div>
     </div>
-    <div class="legend">
+    <div class="legend co">
       <span class="lbl" id="legTitle">Rate</span>
       <svg id="legend" viewBox="0 0 320 34" role="img" aria-label="Map legend"></svg>
       <div class="legkeys" id="legkeys"></div>
       <div class="dotkey" id="dotkey" hidden></div>
     </div>
-    <section class="county" id="county" aria-live="polite"></section>
-    <details class="about sec"><summary>About the data &amp; sources</summary><ul class="srcs" id="srcs"></ul>
-      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where Michigan, New York, New Mexico and Pennsylvania publish them (outlined with dashes). The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
+    <section class="county co" id="county" aria-live="polite"></section>
+    <details class="about sec co"><summary>About the data &amp; sources</summary><ul class="srcs" id="srcs"></ul>
+      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where Michigan, New York, New Mexico and Pennsylvania publish them (outlined with dashes). A few states publish only that a county had 1–4 deaths; the tooltip of a hidden county then says so, and the count and rate stay hidden. The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
   </aside>
 
   <main>
@@ -356,6 +405,7 @@ const hatchG = g.append("g").attr("class","hatch");
 g.append("path").attr("class","states").datum(topojson.mesh(topo, topo.objects.states, (a,b)=>a!==b));
 g.append("path").attr("class","states").datum(nation);
 const selPath = g.append("path").attr("class","sel");
+const hG = g.insert("g","path.states").attr("class","histg").style("display","none");   // historical mode (states), built on first use
 
 let W=0,H=0;
 function layout(){
@@ -365,8 +415,9 @@ function layout(){
   svg.attr("viewBox",`0 0 ${W} ${H}`);
   cPaths.attr("d", path); g.selectAll(".states").attr("d", path);
   drawHatch(); drawSel(); sizeCanvas(); drawPoints();
+  if(HI.on) hLayout();
 }
-const zoom = d3.zoom().scaleExtent([1,60]).on("zoom", e=>{ g.attr("transform", e.transform); drawPoints(); });
+const zoom = d3.zoom().scaleExtent([1,60]).on("zoom", e=>{ g.attr("transform", e.transform); if(HI.on) hMarkers(); else drawPoints(); });
 svg.call(zoom);
 $("#zin").onclick = ()=>svg.transition().duration(RM?0:300).call(zoom.scaleBy,1.6);
 $("#zout").onclick = ()=>svg.transition().duration(RM?0:300).call(zoom.scaleBy,1/1.6);
@@ -377,6 +428,7 @@ function zoomTo(gj, pad=.12){
   svg.transition().duration(DUR).call(zoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2));
 }
 function setView(v){
+  if(HI.on) return;
   state.view=v; writeHash();
   document.querySelectorAll("#views button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.view===v));
   const st = state.fips.slice(0,2);
@@ -399,8 +451,14 @@ function spanOf(m, p){
   return m.spans.find(sp=>{ const [a,b]=sp.split("-").map(Number); return +p>=a && +p<=b; }) || null;
 }
 const spanLbl = sp => sp.replace("-", "–");
-const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH", "35":"New Mexico DOH", "42":"Pennsylvania DOH"};  // states that publish counts CDC hides
-const fillName = i => FILLSRC[counties[i][0].slice(0,2)] || "the state health department";
+const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH", "35":"New Mexico DOH", "42":"Pennsylvania DOH", "17":"Illinois DPH", "18":"Indiana Department of Health", "29":"Missouri DHSS", "37":"North Carolina SCHS", "47":"Tennessee Department of Health", "55":"Wisconsin DHS", "01":"Alabama DPH", "12":"Florida DOH", "13":"Georgia DPH", "24":"Maryland VSA", "28":"Mississippi MSDH", "45":"South Carolina DPH", "40":"Oklahoma State Department of Health", "08":"Colorado CDPHE", "34":"New Jersey DOH (NJSHAD)", "27":"Minnesota Department of Health", "54":"West Virginia Health Statistics Center", "51":"Virginia Department of Health", "50":"Vermont Department of Health", "25":"Massachusetts Department of Public Health", "31":"Nebraska DHHS", "20":"Kansas Department of Health and Environment"};  // states that publish counts CDC hides
+const NCHS_FILL = "NCHS death-certificate files (via NBER)";
+// filled[p][i]: 1 = a state health department's count, 2 = the exact small count from the NCHS files the 1968–98 history is built from
+const fillName = (i, d, p) => (d && d.filled && d.filled[p] && d.filled[p][i]===2) ? NCHS_FILL : (FILLSRC[counties[i][0].slice(0,2)] || "the state health department");
+const fillWhy = (i, d, p) => (d && d.filled && d.filled[p] && d.filled[p][i]===2) ? "published tables hide 1–9" : "CDC hides 1–9";
+// 1–4 bands: a cell CDC hides where the state's own table says only "1–4" (site key `band`: year → county indexes). The count stays hidden and no rate is shown.
+const bandOf = (d, i, p) => { const b = d && d.band && d.band[p]; return !!b && b.includes(i) && !spanOf(M.get(state.measure), p); };
+const bandName = i => FILLSRC[counties[i][0].slice(0,2)] || "the state health department";
 function cntArr(m, d, p){ const sp = spanOf(m,p); return sp ? (d.spans&&d.spans[sp]||{}).count : (d.count && d.count[p]); }
 function valArr(m, d, p){
   const sp = spanOf(m,p);
@@ -483,6 +541,7 @@ function readHash(){
 }
 let hashTimer = null;
 function writeHash(){
+  if(HI.on){ hWriteHash(); return; }
   clearTimeout(hashTimer);
   hashTimer = setTimeout(()=>{
     const m = M.get(state.measure); if(!m) return;
@@ -494,6 +553,7 @@ function writeHash(){
   }, 250);
 }
 function render(){
+  if(HI.on){ hRender(); return; }
   writeHash(); drawMonths();
   const m = M.get(state.measure), d = cache[state.measure], p = state.year;
   let vals = valArr(m, d, p), b = breaks(m, d, p), R = ramp();
@@ -562,7 +622,9 @@ function drawLegend(b, cols, m, d, p){
   const mm = !!state.month && (monthChoro() || stateMonthOk());  // month maps: scale is per month, nothing hatched
   const ca = cntArr(m,d,p);
   if (!mm && ca && ca.some(v=>v===-1) && (spanOf(m,p) || !(d.modeled && d.modeled[p]))) keys.push(`<span><i class="hz" style="background-color:var(--nodata)"></i>Fewer than 10 deaths (hidden)</span>`);
-  if (!spanOf(m,p) && !mm && d.filled && d.filled[p]) keys.push(`<span><i style="background:var(--r2);outline:1.5px dashed var(--ink);outline-offset:-3px"></i>Small counts from the state health department (CDC hides 1–9)</span>`);
+  if (!spanOf(m,p) && !mm && d.band && d.band[p] && d.band[p].length) keys.push(`<span>Some hatched counties show a 1–4 band from the state when you point at them</span>`);
+  if (!spanOf(m,p) && !mm && d.filled && d.filled[p] && d.filled[p].some(v=>v===1)) keys.push(`<span><i style="background:var(--r2);outline:1.5px dashed var(--ink);outline-offset:-3px"></i>Small counts from the state health department (CDC hides 1–9)</span>`);
+  if (!spanOf(m,p) && !mm && d.filled && d.filled[p] && d.filled[p].some(v=>v===2)) keys.push(`<span><i style="background:var(--r2);outline:1.5px dashed var(--ink);outline-offset:-3px"></i>Small counts from the NCHS death-certificate files (the published tables hide 1–9)</span>`);
   if (!spanOf(m,p) && d.modeled && d.modeled[p]) keys.push(`<span><i class="hz" style="background-color:var(--r2)"></i>${m.flagLabel||"Modeled estimate"}</span>`);
   if (isCount(m)) keys.push(`<span>Color shows number of deaths</span>`);
   $("#legkeys").innerHTML = keys.join("") + (isCount(m) || mm ? "" : `<div class="views" role="group" aria-label="Color scale" style="margin-top:4px;width:100%"><button type="button" data-scale="year" aria-pressed="${state.scale==="year"}">Scale to this year</button><button type="button" data-scale="all" aria-pressed="${state.scale==="all"}">Same scale, all years</button></div>`);
@@ -610,14 +672,18 @@ function markCoverage(){
 
 function getText(m, d, i, p){
   const ca = cntArr(m,d,p), sp = spanOf(m,p);
-  if (isCount(m)) { const c = ca ? ca[i] : null; return c==null ? "No data" : (c===-1 ? "Fewer than 10 deaths" : `${fmtN(c)} ${c===1?"death":"deaths"}`); }
+  if (isCount(m)) { const c = ca ? ca[i] : null; return c==null ? "No data" : (c===-1 ? (bandOf(d,i,p) ? "1–4 deaths (state band)" : "Fewer than 10 deaths") : `${fmtN(c)} ${c===1?"death":"deaths"}`); }
   const ra = valArr(m,d,p), v = ra ? ra[i] : null;
-  if (v==null) { const c = ca ? ca[i] : null; return c===-1 ? `Fewer than 10 deaths${sp?` in ${spanN(sp)} years`:""}` : "No data"; }
+  if (v==null) {
+    const c = ca ? ca[i] : null;
+    if (!sp && c>0 && d.filled && d.filled[p] && d.filled[p][i]) return `${fmtN(c)} ${c===1?"death":"deaths"} (no rate: fewer than 20)`;  // state-filled count; a rate on so few deaths is not shown
+    return c===-1 ? (bandOf(d,i,p) ? "1–4 deaths (state band)" : `Fewer than 10 deaths${sp?` in ${spanN(sp)} years`:""}`) : "No data";
+  }
   return m.unit.startsWith("years")&&!m.unit.includes("per") ? `${fmt(v)} yrs` : fmt(v);
 }
 function countText(d,i,p){
   const ca = cntArr(M.get(state.measure), d, p); if(!ca) return null; const c = ca[i];
-  if(c==null) return null; if(c===-1) return "1–9 (hidden)"; if(typeof c==="string") return `${c} (range)`; return fmtN(c);
+  if(c==null) return null; if(c===-1) return bandOf(d,i,p) ? "1–4 (state band)" : "1–9 (hidden)"; if(typeof c==="string") return `${c} (range)`; return fmtN(c);
 }
 function hover(e, f){
   if (hoverPoint(e)) return;
@@ -635,8 +701,9 @@ function hover(e, f){
     }
     placeTip(e); return;
   }
-  const c = isCount(m) ? null : countText(d,i,p);
-  t.innerHTML = `<div>${label(counties[i])} · ${periodLabel(m,p)}</div><b>${getText(m,d,i,p)}</b> ${isCount(m)||((valArr(m,d,p)||[])[i]==null)?"":`<span style="color:var(--muted)">${m.unit}${spanOf(m,p)?" per year":""}</span>`}${c?`<div style="color:var(--muted)">Deaths${spanOf(m,p)?` in ${spanN(spanOf(m,p))} years`:""}: ${c}</div>`:""}${!spanOf(m,p)&&d.filled&&d.filled[p]&&d.filled[p][i]?`<div style="color:var(--accent)">Count from ${fillName(i)} (CDC hides 1–9)</div>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<div style="color:var(--accent)">Modeled estimate</div>`:""}`;
+  const noRate = ((valArr(m,d,p)||[])[i]==null) && !spanOf(m,p) && d.filled && d.filled[p] && d.filled[p][i];  // state-filled count with no rate: the headline already says the count
+  const c = isCount(m) || noRate || bandOf(d,i,p) ? null : countText(d,i,p);  // a band is already the headline
+  t.innerHTML = `<div>${label(counties[i])} · ${periodLabel(m,p)}</div><b>${getText(m,d,i,p)}</b> ${isCount(m)||((valArr(m,d,p)||[])[i]==null)?"":`<span style="color:var(--muted)">${m.unit}${spanOf(m,p)?" per year":""}</span>`}${c?`<div style="color:var(--muted)">Deaths${spanOf(m,p)?` in ${spanN(spanOf(m,p))} years`:""}: ${c}</div>`:""}${!spanOf(m,p)&&d.filled&&d.filled[p]&&d.filled[p][i]?`<div style="color:var(--accent)">Count from ${fillName(i,d,p)} (${fillWhy(i,d,p)})</div>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<div style="color:var(--accent)">Modeled estimate</div>`:""}${bandOf(d,i,p)?`<div style="color:var(--accent)">Band from ${bandName(i)}: it reports only that 1–4 people died (CDC hides 1–9)</div>`:""}`;
   placeTip(e);
 }
 function placeTip(e){
@@ -854,12 +921,12 @@ async function renderCounty(){
   const keep = v => v!=null && (!sparse || v>0);
   const med = d3.median(vals.filter(keep)), medS = d3.median(vals.filter((v,j)=>keep(v)&&counties[j][0].slice(0,2)===st));
   const medLbl = sparse ? " median*" : " median";
-  const cnt = isCount(m) ? null : countText(d,i,p), pop = meta.population[i];
+  const cnt = isCount(m) || bandOf(d,i,p) ? null : countText(d,i,p), pop = meta.population[i];
   const worst = m.higherIsBetter ? "lowest" : "highest";
   const srcKey = d.src && d.src[p];
   let h = `<div><div class="cname">${c[1]} County, ${c[2]}</div><div class="csub">${pop?`Population ${fmtI(pop)} (2023) · `:""}FIPS ${c[0]}</div></div>
-  <div><span class="lbl">${m.label}${m.place==="occurrence"&&m.pair?" (where they died)":""} · ${periodLabel(m,p)}</span><div class="big"><b>${getText(m,d,i,p)}</b><small>${isCount(m)?"":m.unit}</small></div></div>
-  <div class="chips">${!spanOf(m,p)&&d.filled&&d.filled[p]&&d.filled[p][i]?`<span class="chip warn">Count from ${fillName(i)}</span>`:""}${spanOf(m,p)?`<span class="chip">${spanN(spanOf(m,p))}-year total, ${spanLbl(spanOf(m,p))}</span>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<span class="chip warn">Modeled: fewer than 10 deaths</span>`:""}${srcKey?`<span class="chip">${(SRC[srcKey]||{}).label||srcKey}</span>`:""}</div>
+  <div><span class="lbl">${m.label}${m.place==="occurrence"&&m.pair?" (where they died)":""} · ${periodLabel(m,p)}</span><div class="big"><b>${getText(m,d,i,p)}</b><small>${isCount(m)||((valArr(m,d,p)||[])[i]==null)?"":m.unit}</small></div></div>
+  <div class="chips">${!spanOf(m,p)&&d.filled&&d.filled[p]&&d.filled[p][i]?`<span class="chip warn">Count from ${fillName(i,d,p)}</span>`:""}${bandOf(d,i,p)?`<span class="chip warn">1–4 band from ${bandName(i)}</span>`:""}${spanOf(m,p)?`<span class="chip">${spanN(spanOf(m,p))}-year total, ${spanLbl(spanOf(m,p))}</span>`:""}${!spanOf(m,p)&&d.modeled&&d.modeled[p]&&d.modeled[p][i]?`<span class="chip warn">Modeled: fewer than 10 deaths</span>`:""}${srcKey?`<span class="chip">${(SRC[srcKey]||{}).label||srcKey}</span>`:""}</div>
   <div id="pairline"></div>
   <dl class="facts">
     ${cnt?`<dt>Deaths</dt><dd>${cnt}</dd>`:""}
@@ -975,6 +1042,313 @@ function select(fips, fromMap){
   if(!fromMap) setView("county");
 }
 
+// ---------- historical mode: states, 1900–1945 (data/hist_state/, written by pipeline/hist_state.py from approved series only)
+// A different map from the county one: its own series, years, colors and notes. The county layers, filters and sources panel are untouched while it is off.
+const HI = {ok:false, on:false, idx:null, reg:null, ser:{}, key:null, meas:"deaths", scale:"year", year:1920, sel:"NY", playing:null, prevView:"us", built:false, anoms:new Map(), scales:{}};
+const stCode = new Map();   // state FIPS -> postal code, for the states in the panel
+const HMEAS = {
+  deaths:{label:"Deaths", unit:"deaths", desc:"Exact counts from the printed volumes. Counts of 1–9 are shown: the people in these tables died more than 70 years ago, and neither source asks for small counts to be hidden."},
+  share:{label:"Share of registered deaths", unit:"% of all registered deaths", desc:"Deaths from this cause as a percent of all deaths registered in the same state and year. Needs no population figure. Not shown on fewer than 20 deaths."},
+  per1000:{label:"Per 1,000 births", unit:"infant deaths per 1,000 births", desc:"Infant deaths for every 1,000 births registered in the same state and year. Not shown on fewer than 20 deaths."}};
+async function histProbe(){
+  try{
+    const r = await fetch("data/hist_state/index.json"); if(!r.ok) return;
+    HI.idx = await r.json();
+    if (HI.idx.registration){ const rr = await fetch("data/hist_state/"+HI.idx.registration); if (rr.ok) HI.reg = await rr.json(); }
+  }catch(e){ HI.idx = null; return; }
+  if (!HI.idx || !(HI.idx.series||[]).length) return;
+  for (const s of HI.idx.states) stCode.set(s.fips, s.code);
+  const sel = $("#hSeries");
+  for (const g of HI.idx.groups){
+    const og = document.createElement("optgroup"); og.label = g.label;
+    HI.idx.series.filter(s=>s.group===g.key).forEach(s=>og.append(new Option(`${s.label} (${s.years[0]}–${s.years[1]})`, s.key)));
+    sel.append(og);
+  }
+  HI.anoms = new Map((HI.idx.anomalies||[]).map(a=>[a.state+"-"+a.year, a]));
+  HI.key = HI.idx.series.some(s=>s.key==="all_deaths") ? "all_deaths" : HI.idx.series[0].key;
+  HI.ok = true;
+  $("#modesw").hidden = false;
+}
+const hSer = () => HI.idx.series.find(s=>s.key===HI.key);
+async function histLoad(key){
+  if (!HI.ser[key]){
+    const s = HI.idx.series.find(x=>x.key===key);
+    HI.ser[key] = await fetch("data/hist_state/"+s.file).then(r=>r.json());
+  }
+  return HI.ser[key];
+}
+const stName = code => (HI.idx.states.find(s=>s.code===code)||{}).name || code;
+const minDeaths = () => HI.idx.shareMinDeaths || 20;
+// One state-year under the chosen measure. st: ok (value drawn) | none (no data: outside the registration area) | nobirths | small (fewer than 20 deaths, count only) | excluded (printed total in doubt)
+function hCell(code, yr, key=HI.key, meas=HI.meas){
+  const S = HI.ser[key]; if (!S) return {st:"none"};
+  const i = yr - S.y0, arr = S.v[code], n = arr ? arr[i] : null;
+  if (n==null) return {st:"none", n:null};
+  if (meas==="deaths") return {st:"ok", n, v:n};
+  if (meas==="share"){
+    const D = HI.ser.all_deaths, t = D && D.v[code] ? D.v[code][yr-D.y0] : null;
+    if (t==null) return {st:"none", n};
+    const a = HI.anoms.get(code+"-"+yr);
+    if (a && a.excludeShare) return {st:"excluded", n, t, a};
+    if (n < minDeaths()) return {st:"small", n, t};
+    return {st:"ok", n, t, v:100*n/t};
+  }
+  const b = S.births && S.births[code] ? S.births[code][i] : null;
+  if (b==null) return {st:"nobirths", n};
+  if (n < minDeaths()) return {st:"small", n, b};
+  return {st:"ok", n, b, v:1000*n/b};
+}
+function hImputed(code, yr, key=HI.key, meas=HI.meas){
+  const S = HI.ser[key]; const f = S && S.imputed && S.imputed[code] ? S.imputed[code][yr] : 0;
+  if (!f) return 0;
+  return meas==="per1000" ? f : (f & 1);
+}
+function hBreaks(key, meas, yr=null){
+  const k = key+"|"+meas+"|"+(yr||"all"); if (HI.scales[k]) return HI.scales[k];
+  const S = HI.ser[key], vals = [];
+  for (let y=(yr||S.y0); y<=(yr||S.y1); y++) for (const code of Object.keys(S.v)){ const c = hCell(code,y,key,meas); if (c.st==="ok" && c.v>0) vals.push(c.v); }
+  vals.sort(d3.ascending);
+  const step = meas==="deaths" ? 1 : .1;
+  const q = [1,2,3,4,5,6].map(i=>vals.length ? d3.quantileSorted(vals,i/7) : 0);
+  const out = []; q.forEach((v,j)=>{ let x = meas==="deaths" ? Math.round(v) : +v.toPrecision(2); if (j && x<=out[j-1]) x = +(out[j-1]+step).toFixed(2); out.push(x); });
+  return HI.scales[k] = out;
+}
+const hBrk = () => hBreaks(HI.key, HI.meas, HI.scale==="year" ? HI.year : null);
+// States that have something to draw under the chosen measure (a count, or a share or rate where one is allowed).
+const hHave = c => c.st!=="none" && c.st!=="nobirths";
+const hFmt = (v, meas) => meas==="share" ? v.toFixed(1)+"%" : meas==="per1000" ? d3.format(",.0f")(v) : fmtI(v);
+function hBuild(){
+  if (HI.built) { hLayout(); return; }
+  HI.built = true;
+  hG.selectAll("path.hs").data(stateFeats, f=>f.id).join("path").attr("class", f=>"hs"+(stCode.has(f.id)?"":" np")).attr("d", path)
+    .attr("tabindex", f=>stCode.has(f.id)?0:null)
+    .on("pointermove", hHover).on("pointerleave", ()=>{ $("#tip").hidden = true; })
+    .on("click", (e,f)=>{ if (stCode.has(f.id)) hSelect(stCode.get(f.id)); })
+    .on("keydown", (e,f)=>{ if ((e.key==="Enter"||e.key===" ") && stCode.has(f.id)){ e.preventDefault(); hSelect(stCode.get(f.id)); } })
+    .on("focus", (e,f)=>{ if (stCode.has(f.id)) hSelect(stCode.get(f.id)); });
+  hG.append("g").attr("class","hh"); hG.append("g").attr("class","hi"); hG.append("g").attr("class","hm"); hG.append("path").attr("class","hsel");
+}
+function hLayout(){ hG.selectAll("path.hs").attr("d", path); hDraw(); }
+function hFeat(code){ return stateFeats.find(f=>stCode.get(f.id)===code); }
+function hDraw(){
+  if (!HI.on || !HI.ser[HI.key]) return;
+  const S = HI.ser[HI.key], yr = HI.year, R = ramp(), b = hBrk();
+  const scale = d3.scaleThreshold().domain(b).range(R), nodata = css("--nodata");
+  const hatch = [], imp = [];
+  hG.selectAll("path.hs").attr("fill", f=>{
+    const code = stCode.get(f.id); if (!code) return nodata;
+    const c = hCell(code, yr);
+    if (c.st==="none" || c.st==="nobirths") hatch.push(f);
+    if (hImputed(code, yr)) imp.push(f);
+    if (c.st!=="ok") return nodata;
+    return c.v===0 ? css("--r0") : scale(c.v);
+  });
+  hG.select(".hh").selectAll("path").data(hatch, f=>f.id).join("path").attr("d", path).attr("fill","url(#hatch)");
+  hG.select(".hi").selectAll("path").data(imp, f=>f.id).join("path").attr("d", path).attr("fill","none").attr("stroke","var(--ink)").attr("stroke-width",1.6)
+    .attr("stroke-dasharray","1 2.5").attr("stroke-linecap","round").attr("vector-effect","non-scaling-stroke");
+  const sf = hFeat(HI.sel); hG.select(".hsel").datum(sf||null).attr("d", sf?path:null);
+  hMarkers();
+}
+function hMarkers(){
+  if (!HI.on || !HI.ser[HI.key]) return;
+  const S = hSer(), k = d3.zoomTransform(svg.node()).k, yr = HI.year;
+  const marks = S.source==="miller" ? [...HI.anoms.values()].filter(a=>a.year===yr && hFeat(a.state)) : [];
+  hG.select(".hm").selectAll("path").data(marks, a=>a.state+a.year).join("path")
+    .attr("d","M0,-6L6,0L0,6L-6,0Z").attr("transform", a=>{ const [x,y] = path.centroid(hFeat(a.state)); return `translate(${x},${y}) scale(${1/k})`; });
+}
+async function hSetSeries(key, keepMeas){
+  HI.key = key; $("#hSeries").value = key;
+  const s = hSer(); await histLoad(key);
+  if (s.measures.includes("share") && HI.meas==="share") await histLoad("all_deaths");
+  if (!s.measures.includes(HI.meas)) HI.meas = s.measures.includes("per1000") ? "per1000" : "deaths";
+  if (HI.meas==="share") await histLoad("all_deaths");
+  HI.year = Math.min(s.years[1], Math.max(s.years[0], HI.year));
+  const yr = $("#hYear"); yr.min = 0; yr.max = s.years[1]-s.years[0]; yr.value = HI.year-s.years[0];
+  hRender();
+}
+async function hSetMeasure(m){
+  HI.meas = m; if (m==="share") await histLoad("all_deaths"); hRender();
+}
+function hSelect(code){ HI.sel = code; hDraw(); hPanel(); hWriteHash(); }
+function hRender(){
+  const s = hSer(), yr = HI.year; if (!s || !HI.ser[s.key]) return;
+  $("#hPval").textContent = yr;
+  $("#hYear").value = yr - s.years[0];
+  // measures
+  $("#hMeasures").innerHTML = s.measures.map(m=>`<button type="button" data-m="${m}" aria-pressed="${m===HI.meas}">${HMEAS[m].label}</button>`).join("");
+  $("#hMeasures").querySelectorAll("button").forEach(b=>b.onclick=()=>hSetMeasure(b.dataset.m));
+  $("#hMeaDesc").textContent = HMEAS[HI.meas].desc;
+  // grade and series note
+  $("#hGrade").innerHTML = `<span class="chip"><span class="gchip">${s.grade}</span>${s.gradeText}</span>`;
+  $("#hLegTitle").textContent = HMEAS[HI.meas].unit;
+  hLegend(s);
+  hCoverage(s);
+  // notes: series note, registration count, year note
+  const S0 = HI.ser[s.key], i0 = yr - s.years[0];
+  const nArea = Object.keys(S0.v).filter(c=>S0.v[c][i0]!=null).length;
+  const nHave = Object.keys(S0.v).filter(c=>hHave(hCell(c,yr))).length;
+  const yn = (HI.idx.yearNotes||{})[String(yr)];
+  let reach;
+  if (s.source==="miller") reach = `<b>${nArea} of 48 states</b> were in the death-registration area in ${yr}${yr<1933?"; the others are hatched: no data, which is not the same as no deaths":""}.`;
+  else reach = `<b>${nArea} of 48 states</b> have an infant death count in ${yr}.` + (HI.meas==="per1000" && nHave<nArea ? ` ${nArea-nHave} of them have no births counted yet, so no rate (hatched).` : "");
+  $("#hNote").innerHTML = (s.note?`<p>${s.note}</p>`:"") + `<p>${reach}</p>` + (yn && s.source==="miller" && yr<=1913 ? `<p>${yn}</p>` : "");
+  $("#mLab").innerHTML = `${s.label} · <b>${yr}</b>`;
+  $("#status").textContent = `${nHave} of 48 states · ${s.label}, ${yr} · ${HMEAS[HI.meas].label}`;
+  hDraw(); hPanel(); hWriteHash();
+  $("#hAbout").innerHTML = hAbout(s);
+}
+function hAbout(s){
+  const src = HI.idx.sources;
+  const links = Object.entries(src).map(([k,v])=>`<li><a href="${v.url}" target="_blank" rel="noopener">${v.label}</a><br><span>${v.terms}</span></li>`).join("");
+  return `<p>This is a separate map of <b>states</b> for the years before county data exist. Each cause is the one the printed volumes named, not today's ICD group, and carries a grade (A same meaning today … C no modern equivalent, H historical only).</p>
+  <p>${HI.idx.revisionNote}</p>
+  <p>Rates per 100,000 residents need census populations and are not included yet; there is no age adjustment. Shares and rates are not shown on fewer than 20 deaths; the exact count still is. MortalGIS adds no estimates: the dotted outline marks values the workbook's author imputed, and a diamond marks a state-year the publisher flagged or where the age groups do not add to the printed total.</p>
+  <ul class="hlist" style="list-style:none;padding-left:0;display:flex;flex-direction:column;gap:6px">${links}</ul>`;
+}
+function hLegend(s){
+  const b = hBrk(), R = ramp(), L = d3.select("#hLegend"); L.selectAll("*").remove();
+  L.attr("aria-label", `Map legend, ${HMEAS[HI.meas].unit}: seven shades from light (low) to dark (high), with breaks at ${b.join(", ")}. ${HI.scale==="year"?"The shades are set from the states shown in this year.":"The same colors apply in every year."}`);
+  const w = 320/7;
+  R.forEach((c,i)=>L.append("rect").attr("x",i*w).attr("y",0).attr("width",w-1).attr("height",12).attr("fill",c));
+  if (HI.meas==="deaths") L.append("text").attr("x",0).attr("y",26).attr("text-anchor","start").text("0");
+  b.forEach((v,i)=>L.append("text").attr("x",(i+1)*w-.5).attr("y",26).attr("text-anchor","middle").text(hFmt(v,HI.meas).replace("%","")));
+  const noVal = HI.meas==="deaths" ? "Not in these tables (Alaska, Hawaii, DC, territories)"
+    : `No ${HI.meas==="per1000"?"rate":"share"}: fewer than ${minDeaths()} deaths${s.source==="miller"?", a printed total in doubt,":""} or not in these tables`;
+  const keys = [`<span><i style="background:var(--nodata)"></i>${noVal}</span>`,
+                `<span><i class="hz" style="background-color:var(--nodata)"></i>${s.source==="infant"?"No data this year: not in the registration area, or no births counted yet":"No data: not in the registration area this year"}</span>`];
+  const anyImp = Object.values(HI.ser[s.key].imputed||{}).some(o=>Object.keys(o).length);
+  if (anyImp) keys.push(`<span><i style="background:var(--r2);outline:1.5px dotted var(--ink);outline-offset:-3px"></i>Estimated by the workbook's author</span>`);
+  if (s.source==="miller") keys.push(`<span>◆ Publisher's note, or age groups do not add to the total</span>`);
+  $("#hLegKeys").innerHTML = keys.join("") + `<div class="views" role="group" aria-label="Color scale" style="margin-top:4px;width:100%"><button type="button" data-scale="year" aria-pressed="${HI.scale==="year"}">Scale to this year</button><button type="button" data-scale="all" aria-pressed="${HI.scale==="all"}">Same scale, all years</button></div>`;
+  $("#hLegKeys").querySelectorAll("[data-scale]").forEach(b=>b.onclick=()=>{ HI.scale = b.dataset.scale; hRender(); });
+}
+function hCoverage(s){
+  const C = d3.select("#hCov"); C.selectAll("*").remove();
+  const years = d3.range(s.years[0], s.years[1]+1), S = HI.ser[s.key];
+  const x = d3.scaleBand(years, [0,320]).paddingInner(.1), y = d3.scaleLinear([0,48],[24,2]);
+  const nOf = yr => Object.keys(S.v).filter(c=>hHave(hCell(c,yr))).length;
+  C.append("g").selectAll("rect").data(years).join("rect").attr("x",yr=>x(yr)).attr("width",x.bandwidth()).attr("y",yr=>y(nOf(yr))).attr("height",yr=>24-y(nOf(yr)))
+    .attr("fill","var(--r5)").append("title").text(yr=>`${yr}: ${nOf(yr)} of 48 states`);
+  C.append("line").attr("x1",0).attr("x2",320).attr("y1",24.5).attr("y2",24.5).attr("stroke","var(--line)");
+  (s.revisionYears||[]).forEach(r=>{ if (years.includes(r)) C.append("line").attr("x1",x(r)).attr("x2",x(r)).attr("y1",0).attr("y2",25).attr("stroke","var(--ink)").attr("stroke-dasharray","2 1.5"); });
+  C.append("rect").attr("class","hsel").attr("x",x(HI.year)-1).attr("width",x.bandwidth()+2).attr("y",0).attr("height",26).attr("fill","none").attr("stroke","var(--ink)").attr("stroke-width",1.2);
+  C.append("text").attr("x",0).attr("y",33).text(years[0]); C.append("text").attr("x",320).attr("y",33).attr("text-anchor","end").text(years.at(-1));
+  $("#hCovKey").innerHTML = `<span><i style="background:var(--r5)"></i>Bar height: states with a value (of 48)</span>` + ((s.revisionYears||[]).length ? `<span>┊ classification revised</span>` : "");
+}
+function hRank(code){
+  const s = hSer(), mine = hCell(code, HI.year); if (mine.st!=="ok") return null;
+  const pool = Object.keys(HI.ser[s.key].v).map(c=>hCell(c, HI.year)).filter(c=>c.st==="ok");
+  return {rank: pool.filter(c=>c.v>mine.v).length+1, of: pool.length, med: d3.median(pool.map(c=>c.v))};
+}
+function hText(code, yr){
+  const c = hCell(code, yr), unit = HMEAS[HI.meas];
+  if (c.st==="ok") return `${hFmt(c.v, HI.meas)}${HI.meas==="deaths"?" "+(c.v===1?"death":"deaths"):""}`;
+  if (c.st==="small") return `${fmtI(c.n)} ${c.n===1?"death":"deaths"} (no ${HI.meas==="per1000"?"rate":"share"}: fewer than ${minDeaths()})`;
+  if (c.st==="excluded") return `${fmtI(c.n)} deaths (share not shown: printed total in doubt)`;
+  if (c.st==="nobirths") return `${fmtI(c.n)} infant deaths (no births counted yet, so no rate)`;
+  return "No data";
+}
+function hHover(e, f){
+  const t = $("#tip"); t.hidden = false;
+  const code = stCode.get(f.id), yr = HI.year, s = hSer();
+  if (!code){
+    t.innerHTML = `<div>${(f.properties||{}).name||"This area"} · ${yr}</div><b>Not in this map</b><div style="color:var(--muted)">Not a state, or not in the registration area, in ${yr}.</div>`;
+    placeTip(e); return;
+  }
+  const c = hCell(code, yr), a = s.source==="miller" ? HI.anoms.get(code+"-"+yr) : null, imp = hImputed(code, yr);
+  const spans = HI.reg && HI.reg.spans[code];
+  const inArea = spans && s.source==="miller" ? spans.some(([a0,a1])=>yr>=a0 && yr<=a1) : true;
+  let extra = "";
+  if (c.st==="none") extra = s.source==="miller" ? `<div style="color:var(--muted)">Not in the registration area in ${yr}${spans?` (in it ${spans.map(([a0,a1])=>a0===a1?a0:a0+"–"+a1).join(", ")})`:""}. No data, which is not the same as no deaths.</div>` : `<div style="color:var(--muted)">No infant death count for ${yr}.</div>`;
+  if (c.st==="ok" && HI.meas!=="deaths") extra += `<div style="color:var(--muted)">${fmtI(c.n)} ${s.source==="infant"?"infant deaths":"deaths"}${c.t?` of ${fmtI(c.t)} registered`:""}${c.b?` · ${fmtI(c.b)} births`:""}</div>`;
+  if (imp) extra += `<div style="color:var(--muted)">Estimated by the workbook's author from a five-year trend${imp & 2 ? (imp & 1 ? " (deaths and births)" : " (births)") : ""}.</div>`;
+  if (a) extra += `<div style="color:var(--accent)">◆ ${a.text}</div>`;
+  t.innerHTML = `<div>${stName(code)} · ${yr}</div><b>${hText(code, yr)}</b>${extra}`;
+  placeTip(e);
+}
+function hPanel(){
+  const s = hSer(), code = HI.sel, S = HI.ser[s.key]; if (!S) return;
+  const yr = HI.year, c = hCell(code, yr), spans = HI.reg && HI.reg.spans[code];
+  const rk = hRank(code), a = s.source==="miller" ? HI.anoms.get(code+"-"+yr) : null, imp = hImputed(code, yr);
+  const spanTxt = spans && s.source==="miller" ? spans.map(([a0,a1])=>a0===a1?a0:`${a0}–${a1}`).join(", ") : null;
+  $("#hState").innerHTML = `<div><div class="cname">${stName(code)}</div><div class="csub">${spanTxt?`In the registration area: ${spanTxt}`:"State"}</div></div>
+  <div><span class="lbl">${s.label} · ${yr}</span><div class="big"><b>${c.st==="ok"?hFmt(c.v,HI.meas):(c.n!=null?fmtI(c.n):"No data")}</b><small>${c.st==="ok"?HMEAS[HI.meas].unit:(c.n!=null?(c.st==="small"?"deaths (no "+(HI.meas==="per1000"?"rate":"share")+")":"deaths"):"")}</small></div></div>
+  <div class="chips">${c.st==="none"?`<span class="chip warn">Not in the registration area</span>`:""}${imp?`<span class="chip warn">Estimated value</span>`:""}${a?`<span class="chip warn">Publisher's note</span>`:""}</div>
+  <dl class="facts">
+    ${c.n!=null?`<dt>Deaths</dt><dd>${fmtI(c.n)}</dd>`:""}${c.t?`<dt>All registered deaths</dt><dd>${fmtI(c.t)}</dd>`:""}${c.b?`<dt>Births</dt><dd>${fmtI(c.b)}</dd>`:""}
+    ${rk?`<dt>Rank this year</dt><dd>${rk.rank} of ${rk.of} reporting states (1 = highest)</dd><dt>Median of those states</dt><dd>${hFmt(rk.med,HI.meas)}</dd>`:""}
+  </dl>${a?`<div class="note" style="margin:0">◆ ${a.text}</div>`:""}
+  <div class="chart" id="hTrend"></div>`;
+  hTrend(s, code);
+}
+function hTrend(s, code){
+  const S = HI.ser[s.key], years = d3.range(S.y0, S.y1+1);
+  const pts = years.map(yr=>{ const c = hCell(code, yr); const pool = Object.keys(S.v).map(k=>hCell(k, yr)).filter(q=>q.st==="ok").map(q=>q.v);
+    return {yr, c, v: c.st==="ok" ? c.v : null, med: pool.length>=3 ? d3.median(pool) : null, imp: hImputed(code, yr), a: s.source==="miller" && HI.anoms.has(code+"-"+yr)}; });
+  if (pts.every(q=>q.v==null)){ $("#hTrend").innerHTML = `<div class="desc">No value to chart for ${stName(code)} under this measure.</div>`; return; }
+  const w=320,h=140,ml=38,mr=8,mt=10,mb=22;
+  const x = d3.scaleLinear([S.y0,S.y1],[ml,w-mr]);
+  const y = d3.scaleLinear([0, d3.max(pts,q=>Math.max(q.v||0,q.med||0))*1.1||1],[h-mb,mt]).nice();
+  const el = d3.select("#hTrend"); el.append("h4").text(`${HMEAS[HI.meas].label}: ${stName(code)} vs median of reporting states`);
+  const g2 = el.append("svg").attr("viewBox",`0 0 ${w} ${h}`);
+  g2.append("g").selectAll("line").data(y.ticks(4)).join("line").attr("x1",ml).attr("x2",w-mr).attr("y1",y).attr("y2",y).attr("stroke","var(--line)");
+  g2.append("g").selectAll("text").data(y.ticks(4)).join("text").attr("x",ml-5).attr("y",v=>y(v)+3).attr("text-anchor","end").text(HI.meas==="deaths"?d3.format("~s"):d3.format("~g"));
+  g2.append("g").selectAll("text").data(x.ticks(6).filter(Number.isInteger)).join("text").attr("x",x).attr("y",h-6).attr("text-anchor","middle").text(v=>v);
+  (s.revisionYears||[]).filter(r=>r>S.y0 && r<S.y1).forEach(r=>{
+    g2.append("line").attr("x1",x(r)).attr("x2",x(r)).attr("y1",mt).attr("y2",h-mb).attr("stroke","var(--muted)").attr("stroke-dasharray","2 2").attr("opacity",.7);
+    g2.append("text").attr("x",x(r)+2).attr("y",mt+6).style("font-size","8.5px").text("revised"); });
+  g2.append("path").attr("d",d3.line().defined(q=>q.med!=null).x(q=>x(q.yr)).y(q=>y(q.med))(pts)).attr("fill","none").attr("stroke","var(--muted)").attr("stroke-dasharray","3 3");
+  g2.append("path").attr("d",d3.line().defined(q=>q.v!=null).x(q=>x(q.yr)).y(q=>y(q.v))(pts)).attr("fill","none").attr("stroke","var(--accent)").attr("stroke-width",1.8);
+  g2.append("g").selectAll("circle").data(pts.filter(q=>q.imp && q.v!=null)).join("circle").attr("cx",q=>x(q.yr)).attr("cy",q=>y(q.v)).attr("r",3).attr("fill","var(--panel)").attr("stroke","var(--accent)").attr("stroke-width",1.4);
+  g2.append("g").selectAll("path").data(pts.filter(q=>q.a && q.v!=null)).join("path").attr("d","M0,-4L4,0L0,4L-4,0Z").attr("transform",q=>`translate(${x(q.yr)},${y(q.v)})`).attr("fill","var(--ink)");
+  const cur = pts.find(q=>q.yr===HI.year && q.v!=null); if (cur) g2.append("circle").attr("cx",x(cur.yr)).attr("cy",y(cur.v)).attr("r",3.8).attr("fill","var(--accent)");
+  g2.append("rect").attr("x",ml).attr("y",mt).attr("width",w-ml-mr).attr("height",h-mt-mb).attr("fill","transparent").style("cursor","pointer")
+    .on("click", ev=>{ const [mx] = d3.pointer(ev); const yr = Math.round(x.invert(mx)); if (yr>=S.y0 && yr<=S.y1){ HI.year = yr; hRender(); } })
+    .append("title").text("Click to jump to a year");
+  el.append("div").attr("class","desc").text("Gaps are years outside the registration area. Hollow points are estimated values, diamonds are publisher notes.");
+}
+function hWriteHash(){
+  if (!HI.on) return;
+  clearTimeout(hashTimer);
+  hashTimer = setTimeout(()=>{ try{ history.replaceState(null,"","#"+new URLSearchParams({mode:"hist", hs:HI.key, hm:HI.meas, y:HI.year, st:HI.sel, ...(HI.scale==="all"?{sc:"all"}:{})}).toString()); }catch(e){} }, 250);
+}
+function hStep(dir){
+  const s = hSer(), y = HI.year+dir; if (y<s.years[0] || y>s.years[1]) return;
+  HI.year = y; hRender();
+}
+function hPlayIcon(on){ $("#hPlay").textContent = on?"❚❚":"▶"; $("#mPlay").textContent = on?"❚❚":"▶"; for (const b of [$("#hPlay"),$("#mPlay")]) b.setAttribute("aria-label", on?"Pause":"Play through years"); }
+function hStop(){ if (HI.playing){ clearInterval(HI.playing); HI.playing = null; } hPlayIcon(false); }
+function hPlay(){
+  if (HI.playing){ hStop(); return; }
+  const s = hSer(); if (HI.year>=s.years[1]) HI.year = s.years[0]-1;
+  hPlayIcon(true);
+  HI.playing = setInterval(()=>{ if (HI.year>=s.years[1]){ hStop(); return; } HI.year++; hRender(); }, 700);
+}
+async function hEnter(){
+  if (!HI.ok || HI.on) return;
+  if (state.playing){ clearInterval(state.playing); state.playing = null; playIcon(false); }
+  HI.on = true; HI.prevView = state.view;
+  document.body.dataset.mode = "hist";
+  $("#modeCo").setAttribute("aria-pressed","false"); $("#modeHi").setAttribute("aria-pressed","true");
+  $("#tagline").textContent = "US state death statistics before county data, 1900 to 1945";
+  cPaths.style("display","none"); hatchG.style("display","none"); selPath.style("display","none"); hG.style("display",null);
+  $("#map").setAttribute("aria-label","Map of US states shaded by deaths in 1900 to 1945. Use the cause list and the year slider; select a state for its history.");
+  $("#tip").hidden = true;
+  hBuild();
+  svg.interrupt().call(zoom.transform, d3.zoomIdentity);
+  await hSetSeries(HI.key, true);
+}
+function hExit(){
+  if (!HI.on) return;
+  hStop(); HI.on = false; delete document.body.dataset.mode;
+  $("#modeCo").setAttribute("aria-pressed","true"); $("#modeHi").setAttribute("aria-pressed","false");
+  $("#tagline").textContent = "US county death rates, 1968 to today";
+  hG.style("display","none"); cPaths.style("display",null); hatchG.style("display",null); selPath.style("display",null);
+  $("#map").setAttribute("aria-label","Map of US counties shaded by death rate. Use the county search to pick a county.");
+  $("#tip").hidden = true;
+  layout(); render(); setView(HI.prevView||"us");
+}
+
 // ---------- events
 sel.onchange = ()=>setMeasure(sel.value, true);
 $("#wLived").onclick = ()=>setWhere("lived");
@@ -986,6 +1360,7 @@ function playIcon(on){
   for (const b of [$("#play"), $("#mPlay")]) b.setAttribute("aria-label", on ? "Pause" : (state.month ? "Play through months" : "Play through years"));
 }
 function stepYear(dir){
+  if(HI.on){ hStep(dir); return; }
   const tl = timeline(M.get(state.measure)); let k = tl.indexOf(state.year) + dir;
   if (k<0 || k>=tl.length) return;
   state.year = tl[k]; $("#period").value = k; markCoverage(); render();
@@ -993,7 +1368,7 @@ function stepYear(dir){
 document.querySelectorAll("#spanWrap [data-span]").forEach(b=>b.onclick=()=>{ state.span5 = b.dataset.span==="5"; if(state.span5) state.month=0; render(); });
 $("#mPrev").onclick = ()=>stepYear(-1);
 $("#mNext").onclick = ()=>stepYear(1);
-$("#mPlay").onclick = ()=>$("#play").click();
+$("#mPlay").onclick = ()=>{ if(HI.on) hPlay(); else $("#play").click(); };
 $("#dotchip").onclick = ()=>{ const k=$("#dotkey"); k.scrollIntoView({behavior:RM?"auto":"smooth", block:"center"}); };
 $("#play").onclick = ()=>{
   if(state.playing){ clearInterval(state.playing); state.playing=null; playIcon(false); return; }
@@ -1011,21 +1386,34 @@ $("#q").addEventListener("change", e=>{ const f=byLabel.get(e.target.value.trim(
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{ drawCoverage(M.get(state.measure), cache[state.measure]); render(); });
 new MutationObserver(()=>{ drawCoverage(M.get(state.measure), cache[state.measure]); render(); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 new ResizeObserver(()=>{ layout(); }).observe($("#map"));
+$("#modeCo").onclick = hExit; $("#modeHi").onclick = hEnter;
+$("#hSeries").onchange = e=>hSetSeries(e.target.value);
+$("#hYear").oninput = e=>{ HI.year = hSer().years[0] + (+e.target.value); hRender(); };
+$("#hPlay").onclick = hPlay;
 
 layout();
 renderSources();
 const H0 = readHash();
 if (H0.c && idx.has(H0.c)) state.fips = H0.c;
 if (H0.w==="died" || H0.w==="lived") state.where = H0.w;
-if (H0.y) state.year = String(H0.y);
+if (H0.y && H0.mode!=="hist") state.year = String(H0.y);
 if (+H0.mo>=1 && +H0.mo<=12) state.month = +H0.mo;
 if (H0.sp==="5" && !state.month) state.span5 = true;
 const m0key = (H0.m && M.has(H0.m)) ? H0.m : DEFAULT.measure;
 if (state.where==="died"){ $("#wLived").setAttribute("aria-pressed", false); $("#wDied").setAttribute("aria-pressed", true); }
-await setMeasure(m0key, !!H0.y);
+await setMeasure(m0key, !!H0.y && H0.mode!=="hist");
 drawSel();
 if (H0.c && idx.has(H0.c)) renderCounty();
 setTimeout(()=>setView(["us","state","county"].includes(H0.v) ? H0.v : "us"), 50);
+await histProbe();
+if (HI.ok && H0.mode==="hist"){
+  if (HI.idx.series.some(x=>x.key===H0.hs)) HI.key = H0.hs;
+  if (HMEAS[H0.hm]) HI.meas = H0.hm;
+  if (+H0.y>=1900 && +H0.y<=1945) HI.year = +H0.y;
+  if (HI.idx.states.some(x=>x.code===H0.st)) HI.sel = H0.st;
+  if (H0.sc==="all") HI.scale = "all";
+  await hEnter();
+}
 })();
 
 </script>

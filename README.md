@@ -56,7 +56,7 @@ numbering scheme (counties = 3 × alphabetical index, cities from 300). SEER com
 | All deaths | Rail accidents (FRA, coordinates from ~2000) and mine accidents (MSHA, 2000–) | 2000–now | ~1 km squares | — |
 | All deaths, homicide, firearm | Mother Jones mass shootings database (newest rows placed at the city centroid from the Census places gazetteer) | 1982–now | ~1 km squares | — |
 | All deaths, firearm, traffic | People killed by police: Fatal Encounters 2000–21, Washington Post Fatal Force 2022–24 (CC BY-NC-SA) | 2000–2024 | ~1 km squares | — |
-| Homicide, firearm | Chicago Police (1991–2013; Cook ME covers later), NYPD murders (2006–24), Philadelphia fatal shootings (2015–now), Detroit Police homicides (2010–now, homicide only) | varies | ~1 km squares | — |
+| Homicide, firearm | Chicago Police (1991–2013; Cook ME covers later), NYPD murders (2006–24), Philadelphia fatal shootings (2015–now), Detroit Police homicides (2010–now, homicide only), LAPD (2010–23), Cincinnati (2011–), Charlotte-Mecklenburg Police (2015–, with firearm), Atlanta Police (1997–) and Denver Police (2021–), the last five homicide victims only | varies | ~1 km squares | — |
 
 Every layer keeps only counts per square/ZIP, year and category; names, case numbers, ages and addresses are dropped in the pipeline. Police killings are not shown on the homicide map because CDC counts them as legal intervention, not homicide.
 
@@ -99,11 +99,17 @@ published. `site/data/validation.json` lists county coverage for every measure a
 CDC hides county counts of 1–9. Three things recover most of them:
 - **5-year totals** (switch under the year slider): WONDER county totals over 1999–2003 … 2021–2025. Suicide goes
   from ~57% of counties hidden to ~21%, firearm 59% → 27%, stroke 32% → 6%. Rare causes (homicide, falls) barely move.
-- **States that publish small counts** (`pipeline/statefill.py`): Michigan DHHS, New York State DOH, New Mexico DOH (IBIS)
-  and Pennsylvania DOH (EDDIE); NM and PA are Chrome pulls saved in `data_manual/states/`. Used only for
+- **States that publish small counts** (`pipeline/statefill.py`): Michigan DHHS, New York State DOH, New Mexico DOH (IBIS),
+  Pennsylvania DOH (EDDIE) and the other state sources approved in `master/ledger.csv`; the bundles are saved in `data_manual/states/`. Used only for
   cells CDC hid, only for causes whose definition matches CDC's, and only when the state's numbers agree with CDC's
   wherever CDC does publish (90%+ within 10% or 2 deaths). Filled counties get a dashed outline and say where the
-  number came from.
+  number came from. They show the count only, with no rate (a rate on fewer than 20 deaths is not reliable).
+  A source is read only when its row in `master/ledger.csv` is approved or released (`master/README.md` explains the
+  ledger); the build stops if the ledger is missing. Where a state says only "1–4" (Wisconsin, Mississippi, South
+  Carolina, Missouri), the county shows "1–4 deaths (state band)" when you point at it; count and rate stay hidden.
+- **States 1900–1945** (header switch, shown when `site/data/hist_state/` exists): registered deaths by state and cause from
+  Miller's NBER file and the 1920–45 infant-death workbook, with the registration area, classification revisions and the
+  publishers' notes shown (`pipeline/hist_state.py`, `master/README.md`).
 - **Death locations** from medical examiners and police, which aren't held back. People killed by police: Fatal
   Encounters 2000–2012 and Mapping Police Violence 2013– (trimmed copy in `data_manual/mpv/`, refreshed by hand).
 
@@ -114,6 +120,10 @@ pipeline/build_data.py   county measures: download + validate + write site/data/
 pipeline/incidents.py    medical examiner layers with privacy aggregation
 pipeline/history.py      one-time history build: NCHS 1968–2004, SEER population, FARS, NOAA
 data_manual/wonder/      CDC WONDER exports (manual; instructions inside)
+data_manual/states/      state query exports (NM, PA) and state bundles whose ledger row is approved
+data_manual/hist_state/  the two historical state sets behind the 1900–1945 mode
+master/                  approval ledger (ledger.csv), source terms, and the master-file builder and checks
+pipeline/hist_state.py   builds site/data/hist_state/ from approved historical series
 tests/                   cause-definition, history and WONDER-parser checks
 pipeline/wrap_index.py   wrap site/app.html into site/index.html
 site/                    static site (d3 + topojson from CDN), deploys as-is
