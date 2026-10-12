@@ -1771,15 +1771,15 @@
  "incident_sources": {
   "cook_county": {
    "ok": true,
-   "latest": "2026-10-10"
+   "latest": "2026-10-12"
   },
   "santa_clara_county": {
    "ok": true,
-   "latest": "2026-10-09"
+   "latest": "2026-10-11"
   },
   "orange_fl": {
    "ok": true,
-   "latest": "2026-09-26"
+   "latest": "2026-10-11"
   },
   "san_diego": {
    "ok": true,
@@ -1855,7 +1855,7 @@
   },
   "detroit_homicides": {
    "ok": true,
-   "latest": "2026-10-09"
+   "latest": "2026-10-11"
   }
  }
 }

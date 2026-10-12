@@ -1,6 +1,6 @@
 # MortalGIS data coverage
 
-Generated 2026-10-11 01:50 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
+Generated 2026-10-12 19:07 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
 
 ## Needs attention
 
@@ -82,9 +82,9 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [CDC occurrence vs residence county tables](https://data.cdc.gov/) (`cdc_occ_res`) | api | yearly | – | – |
 | [SEER county population estimates 1969-2024](https://seer.cancer.gov/popdata/) (`seer_pop`) | download | yearly | – | – |
 | [Census county boundaries (us-atlas TopoJSON) and Gazetteer places/ZCTAs](https://www.census.gov/geographies/reference-files/time-series/geo/gazetteer-files.html) (`geo`) | download | yearly | – | – |
-| [Cook County Medical Examiner case archive](https://datacatalog.cookcountyil.gov/d/cjeq-bs86) (`cook_me`) | api | weekly | 2026-10-10 | – |
-| [Santa Clara County Medical Examiner-Coroner cases](https://data.sccgov.org/d/s3fb-yrjp) (`santa_clara_me`) | api | weekly | 2026-10-09 | – |
-| [District Nine Medical Examiner (Orange & Osceola, FL)](https://services1.arcgis.com/0U8EQ1FrumPeIqDb/arcgis/rest/services/Cases_DeathAddress/FeatureServer/0) (`orange_fl_me`) | api | weekly | 2026-09-26 | – |
+| [Cook County Medical Examiner case archive](https://datacatalog.cookcountyil.gov/d/cjeq-bs86) (`cook_me`) | api | weekly | 2026-10-12 | – |
+| [Santa Clara County Medical Examiner-Coroner cases](https://data.sccgov.org/d/s3fb-yrjp) (`santa_clara_me`) | api | weekly | 2026-10-11 | – |
+| [District Nine Medical Examiner (Orange & Osceola, FL)](https://services1.arcgis.com/0U8EQ1FrumPeIqDb/arcgis/rest/services/Cases_DeathAddress/FeatureServer/0) (`orange_fl_me`) | api | weekly | 2026-10-11 | – |
 | [San Diego County Medical Examiner deaths by ZIP](https://data.sandiegocounty.gov/d/jkvb-n4p7) (`san_diego_me`) | api | monthly | 2026-07-31 | – |
 | [Sacramento County Coroner cases by ZIP](https://data.saccounty.gov/) (`sacramento_coroner`) | api | weekly | 2026-10-09 | – |
 | [Allegheny County fatal accidental overdoses](https://data.wprdc.org/dataset/allegheny-county-fatal-accidental-overdoses) (`allegheny_me`) | api | monthly | 2026-08-03 | – |
@@ -100,7 +100,7 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [Denver Police murders, 2021-](https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime) (`denver_homicides`) | api | weekly | 2026-09-26 | – |
 | [NYPD shooting incidents (murders)](https://data.cityofnewyork.us/d/833y-fsy8) (`nyc_homicides`) | api | yearly | 2024-12-30 | – |
 | [Philadelphia fatal shooting victims](https://opendataphilly.org/datasets/shooting-victims/) (`philly_homicides`) | api | weekly | 2026-10-05 | – |
-| [Detroit Police RMS crime incidents (homicide)](https://data.detroitmi.gov/) (`detroit_homicides`) | api | weekly | 2026-10-09 | – |
+| [Detroit Police RMS crime incidents (homicide)](https://data.detroitmi.gov/) (`detroit_homicides`) | api | weekly | 2026-10-11 | – |
 | [NHTSA Fatality Analysis Reporting System](https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars) (`fars`) | download | yearly | 2024-12-31 | – |
 | [NOAA Storm Events Database](https://www.ncdc.noaa.gov/stormevents/) (`noaa`) | download | monthly | 2026-12-31 | – |
 | [Milwaukee County Medical Examiner case data (snapshot)](https://github.com/UK-IPOP/open-data-pipeline/releases/tag/2025-12-01) (`milwaukee_me`) | download | static | 2025-11-30 | – |
