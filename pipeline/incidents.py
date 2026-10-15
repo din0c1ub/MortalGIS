@@ -771,8 +771,17 @@ def new_city_jobs():
     ]
 
 
+# Layers that are no longer fetched: the previous file is kept as it is (marked stale) and the reason is logged.
+FROZEN = {
+    "allegheny": "WPRDC's robots.txt disallows /api/ (seen 2026-10-15) and its datastore API returned only 1,000 rows that day; "
+                 "kept at its last full pull (7,780 deaths, 2026-10-12) until a permitted download route is chosen",
+}
+SHRINK_LIMIT = 0.5  # a refresh that returns under half of last time's deaths is treated as a failed fetch
+
+
 def build_incidents(out_dir, status: dict):
-    """Build every incident layer. A failing source keeps its previous file and is reported."""
+    """Build every incident layer. A failing source keeps its previous file and is reported.
+    A source whose refresh returns under SHRINK_LIMIT of its previous deaths also keeps its previous file (a capped or broken API)."""
     (out_dir / "points").mkdir(exist_ok=True)
     layers = []
     yes = lambda v: [3] + ([4] if str(v).upper() in ("YES", "Y", "TRUE") else [])  # noqa: E731
@@ -817,8 +826,17 @@ def build_incidents(out_dir, status: dict):
     if idx_path.exists():
         prev_index = {l["key"]: l for l in json.loads(idx_path.read_text())}
     for key, fn in jobs:
+        if key in FROZEN:
+            log(f"  = {key} not refreshed: {FROZEN[key]}")
+            status[key] = {"ok": True, "frozen": True}
+            if key in prev_index:
+                layers.append({**prev_index[key], "stale": True})
+            continue
         try:
             layer = fn()
+            prev = prev_index.get(key)
+            if prev and prev.get("cases") and layer.get("cases", 0) < SHRINK_LIMIT * prev["cases"]:
+                raise RuntimeError(f"refresh returned {layer.get('cases', 0):,} deaths against {prev['cases']:,} last time; keeping the previous file")
             (out_dir / "points" / f"{layer['key']}.json").write_text(
                 json.dumps({"died": layer.pop("died"), "lived": layer.pop("lived")}, separators=(",", ":")))
             monthly = layer.pop("monthly", None)
