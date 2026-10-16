@@ -1,0 +1,15 @@
+{
+ "what": "Table 18 (Deaths from each cause by race and sex, each State) lines read by eye from the printed volumes, for the two Miller series Table 19 does not carry: smallpox (List No. 6) and List Nos. 196-198 (wounds of war, execution of civilians by belligerent armies, legal executions), which Miller's accidents_violence (172-198) includes. Zero where the volume prints dashes. Checked: the states add up to the printed United States line in each year (smallpox 34 and 48; 196-198: 143 and 187).",
+ "source": "Vital Statistics of the United States 1937 Part I and 1938 Part I (US Bureau of the Census), Table 18; PDF pages 396-459 (1937) and 395-458 (1938) of the CDC/NCHS scans in sources/vsus_1937_1938/",
+ "read_on": "2026-10-15",
+ "smallpox": {
+  "1937": {"CA": 3, "CO": 1, "ID": 2, "IN": 3, "IA": 2, "KY": 1, "MI": 1, "MN": 3, "MS": 1, "MO": 6, "MT": 2, "NY": 1, "NC": 1, "OH": 2, "OK": 1, "OR": 2, "SD": 1, "TX": 1},
+  "1938": {"AR": 1, "CA": 4, "GA": 1, "ID": 2, "IL": 1, "IN": 4, "IA": 7, "KS": 2, "KY": 2, "MO": 4, "MT": 1, "NC": 1, "OK": 7, "OR": 1, "SD": 1, "TN": 1, "TX": 7, "WI": 1}
+ },
+ "us_smallpox": {"1937": 34, "1938": 48},
+ "list_196_198": {
+  "1937": {"AL": 4, "AZ": 4, "CA": 8, "CO": 1, "CT": 1, "DE": 2, "DC": 2, "FL": 6, "GA": 17, "IL": 7, "IN": 5, "KY": 6, "LA": 4, "MD": 1, "MS": 6, "MO": 4, "NV": 1, "NY": 14, "NC": 12, "OH": 1, "OK": 3, "PA": 8, "SC": 2, "TN": 10, "TX": 6, "VA": 3, "WV": 4, "WY": 1},
+  "1938": {"AL": 9, "AZ": 1, "AR": 7, "CA": 11, "CT": 1, "DC": 1, "FL": 2, "GA": 15, "IL": 5, "IN": 9, "IA": 4, "KS": 2, "KY": 4, "LA": 4, "MD": 2, "MA": 3, "MI": 1, "MS": 5, "MO": 8, "MT": 1, "NJ": 7, "NY": 7, "NC": 19, "OH": 12, "PA": 12, "SC": 4, "TN": 2, "TX": 15, "UT": 1, "VA": 5, "WA": 4, "WV": 4}
+ },
+ "us_196_198": {"1937": {"196": 2, "197": 0, "198": 141}, "1938": {"196": 0, "197": 0, "198": 187}}
+}

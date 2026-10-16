@@ -474,6 +474,15 @@ def build(out_dir: Path, chr_year: int):
     fill_report = {}
     # Exact 1-9 counts from the NCHS files the 1968-2004 series come from (ledger source nber_small; only approved measure/place pairs are returned)
     nber_cells, nber_notes = statefill.nber_small(ledger)
+    icpsr_ok = statefill.icpsr_approved(ledger)  # 1959-1967 county history (pipeline/history_icpsr.py), per cause and place
+    if icpsr_ok and not any(v is not None for a in ((hist("icpsr_all_res") or {}).get("rate") or {}).values() for v in a):
+        log("  ! 1959-1967 county history is approved but has no rates yet (data_manual/hist/census_county_population_1960_1970.json "
+            "is missing): not shown")
+        icpsr_ok = set()
+    if icpsr_ok:
+        SOURCES["icpsr"] = {"label": "NCHS death certificates 1959–1967 (public-use files, via ICPSR)",
+                            "url": "https://www.icpsr.umich.edu/web/ICPSR/studies/20680"}
+        log(f"  1959-1967 county history (ICPSR) approved for: {', '.join(f'{c}/{p}' for c, p in sorted(icpsr_ok))}")
     for note in nber_notes:
         log(f"  ! {note}")
     nber_report = {}
@@ -591,6 +600,10 @@ def build(out_dir: Path, chr_year: int):
     for cause in CAUSES:
         key = "all_deaths" if cause == "all" else cause
         nb_res, nb_occ = hist(f"nber_{cause}_res"), hist(f"nber_{cause}_occ")
+        ic_res = hist(f"icpsr_{cause}_res") if (cause, "res") in icpsr_ok else None
+        ic_occ = hist(f"icpsr_{cause}_occ") if (cause, "occ") in icpsr_ok else None
+        # the map colours by rate: 1959-1967 go on only once history_icpsr.py has county populations (census 1960 and 1970)
+        ic_res, ic_occ = [d if d and any(v is not None for a in d["rate"].values() for v in a) else None for d in (ic_res, ic_occ)]
         pts = []  # point layers are attached after the incident layers are built (see attach_points)
         for place in ("res", "occ"):
             s_ = Series()
@@ -617,6 +630,10 @@ def build(out_dir: Path, chr_year: int):
                 for y in nb["count"]:
                     if int(y) <= 1988:
                         s_.add(y, nb["rate"][y], nb["count"][y], "nber")
+            ic = ic_res if place == "res" else ic_occ
+            if ic:  # 1959-1967 (no 1963), ledger-approved only
+                for y in ic["count"]:
+                    s_.add(y, ic["rate"][y], ic["count"][y], "icpsr")
             if place == "res" and cause == "all":
                 for y in sorted(pep_deaths):
                     if y in ("2000", "2010", "2020"):  # partial estimate years
@@ -636,7 +653,7 @@ def build(out_dir: Path, chr_year: int):
                 unit="per 100k residents", rateType="crude", hasCounts=True,
                 place="occurrence" if died else "residence", pair=(key if died else f"{key}_died"),
                 periodLabels=({} if died else ttm_label), points=pts,
-                icdBreaks=[1979, 1999], flagLabel="Modeled by CDC (1–9 deaths)",
+                icdBreaks=([1968] if ic_res or ic_occ else []) + [1979, 1999], flagLabel="Modeled by CDC (1–9 deaths)",
                 notes=("Rates use the county's population (NCI SEER estimates; Census for 2025). Counts of 1–9 are suppressed. "
                        "Cause definitions follow ICD-8 (1968–78), ICD-9 (1979–98) and ICD-10 (1999–); small jumps at those years are coding changes."),
             )

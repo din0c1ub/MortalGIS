@@ -35,7 +35,7 @@ HERE = Path(__file__).resolve().parent
 KEYMAP = {"falls": "falls", "homicide": "homicide", "suicide": "suicide", "cancer": "cancer", "heart": "heart", "stroke": "stroke",
           "alzheimers": "alzheimers", "diabetes": "diabetes", "liver": "liver", "clrd": "clrd", "flu": "flu_pneumonia", "flu_pneumonia": "flu_pneumonia",
           "kidney": "kidney", "covid": "covid", "all": "all_deaths", "firearm": "firearm", "overdose": "overdose", "alcohol": "alcohol"}
-STATE_ABBR = {"01": "AL", "12": "FL", "13": "GA", "17": "IL", "18": "IN", "24": "MD", "26": "MI", "28": "MS", "29": "MO", "37": "NC", "45": "SC", "47": "TN", "55": "WI", "08": "CO", "40": "OK", "34": "NJ", "27": "MN", "54": "WV", "51": "VA", "50": "VT", "25": "MA", "31": "NE", "20": "KS"}
+STATE_ABBR = {"01": "AL", "12": "FL", "13": "GA", "17": "IL", "18": "IN", "24": "MD", "26": "MI", "28": "MS", "29": "MO", "37": "NC", "45": "SC", "47": "TN", "55": "WI", "08": "CO", "40": "OK", "34": "NJ", "27": "MN", "54": "WV", "51": "VA", "50": "VT", "25": "MA", "31": "NE", "20": "KS", "16": "ID", "38": "ND"}
 # State sources the live build already uses to fill CDC-hidden cells (site/app.html FILLSRC) -> registry id
 LIVE_FILL = {"26": "mi_mdhhs", "36": "ny_vitals", "35": "nm_ibis", "42": "pa_eddie"}
 LIVE_FILL_ABBR = {"MI": "mi_mdhhs", "NY": "ny_vitals", "NM": "nm_ibis", "PA": "pa_eddie"}
@@ -45,7 +45,7 @@ SITE_FAMILY = {"nber": "cdc_nchs", "nber_partial": "cdc_nchs", "psx4": "cdc_nchs
 SOURCE_FAMILY = {"mi_mdhhs": "MI", "mi_fatal_injuries": "MI", "ny_vitals": "NY", "nm_ibis": "NM", "pa_eddie": "PA", "nc_schs_lcd": "NC",
                  "il_idph_causes": "IL", "il_idph_injury": "IL", "il_idph_overdose": "IL", "in_isdh_mortality": "IN",
                  "tn_health_county": "TN", "wi_wish": "WI", "mo_mica": "MO",
-                 "al_dph": "AL", "fl_charts": "FL", "ga_oasis": "GA", "md_vsa": "MD", "ms_mstahrs": "MS", "sc_scan": "SC", "ok_ok2share": "OK", "co_cdphe": "CO", "nj_shad": "NJ", "mn_mdh_county": "MN", "wv_hsc_vital": "WV", "va_vdh_profiles": "VA", "va_ocme_annual": "VA", "vt_vdh_annual": "VT", "ma_deaths_report": "MA", "ne_dhhs_vital_report": "NE", "ks_kdhe_d25": "KS", "ks_kdhe_annual": "KS"}
+                 "al_dph": "AL", "fl_charts": "FL", "ga_oasis": "GA", "md_vsa": "MD", "ms_mstahrs": "MS", "sc_scan": "SC", "ok_ok2share": "OK", "co_cdphe": "CO", "nj_shad": "NJ", "mn_mdh_county": "MN", "wv_hsc_vital": "WV", "va_vdh_profiles": "VA", "va_vdh_overdose": "VA", "va_ocme_annual": "VA", "vt_vdh_annual": "VT", "ma_deaths_report": "MA", "ne_dhhs_vital_report": "NE", "ks_kdhe_d25": "KS", "ks_kdhe_annual": "KS", "id_dhw_vital": "ID", "nd_hhs_ves": "ND"}
 # staged bundle files -> (registry source id, bundle name). Two files with the same bundle are merged before the agreement gate.
 STAGED = [(["mi_injury_county_2000-2024.json"], "mi_fatal_injuries", "mi_injury"),
           (["nc_vital_stats_county_2019-2023.json"], "nc_schs_lcd", "nc_lcd"),
@@ -77,7 +77,10 @@ STAGED = [(["mi_injury_county_2000-2024.json"], "mi_fatal_injuries", "mi_injury"
           (["ne_dhhs_vital_report_county_2008-2016.json"], "ne_dhhs_vital_report", "ne_dhhs_vital_report"),
           (["ne_dhhs_vital_early_county_2005-2007.json"], "ne_dhhs_vital_report", "ne_dhhs_vital_early"),
           (["ks_kdhe_d25_county_2016.json"], "ks_kdhe_d25", "ks_kdhe_d25"),
-          (["ks_kdhe_annual_county_2001-2024.json"], "ks_kdhe_annual", "ks_kdhe_annual")]
+          (["ks_kdhe_annual_county_2001-2024.json"], "ks_kdhe_annual", "ks_kdhe_annual"),
+          (["id_dhw_vital_county_2006-2024.json"], "id_dhw_vital", "id_dhw_vital"),
+          (["nd_hhs_ves_county_1998-2024.json"], "nd_hhs_ves", "nd_hhs_ves"),
+          (["va_vdh_overdose_county_2018-2024.json"], "va_vdh_overdose", "va_vdh_overdose")]
 BUNDLE_SOURCE = {bundle: sid for _files, sid, bundle in STAGED}
 FIPS_OF = {**{ab: fips for fips, ab in STATE_ABBR.items()}, "NY": "36", "NM": "35", "PA": "42"}
 # a state with several staged sources: the one named first here is used when the build's report does not say which filled a cell
@@ -452,6 +455,20 @@ def hist_state_rows(terms: dict):
         return []
     HS = _hist_series()
     out = []
+    for k, a, b, base in getattr(HS, "EXTENSIONS", []):  # years after a source's own span, approved per series
+        src = HS.SOURCES[k]
+        t = terms.get(src["id"], "unchecked")
+        for s in HS.SERIES:
+            if s["source"] != base:
+                continue
+            w = ["no_cdc_overlap", "transcribed_by_mortalgis", "checked_against_table_sums"]
+            if t in ("none_stated", "unchecked", "stated_review"):
+                w.append("terms_" + t)
+            out.append(dict(source_id=src["id"], bundle=HS.BUNDLE, measure=s["key"], place="state", period_from=str(a), period_to=str(b), status="staged",
+                            verdict="n/a", checked_n=None, agree_n=None, agree_pct=None, exact_pct=None, low_years="", exact_fills=0, band_cells=0,
+                            discordant_n=None, obs_n=0, anchor_n=None, anchor_off_n=None, anchor_off_years="", terms_status=t, warnings=";".join(w),
+                            approved_by="", approved_on="",
+                            note=f"extends {s['key']} to {b} ({', '.join(s['cols'])}) from {src['file']}; read only when the series' own row is approved too"))
     for s in HS.SERIES:
         src = HS.SOURCES[s["source"]]
         y0, y1 = (1900, 1936) if s["source"] == "miller" else (1920, 1945)
@@ -467,6 +484,47 @@ def hist_state_rows(terms: dict):
                         discordant_n=None, obs_n=0, anchor_n=None, anchor_off_n=None, anchor_off_years="", terms_status=t, warnings=";".join(w),
                         approved_by="", approved_on="",
                         note=f"state series, grade {s['grade']}: {s['label']} (printed column(s): {what}); state-level historical mode, not read by the county build"))
+    return out
+
+
+ICPSR_HIST = Path(__file__).resolve().parents[1] / "site" / "data" / "hist"
+ICPSR_CAUSES = ["all", "overdose", "suicide", "homicide", "firearm", "heart", "stroke"]
+
+
+def icpsr_rows(terms: dict):
+    """Ledger rows for the 1959-1967 county history (source icpsr_mcd, bundle icpsr_mcd): one per measure and place, built by
+    pipeline/history_icpsr.py into site/data/hist/icpsr_*.json. The build reads a row's series only when the row is approved or released.
+    There is no CDC overlap before 1968 (verdict n/a); history_icpsr.py's report holds its checks (national totals, year-to-year county
+    continuity, the 1959-1961 code conversion)."""
+    rep_p = ICPSR_HIST / "icpsr_report.json"
+    if not rep_p.exists():
+        return []
+    rep = json.loads(rep_p.read_text())
+    has_pop = (Path(__file__).resolve().parents[1] / "data_manual" / "hist" / "census_county_population_1960_1970.json").exists()
+    t = terms.get("icpsr_mcd", "unchecked")
+    out = []
+    for cause in ICPSR_CAUSES:
+        for pl in ("res", "occ"):
+            f = ICPSR_HIST / f"icpsr_{cause}_{pl}.json"
+            if not f.exists():
+                continue
+            d = json.loads(f.read_text())
+            shown = sum(1 for y in d["count"] for v in d["count"][y] if v is not None and v >= 0)
+            hidden = sum(1 for y in d["count"] for v in d["count"][y] if v == -1)
+            w = ["no_cdc_overlap", "icd7_classification", "year_1963_missing", "alaska_blank", "source_coding_issue_blanked"]
+            if not has_pop:
+                w.append("no_population_yet")
+            if cause == "overdose":
+                w.append("icd7_overdose_narrower")
+            if t in ("none_stated", "unchecked", "stated_review"):
+                w.append("terms_" + t)
+            yrs = sorted(d["count"], key=int)
+            out.append(dict(source_id="icpsr_mcd", bundle="icpsr_mcd", measure="all_deaths" if cause == "all" else cause,
+                            place=NBER_PLACE[pl], period_from=yrs[0], period_to=yrs[-1], status="staged", verdict="n/a", checked_n=None,
+                            agree_n=None, agree_pct=None, exact_pct=None, low_years="", exact_fills=0, band_cells=0, discordant_n=None, obs_n=0,
+                            anchor_n=None, anchor_off_n=None, anchor_off_years="", terms_status=t, warnings=";".join(w), approved_by="",
+                            approved_on="", note=f"county history {yrs[0]}-{yrs[-1]} (no 1963) from ICPSR 20680: {shown:,} county-years with a "
+                                                 f"count, {hidden:,} hidden (1-9); residence placed {min(rep.get('residence_placed', {}).values() or [0]):.2%}+"))
     return out
 
 
@@ -584,6 +642,7 @@ def ledger_rows(con, reg: dict, site: Path):
                         approved_by="", approved_on="", note="from meta.stateFills (build_data.py); used=%s" % used))
     out += nber_small_rows(con, terms)
     out += hist_state_rows(terms)
+    out += icpsr_rows(terms)
     # every other registry entry: one row so the ledger answers "what have we got, what is missing"
     have = {r["source_id"] for r in out}
     for sid, s in reg.items():
@@ -925,6 +984,8 @@ def check(a):
     if hs_path.exists():
         HS = _hist_series()
         want = {(HS.SOURCES[s["source"]]["id"], HS.BUNDLE, s["key"], "state") for s in HS.SERIES}
+        want |= {(HS.SOURCES[k]["id"], HS.BUNDLE, s["key"], "state") for k, a, b, base in getattr(HS, "EXTENSIONS", []) for s in HS.SERIES
+                 if s["source"] == base}
         have = {(r.source_id, r.bundle, r.measure, r.place) for r in L.itertuples() if r.bundle == HS.BUNDLE}
         ok("historical state series: ledger rows equal the series defined in pipeline/hist_series.py", want == have,
            f"{len(have)} rows; missing {sorted(want - have)[:3]}; extra {sorted(have - want)[:3]}")
@@ -932,13 +993,15 @@ def check(a):
         ok("historical state series stay out of the county STAGED lists", HS.BUNDLE not in county_bundles)
         idx_p = site / "hist_state" / "index.json"
         if idx_p.exists():
-            listed = [s["key"] for s in json.loads(idx_p.read_text()).get("series", [])]
+            idx_series = json.loads(idx_p.read_text()).get("series", [])
+            listed = [s["key"] for s in idx_series]
             bad_h = []
-            for k in listed:
-                sid = HS.SOURCES[HS.SERIES_BY_KEY[k]["source"]]["id"]
-                row = L[(L.source_id == sid) & (L.bundle == HS.BUNDLE) & (L.measure == k) & (L.place == "state")]
-                if row.empty or row.iloc[0].status not in ("approved", "released"):
-                    bad_h.append(f"{k} ({'no row' if row.empty else row.iloc[0].status})")
+            for so in idx_series:
+                k = so["key"]
+                for sid in [HS.SOURCES[HS.SERIES_BY_KEY[k]["source"]]["id"]] + [HS.SOURCES[e]["id"] for e in so.get("extendedBy", {})]:
+                    row = L[(L.source_id == sid) & (L.bundle == HS.BUNDLE) & (L.measure == k) & (L.place == "state")]
+                    if row.empty or row.iloc[0].status not in ("approved", "released"):
+                        bad_h.append(f"{k}/{sid} ({'no row' if row.empty else row.iloc[0].status})")
             ok("every series in site/data/hist_state rests on an approved or released ledger row", not bad_h, "; ".join(bad_h) or f"{len(listed)} series listed")
     bad = [r for r in results if not r[0]]
     for good, name, detail in results:

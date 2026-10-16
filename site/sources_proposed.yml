@@ -1,0 +1,375 @@
+# PROPOSED additions to pipeline/sources.yml. NOT applied. (2026-10-10: entries whose ledger rows the owner approved moved into pipeline/sources.yml with status live; what is left here is still held, a lead, blocked or rejected.) Nothing in the repo was changed during the sourcing-only session (2026-10-07/08).
+# Same fields as sources.yml. Statuses here are proposals: "live" means "ready to wire into statefill.py once audited", not "already used".
+# Every entry records the publisher's own stated suppression rule, or "none stated". Agreement figures come from staging/stage_check.py
+# (county-years where CDC publishes 10+ and the state agrees within max(2, 10%)); fills are CDC-hidden cells (1-9) the state value would un-hide.
+# Raw source files are under ~/Desktop/MORTALGIS/sources/<id>/ with a SOURCES.tsv (URL, SHA-256) unless noted.
+
+sources:
+  # ------------------------------------------------------------ proposed live (state fills)
+  - id: il_idph_overdose
+    name: Illinois IDPH drug overdose deaths by resident county
+    publisher: Illinois Department of Public Health
+    url: https://dph.illinois.gov/content/dam/soi/en/web/idph/publications/idph/data-and-statistics/vital-statistics/death-statistics/drug-overdose-deaths-2020-2023.pdf
+    license: public state statistics (no license stated)
+    access: download
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [overdose]
+    years: 2020-2023
+    grain: year
+    hidden: none stated
+    cadence: yearly
+    files: [staging/il_overdose_county_2020-2023.json]
+    status: hold-for-audit
+    notes: "REVIEW BEFORE USE. Agreement only 90.7% (118 checked), right at the 90% gate; IDPH's overdose definition (substances involved) may differ from CDC drug-poisoning deaths. 237 potential fills. Decision from the user: hold until audited."
+
+  # ------------------------------------------------------------ candidates and leads (not pulled)
+
+  - id: va_vdh_post2013
+    name: "Virginia VDH locality death data after 2013 (natural causes: Tableau dashboard or a data request)"
+    publisher: Virginia Department of Health
+    url: https://www.vdh.virginia.gov/data/chronic-disease-in-virginia/deaths/
+    status: candidate
+    value: 3
+    effort: 4
+    notes: "The City/County Health Profiles stop at 2013. For 2014-2020 the stats page lists only PDFs of total deaths by race and locality ('By Locale') and monthly totals by county of residence for 2015-2018. The Chronic Disease Deaths Tableau dashboard (read in Chrome 2026-10-10, no download button) covers Alzheimer's, asthma, cardiovascular disease, chronic kidney disease, COPD, diabetes, heart disease, hypertension and stroke through 2024; its visible table is 35 health districts with age-adjusted rates, locality counts only through the selectors, small-count rule not stated: not scrapeable at scale. About 4,900 natural-cause cells are hidden for 2014-2024 (stroke, Alzheimer's, diabetes, flu and pneumonia, CLRD, liver, kidney). Route: a VDH data request. Injury causes are in va_ocme_annual."
+
+  - id: va_ocme_annual
+    name: Virginia Office of the Chief Medical Examiner annual reports, locality tables 2014-2023
+    publisher: Virginia Department of Health, Office of the Chief Medical Examiner
+    url: https://www.vdh.virginia.gov/medical-examiner/annual-reports/
+    status: staged
+    value: 1
+    effort: 3
+    notes: "Downloaded and parsed 2026-10-10: ten annual-report PDFs (2014-2022 by pdftotext, 2023 from the Tables of Deaths by Locality workbook), residence-locality tables for homicide, suicide, overdose and gun-related deaths, 133 localities each, exact counts, every table adds up to its printed subtotal and total. Bundle va_ocme_annual_county_2014-2023.json is staged in the master. It FAILS the agreement gate for all four causes (firearm 87.1%, suicide 86.6%, homicide 81.6%, overdose 77.4%; gate 90%): the tables are OCME cases, so Virginians who died in another state are missing and OCME runs a few deaths under CDC's residence counts (96-99% of CDC's total over the checked cells). Verdict SKIP, nothing used. No terms stated (none_stated). The successor to the retired VDH overdose-by-FIPS file, 'VDH PUD Overdose Deaths by Year and Geography' on data.virginia.gov (Virginia residents including out-of-state deaths, ICD-10 underlying cause, death certificates, 2019 to 2026-07, quarterly), is the better lead for overdose; a scripted request got HTTP 403, so it needs a browser save (owner)."
+
+  - id: ky_odcp_overdose
+    name: Kentucky Office of Drug Control Policy overdose fatality reports, county table
+    publisher: "Kentucky Office of Drug Control Policy (source data: Kentucky death certificate database)"
+    url: https://odcp.ky.gov/Reports/2022 Overdose Fatality Report.pdf
+    status: candidate
+    value: 1
+    effort: 2
+    notes: "2022 report Table 4 lists all 120 counties by residence: 5-9 shown exactly, 1-4 as '<5' (suppressed under state data release policy), zero as 0, rates under 20 deaths unstable. Earlier reports (2015-2021) listed but not read. Could fill only the 5-9 part of overdose cells hidden 2015-2022 (about 600 in the base data); 1-4 stays hidden. KIPRC Injury Indicators reports are statewide only. Not downloaded."
+
+  - id: tn_lcd_2014_2017
+    name: Tennessee four-year county leading-cause workbook 2014-2017
+    publisher: Tennessee Department of Health
+    url: https://www.tn.gov/content/dam/tn/health/documents/vital-statistics/death/2017/LCD-AllCounties2014-17.xlsx
+    status: candidate
+    value: 2
+    effort: 1
+    notes: "File already listed on the TN page and in sources/tn_health manifest; four-year totals do not match the 5-year spans CDC uses, so low value unless spans become flexible."
+
+  - id: ma_deaths_report
+    name: Massachusetts Deaths annual report, table "Selected Causes of Death by County" (2020, 2021 and 2022 reports, DOCX)
+    publisher: Massachusetts Department of Public Health, Office of Population Health, Registry of Vital Records and Statistics
+    url: https://www.mass.gov/lists/annual-massachusetts-death-reports
+    license: no terms in the reports beyond a suggested citation; Mass.gov terms of use say most public records on Commonwealth sites "can be copied and used for any purpose" but also that the Commonwealth holds a copyright interest in most material and limits copying to fair use (terms status stated_review)
+    access: docx (downloaded 2026-10-10 with the owner's yes)
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, clrd, covid, diabetes, flu_pneumonia, heart, homicide, stroke, suicide]
+    years: 2020, 2021, 2022
+    grain: year
+    hidden: "none: every cell is an exact count and zeros print as 0; the 14 county counts add to the printed Massachusetts row (a few deaths with no county are the only gap)"
+    cadence: yearly
+    files: [staging/ma_deaths_report_county_2020-2022.json]
+    status: live
+    notes: "Three DOCX files from mass.gov (2020: 1,778,354 bytes, 2021: 1,216,259, 2022: 1,213,562; SHA-256 in sources/ma_dph/SOURCES.tsv). Against CDC every cause agrees 100% where CDC publishes, but 14 counties x 3 years leaves 22-42 checked county-years per cause, under the build's 50-sample gate, so every cause is SKIP. Would fill about 40 hidden cells if it passed (Dukes, Nantucket, Franklin). Older reports (2019 and before) are only by email request (Vital.DataRequest@mass.gov); the 2019 PDF address is dead. Lead: the Population Health Information Tool Death Dashboard has an Excel download 'Deaths of Massachusetts Residents - Data Download_2015-2021.xlsx' (https://www.mass.gov/doc/deaths-of-massachusetts-residents-data-download/download), probably by city/town, not downloaded (needs the owner's yes; size not shown). lung_cancer, motor_vehicle and opioid_related are kept raw (no CDC measure; opioid-related is not all overdose)."
+
+  - id: vsus_tables_1937_1938
+    name: "Vital Statistics of the United States 1937 and 1938, Part I: Table 19 (deaths from selected causes, each state) and Table 18 lines, transcribed by MortalGIS"
+    publisher: "US Bureau of the Census; scans hosted by CDC/NCHS"
+    url: https://www.cdc.gov/nchs/products/vsus/vsus_1890_1938.htm
+    license: "none stated (US federal publication; terms status none_stated)"
+    access: "two PDFs (VSUS_1937_1.pdf, VSUS_1938_1.pdf) downloaded 2026-10-15 with the owner's yes; sources/vsus_1937_1938/, SHA-256 in SOURCES.tsv; transcribed with tools/vsus_1937_1938/"
+    kind: state-counts
+    geography: state
+    place: [died]
+    causes: [the 20 Miller causes (Table 19 columns added together; smallpox and List 196-198 from Table 18)]
+    years: 1937-1938
+    grain: year
+    hidden: "none: exact state counts as printed"
+    cadence: one-off (historical)
+    files: [data_manual/hist_state/hist_vsus_1937_1938_state.json, data_manual/hist_state/vsus_1937_1938_table19_cells.json, data_manual/hist_state/vsus_1937_1938_table18_lines.json]
+    status: staged
+    notes: "Extends Miller's 1900-1936 state series to 1938 (same 4th-revision causes; place of occurrence as in the printed volumes). OCR values were settled with the table's own sums: by sex, by population group, and the row sum. Every unsettled row, and every column whose states did not add up, was checked by eye. In both years each of the 52 White/Other columns used adds up across the 48 states and DC to the printed United States line. 1937 total deaths for the 48 states, 1,441,700, plus DC's 8,727 equals the printed US total of 1,450,427. DC is left out, as in Miller's panel. Owner approved 2026-10-15 ('Approve (Recommended)')."
+  - id: miller_vsh_1900_1936
+    name: "Vital Statistics Deaths - Historical 1900-1936, state by year, by cause and by age and sex (Grant Miller, NBER)"
+    publisher: "Grant Miller (Stanford), digitized from the Census Bureau / Public Health Service mortality statistics volumes; hosted by the NBER Public Use Data Archive"
+    url: https://www.nber.org/research/data/vital-statistics-deaths-historical-1900-1936
+    license: "stated: the page encourages use and sharing ('please feel free to share it with whomever might be interested'); no license text or citation format; terms status stated_review"
+    access: "csv (master_mortality_data_1900_1936_ucb.csv, 461,932 bytes, saved by the owner from his own browser 2026-10-10; data.nber.org refuses automated downloads)"
+    kind: state-counts
+    geography: state
+    place: [lived]
+    causes: [total deaths, 20 causes of the printed volumes (not ICD groups), ages by sex]
+    years: 1900-1936
+    grain: year
+    hidden: "none known: exact state counts; death-registration states only (10 states in 1900, 48 from 1933)"
+    cadence: one-off (historical)
+    files: [staging/historical/hist_miller_vsh_1900_1936_state.json]
+    status: candidate
+    value: 3
+    effort: 3
+    notes: "1,109 state-years, 48 states. In 1,102 of 1,109 the age groups add exactly to total deaths; the seven exceptions are the publisher's listed volume anomalies (Ohio 1916, Kentucky 1919, California and Indiana 1920, Massachusetts 1935) plus California and Utah 1935. The causes are a selection from the printed volumes, not a partition, and do not map to ICD groups, so they cannot share a legend with CDC causes. State level only; needs a separate historical mode (no county, no populations). Staged, not read by the build; nothing pre-1959 is merged."
+
+  - id: nber_infant_1920_1945
+    name: "Infant Births and Deaths by State, 1920-1945 (NBER workbook, Douglas Norton / Karen Norberg)"
+    publisher: "NBER Public Use Data Archive (transcription of the printed Census/PHS volumes)"
+    url: https://www.nber.org/research/data
+    license: "none stated (the workbook's README sheet names the author and the imputation rule only; terms status none_stated)"
+    access: "xls (state_infant_deaths_births_1920-1945.xls, 75,776 bytes, saved by the owner from his own browser 2026-10-10)"
+    kind: state-counts
+    geography: state
+    place: [lived]
+    causes: [infant deaths, births]
+    years: 1920-1945
+    grain: year
+    hidden: "none known: exact state counts; 5 of 1,164 infant-death values and 20 of 1,094 birth values are imputed (bold in the workbook, flagged in the bundle)"
+    cadence: one-off (historical)
+    files: [staging/historical/hist_infant_deaths_births_1920_1945_state.json]
+    status: candidate
+    value: 2
+    effort: 2
+    notes: "48 states. Infant deaths equal Miller's all_under_1 on all 727 overlapping non-imputed state-years (1920-1936), so the two share one origin; this set adds 1937-1945. State level only. Staged, not read by the build; nothing pre-1959 is merged."
+
+  - id: la_ldh_parish_tables
+    name: Louisiana LDH vital statistics parish tables (Appendix F PDFs 2019-2023)
+    publisher: Louisiana Department of Health, Center for Records and Statistics
+    status: parked
+    value: 3
+    effort: 4
+    notes: "2026-10-10: the 2023 Appendix F file (258,242 bytes, SHA-256 722bca1b...8def7) was downloaded with the owner's yes. Six columns only (all deaths, heart, cancer, accidents, stroke, CLRD), one year; counts under 5 print <5 and 5 and up are exact, so it can fill only CDC's 5-9 cells: 2 usable fills (cancer); CLRD (10) and stroke (13) fail the 50-sample gate. The 2022 file answers 403 to a plain fetch and earlier years were not located. Extract in sources/la_ldh/. Parked as low value."
+
+  - id: or_oha_county_deaths
+    name: Oregon OHA County Deaths Dashboard (Tableau, 2017-2024) and Volume 2 annual reports
+    publisher: Oregon Health Authority, Center for Health Statistics
+    status: blocked
+    value: 2
+    effort: 4
+    notes: "No suppression stated: Gilliam County 2024 shows cancer 8, heart disease 3 and four causes at 1. The dashboard says its data cannot be downloaded and points to a data use request; hand-driving it is about 288 views (36 counties x 8 years). Best route is the data use request (owner)."
+
+  - id: ky_vsb_county_tables
+    name: Kentucky county death tables (CHFS Vital Statistics)
+    publisher: Kentucky Cabinet for Health and Family Services, Vital Statistics Branch
+    status: blocked
+    value: 4
+    effort: 3
+    notes: "The old county tables (2I, 2J, 2L, 2O, 2R) are no longer linked: the reports page lists only delivery-procedure reports, and several old addresses answered 404 when checked earlier (but see the 2026-10-10 note below for Table 2-O). Needs a data request to the Vital Statistics Branch, (502) 564-4212. Headroom 25,070. 2026-10-10 (corrected the same night): an earlier read through the fetch tool returned copies of the old Table 2-O (Leading Causes of Resident Deaths, Kentucky, districts and counties; 1999DeathsTable2O.pdf, Table2O2004.pdf, Table2O2005.pdf) that showed 120 counties and about 18 causes with exact counts. That claim that the files are 'still served' was wrong: when the owner's own Chrome opened all seven addresses (1998DeathsTable2O.pdf, 1999DeathsTable2O.pdf, 2001DeathsTable2O.pdf, 2002DeathsTable2O.pdf, 2003DeathsTable2O.pdf, Table2O2004.pdf, Table2O2005.pdf under www.chfs.ky.gov/agencies/dph/dehp/vsb/Documents/) each showed 'Page Not Found - Cabinet for Health and Family Services', and plain requests from the cloud and the owner's computer answered 403. The fetch tool had returned stale cached copies, so nothing was saved and the 1998-2005 tables must be treated as not available online. The route left is the Vital Statistics Branch phone request, which can ask for the 1998-2005 county tables together with later years. Those old tables would have covered only CDC years 1999-2005 (about a quarter of the 26 years)."
+
+  - id: mt_dphhs_vsu_s4
+    name: Montana DPHHS annual report, table S-4 leading causes of death by county (5-year counts)
+    publisher: Montana Department of Public Health and Human Services, Vital Statistics Unit
+    status: parked
+    value: 2
+    effort: 2
+    notes: "Five-year counts (2020-2024), small counts exact, rates replaced by a mark; top causes only. The map does not draw spans yet, and the 5-year span of the report may not match CDC's spans. Parked until spans are wired. 2026-10-15: the 2023 report (Table S-4) covers 2019-2023, which is one of the map's own 5-year spans (CDC provisional 2019-2023), so it could fill hidden span cells once spans are wired; each year's report is a different rolling window, and differencing two windows to get single years is not allowed (owner rule)."
+
+  - id: nd_county_pdf
+    name: North Dakota county cause-of-death PDF
+    publisher: North Dakota Department of Health and Human Services
+    status: parked
+    notes: "A PDF with county cause counts was found overnight; some cells are marked NR and the page does not say what NR means (it could be 'not reported' for small counts). Not pulled. Needs the owner's permission to download and a definition of NR. 2026-10-15: superseded by nd_hhs_ves (the Vital Event Summary PDFs, 1998-2024; NR = 5 or fewer events)."
+
+  - id: ia_tracking_portal
+    name: Iowa Public Health Tracking portal (deaths)
+    status: blocked
+    notes: "WebFetch is refused by the site's robots rules, so the portal was not read; earlier survey called Iowa all-cause only. Needs the owner to open it in his own Chrome if wanted. 2026-10-10: the Iowa HHS page links a Tableau view of the top 10 causes by county and year in age-adjusted rates (per 10,000), and says data are not shown 'when there are five or fewer deaths from a specific cause'; rates, not counts, so nothing to un-hide. The State Library of Iowa data center tables (iowadatacenter.org/datatables/CountyAll) give total deaths per county for July-June years 2000-2009 with no causes."
+
+  # ------------------------------------------------------------ set aside or blocked
+  - id: oh_odh
+    name: Ohio ODH public data (publicapps.odh.ohio.gov)
+    status: blocked
+    notes: "The Claude in Chrome extension has no permission for the site and the network allowlist blocks the cloud and desktop shell. Needs the user to allow the site in the extension. 2026-10-10: the Ohio Public Health Information Warehouse mortality browser (publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/Mortality; its test host publicappstst.odh.ohio.gov answers the fetch tool) lists county of residence and county of death, underlying cause, leading causes and manner of death, 2007 to present, updated daily. Neither the browse page nor the Disclaimer page states a small-number rule; the disclaimer asks for the citation 'These data were provided by the Ohio Department of Health' and disclaims responsibility for analyses. Whether counts of 1-9 are shown is unknown until the tool is driven. Chrome still shows a browser error page for the production host, so the owner would need to open it and say what appears. 2026-10-15: tried again in the owner's Chrome; publicapps.odh.ohio.gov still shows a browser error page. Not worked around (the test host publicappstst.odh.ohio.gov answers, but a test system is not a source to pull from without ODH's say-so)."
+
+  - id: tx_table23
+    name: Texas death tables (Table 23)
+    status: rejected
+    notes: "Inspected scratch_crawl/tx_2019_t23.xlsx. Table 23 Footnotes sheet Row 3 explicitly states: 'Counts of 1-9 are suppressed to prevent the identification of individuals in confidential data and are indicated by *'. Texas enforces identical 1-9 suppression as CDC WONDER; unusable for un-hiding small counts. 2026-10-10 re-check: the live Texas Health Data deaths dashboard (healthdata.dshs.texas.gov/dashboard/births-and-deaths/deaths) says 'Suppression occurs for counts that are 9 or less' (public health regions; downloads show -1), the same rule as CDC. Stays rejected. 2026-10-15: the DSHS annual-reports page lists yearly zip files for 2000-2023 as plain text without links; only 2017-2019 Table 23 links work (suppressed). Whether the older zips print counts of 1-9 is unknown; ask VSTAT (draft 8)."
+
+  - id: ca_death_profiles
+    name: California Death Profiles
+    status: rejected
+    notes: "Set aside earlier in the session; reason not re-verified overnight. Confirm at audit."
+
+  - id: ut_ibis
+    name: Utah IBIS death queries
+    status: rejected
+    notes: "Verified 2026-10-10: the IBIS query system suppresses every county count under 12, so it hides more than CDC does (1-9); nothing to un-hide."
+
+  - id: wa_wtn_death_dashboard
+    name: Washington Tracking Network death dashboards (Power BI) and Death-DashboardData.xlsx
+    publisher: Washington State Department of Health, Center for Health Statistics
+    url: https://doh.wa.gov/data-and-statistical-reports/washington-tracking-network-wtn/death/all-deaths-dashboard
+    status: rejected
+    notes: "Verified 2026-10-10 on the dashboard's title page: '** = Suppression. Rates and counts are suppressed when counts are between 1-9.' Same rule as CDC WONDER, so nothing to un-hide. The Death Data Users' Guide says the record-level death files need a data sharing agreement and 'cannot be released' otherwise."
+
+  - id: me_cdc_deaths_by_county
+    name: Maine CDC resident deaths by county of residence, 2016-2025
+    publisher: Maine Department of Health and Human Services, Maine CDC
+    url: https://mobile.maine.gov/dhhs/mecdc/sites/maine.gov.dhhs.mecdc/files/deaths2016_2025.pdf
+    status: rejected
+    notes: "Verified 2026-10-10: one table of total deaths by county and year; no cause of death."
+
+  - id: nv_ophie_deaths_by_county
+    name: Nevada OPHIE deaths by county, 2001-2011
+    publisher: Nevada Division of Public and Behavioral Health, Office of Public Health Informatics and Epidemiology
+    url: https://dpbh.nv.gov/Programs/OPHIE/Docs/Vital_stats_publications/2001-2011_deaths_by_county_2013_03
+    status: rejected
+    notes: "Verified 2026-10-10: total deaths by county of residence only (no cause), 2001-2011, nothing newer on the OPHIE vital statistics page; the leading-causes table is statewide."
+
+  - id: ak_bvs_leading_causes_census
+    name: Alaska leading causes of death by census area (top five, rolling three-year periods)
+    publisher: Alaska Department of Health, Bureau of Vital Statistics
+    url: https://data.dhss.alaska.gov/data/death_statistics/leading_causes_census/body22.html
+    status: rejected
+    notes: "Verified 2026-10-10: top five causes per borough or census area for 1992-94 to 2011-13 (last updated 01/21/15); causes under 3 deaths are not reported; three-year periods do not match single years or CDC's 5-year spans. Low value."
+
+  - id: nh_vitals_leading_causes
+    name: New Hampshire Leading Causes of Death of New Hampshire Residents, 1999-2001
+    publisher: New Hampshire Division of Public Health Services
+    url: https://nhvrinweb.sos.nh.gov/nhivs_pubs.aspx
+    status: rejected
+    notes: "Only a 1999-2001 report (PDF, 114 pages) is listed on the vital records publications page; whether it has county tables was not checked. Too old and too narrow to be worth a download."
+
+  - id: sd_annual_report
+    name: South Dakota vital statistics annual report
+    status: rejected
+    notes: "Statewide cause tables only; the one county table is infectious disease (round 4 survey)."
+
+  - id: ar_no_county_data
+    name: Arkansas
+    status: rejected
+    notes: "No public county cause-of-death data found (round 4 survey)."
+
+  - id: wy_rates_only
+    name: Wyoming
+    status: rejected
+    notes: "Public tables give rates only (surveyed overnight)."
+
+  - id: az_table_5e12
+    name: Arizona table 5E-12
+    status: rejected
+    notes: "Exact counts from 6 up, '*' for 1-5, sums rounded to tens; 15 counties and a headroom of only 608 (round 4). Cheap but low value."
+
+  - id: id_ct_survey
+    name: Idaho and Connecticut
+    status: rejected
+    notes: "Nothing usable found for Idaho; Connecticut judged low value (surveyed overnight)."
+
+  # ------------------------------------------------------------ survey 2026-10-10 night: small states and big-city police data
+  - id: hi_hhdw_leading_causes
+    name: Hawaii Health Data Warehouse, Leading Causes of Death 2020-2024
+    publisher: Hawaii State Department of Health, Hawaii Health Data Warehouse (hhdw.org)
+    url: https://hhdw.org/wp-content/uploads/2026/07/Leading-Causes-of-Death-2020-2024-7-14-26.pdf
+    status: rejected
+    notes: "Read 2026-10-10 through the fetch tool: state totals by year 2020-2024, but the county table (Hawaii, Honolulu, Kauai, Maui; Kalawao not listed) is a three-year aggregate for 2022-2024 and the report says 'cells with counts between 1 and 9 have been suppressed'. Single years and small counts are exactly what we need and are not there. The 2022 death-record page lists county reports with exact totals but no cause-by-county download. Hawaii has 414 hidden cells left (Kauai 205, Maui 111, Hawaii 63, Kalawao 35; mostly homicide, firearm, overdose, falls). Suggested citation: 'Hawaii State Department of Health, Hawaii Health Data Warehouse'. Revisit only through a written request to HHDW (profiles@hhdw.org)."
+
+  - id: ri_ridoh_death_records
+    name: Rhode Island Department of Health, death records and leading causes of death
+    publisher: Rhode Island Department of Health, Center for Health Data and Analysis
+    url: https://health.ri.gov/data/death-records-leading-causes-death
+    status: parked
+    notes: "Read 2026-10-10: the page offers a '10 Leading Causes of Death, 2016' table (Google Sheet) and says preliminary data are available within a year of year end; it names no county or town breakdown and no small-number rule. Not opened beyond the page text (the Google Sheet was not read). Rhode Island has 523 hidden cells left (Bristol 204, Newport 145, Washington 101, Kent 73; mostly firearm, homicide, suicide, overdose), so even a full county table would add little. Ask RIDOH only if the state becomes a priority."
+
+  - id: de_dhss_vital_stats
+    name: Delaware Vital Statistics Annual Report, county tables of deaths by age and selected cause
+    publisher: Delaware Division of Public Health, Health Statistics Center
+    url: https://dhss.delaware.gov/dph/hp/files/mort21.pdf
+    status: candidate
+    gap: Delaware Kent and Sussex counties (121 hidden cells left, mostly homicide 56, overdose 26, falls 20)
+    value: 1
+    effort: 3
+    notes: "Read 2026-10-10 through the fetch tool. The 2009 report (mort09.pdf) has single-year tables of deaths by age and selected cause for each county (Table F-13 Kent, F-14 New Castle, F-15 Wilmington; the Sussex table was not in the excerpt), exact counts with 0, 1 and 2 printed and no suppression. The 2021 report (mort21.pdf) has the county table only as a five-year aggregate (Table F-8, 2017-2021, top causes), so the single-year county tables may stop after some year; which years carry them is not checked. Other report addresses seen: mort04, mort19, mort20, mort21, ar2020_net, ar2021_net on dhss.delaware.gov. Terms not read. Headroom is small (121 cells); take it only together with other work."
+
+  - id: dc_no_county
+    name: District of Columbia
+    publisher: DC Health
+    status: rejected
+    notes: "DC is one county-equivalent; the map has 1 hidden cell for it in all measures and years, so there is nothing to fill (checked 2026-10-10 against the built site data)."
+
+  - id: city_police_open_data
+    name: Other big-city police open data that could become homicide incident layers
+    publisher: various city police departments and portals
+    status: candidate
+    gap: Death locations in large cities outside the layers we have (Chicago, New York, Philadelphia, Detroit are in)
+    value: 3
+    effort: 3
+    notes: "Survey 2026-10-10, search results and fetched catalog pages only; no columns or counts were read for these unless said. Seen as published datasets: San Francisco incident reports 2018 to present (data.sfgov.org wg3w-h783, daily, PDDL 1.0, locations snapped to intersections) and the 2003-May 2018 historical set; Seattle SPD Crime Data 2008 to present (cos-data.seattle.gov tazs-3rd5, daily, NIBRS, licence not stated, marked closed in the catalog); Baltimore Part 1 crime data (data.baltimorecity.gov, licence 'other', not open in the catalog's flag); Washington DC crime incidents by year 2008 onward (opendata.dc.gov; the MPD page itself is a 2001-2005 homicide PDF); Dallas Police Incidents (a city memo of 2018 lists known data-quality issues); New Orleans NOPD Calls for Service by year (calls, not victims); Austin APD Crime Reports; Louisville Metro crime data by year 2019-2025 plus a Gun Violence dataset; Boston crime incident reports; Houston HPD Crime Summary on ArcGIS (2020-2024 only as counts per grid cell and per beat, not incidents); Phoenix publishes monthly UCR/NIBRS PDFs. Checked in the night survey that followed (reading only, 2026-10-10): Cincinnati, Charlotte, Atlanta, Denver and Kansas City are usable; Las Vegas disclaims analytics use; Oakland and Memphis parked; Nashville (data to July 2025, license text not read), Minneapolis and Indianapolis (field lists not yet checked) and Portland (browser-only Tableau download) are held; Kansas City needs several yearly datasets stitched and carries a hold-harmless disclaimer (stated_review). Since then Cincinnati, Charlotte, Atlanta and Denver are built as previews with their own entries (cincinnati_homicides, charlotte_homicides, atlanta_homicides, denver_homicides; staged, not approved; see pipeline/sources.yml and master/README.md). Kansas City is the next one if you want another (data.kcmo.org; its /browse page is robots-disallowed, so any pull would have to go through a documented API path only if the portal allows it, and I would check that first). Los Angeles has its own entry (lapd_homicides). Each needs: homicide identifiable, a point or block location, a licence, and an agreement check against CDC homicide counts for the county."
+
+  # ------------------------------------------------------------ round 17 (2026-10-15): state fills found, held for review
+  - id: ut_vital_county_tables
+    name: Utah Vital Statistics 'Births and Deaths' reports, 'Deaths by selected causes and county' (Tables A34a-A34c)
+    publisher: Utah Department of Health and Human Services, Office of Vital Records and Statistics
+    url: https://vitalrecords.utah.gov/wp-content/uploads/Births-and-Deaths-2018-Utah-Vital-Statistics.pdf
+    status: candidate
+    value: 1
+    effort: 3
+    notes: "Lead only (2026-10-15). The 2018 report's table list names Table A34a-A34c 'Deaths by selected causes and county: Utah residents, 2018' (page R-56), but the published PDF stops before the reference tables (66,139 characters of text); the full edition and other years were not found. IBIS hides by relative standard error (see ut_ibis). Small-count handling unknown."
+  # ------------------------------------------------------------ round 17: location layers and national leads (survey only, nothing pulled)
+  - id: allegheny_me_homicides
+    name: Allegheny County Medical Examiner homicide deaths with incident coordinates, 2007-2024
+    publisher: Allegheny County (ArcGIS Online account; 'Data from Allegheny County Office of the Medical Examiner')
+    url: https://services1.arcgis.com/vdNDkVykv9vEWFX4/arcgis/rest/services/Homicides_2007_2023/FeatureServer/15
+    status: candidate
+    value: 2
+    effort: 1
+    notes: "Verified 2026-10-15 by service metadata: 1,767 records 2007-2023 (layer 15; last edit March 2024) plus a 2024 layer (104 records, per the survey agent). Fields: date of death, age, time, cause description, gender, race, ethnicity, incident latitude/longitude, neighborhood, census tract, municipality. No licence or description on the service; an ad hoc county map service rather than a WPRDC release (the overdose layer we use is on WPRDC). Exact location with date and age is sensitive: snap to the 1 km grid and drop age, race and time if used. Ask the county or WPRDC before relying on it. Update 2026-10-15 (round 17b): preview layer allegheny_homicides built from layer 15 (2007-2023) and layer 59 (2024 Homicides in Allegheny County), requesting only date, year, month, cause description and coordinates: 1,871 homicides, 1,602 with a firearm cause; yearly totals within 8 of CDC resident homicide counts. A combined layer 61 ('2007-2024 Homicides', date and coordinates only, 1,872 records) also exists. Request draft 9 in staging/allegheny_me_request_draft.md."
+  - id: pierce_me_homeless
+    name: Pierce County (WA) Medical Examiner homeless deaths, 2022-2026
+    publisher: Pierce County Medical Examiner via open.piercecountywa.gov
+    url: https://open.piercecountywa.gov/d/dxga-rmrd
+    status: candidate
+    value: 1
+    effort: 1
+    notes: "Verified 2026-10-15 by Socrata metadata: case number, age, sex, date of death, location of death (city level), home address, jurisdiction, cause, manner, how the injury occurred, accident category; about 530 records; licence field 'See Terms of Use' (not read). City-level locations only; case number and home address would be dropped."
+  - id: usaleep_tract_le
+    name: USALEEP census-tract life expectancy estimates, 2010-2015
+    publisher: CDC National Center for Health Statistics (with RWJF and NAPHSIS)
+    url: https://www.cdc.gov/nchs/nvss/usaleep/usaleep.html
+    status: candidate
+    value: 1
+    effort: 3
+    notes: "Survey 2026-10-15: 65,662 tracts, one period (2010-2015), US_A.CSV 2.6 MB; Maine and Wisconsin in separate files; 'public domain and may be reproduced without permission'. Modelled life expectancy, not death counts; a tract layer would need tract shapes (large). No newer release found."
+  - id: census_popest_county_deaths
+    name: Census Bureau population estimates components of change, deaths by county
+    publisher: US Census Bureau
+    url: https://www.census.gov/data/tables/time-series/demo/popest/2020s-counties-total.html
+    status: candidate
+    value: 1
+    effort: 1
+    notes: "Survey 2026-10-15: all-cause deaths for every county in July-June years (2010-2019 and 2020-2025 vintages), no small-count suppression, files under 1 MB. July-June years do not match the map's calendar years, and all-cause cells are rarely hidden (about 1%), so low value; listed so it is not re-surveyed."
+  - id: osha_fatality_inspections
+    name: OSHA fatality and catastrophe inspections (workplace deaths with establishment address)
+    publisher: US Department of Labor, Occupational Safety and Health Administration
+    url: https://www.osha.gov/fatalities
+    status: candidate
+    value: 1
+    effort: 3
+    notes: "Survey 2026-10-15: federal inspections after April 2011 (state plans from about October 2014) list date, employer, site address and 'Victim Name (Age)'; bulk enforcement data moved to data.dol.gov, which needs JavaScript (not read). Needs geocoding and name stripping. Federal work."
+  - id: map_shr_county_homicides
+    name: Murder Accountability Project / FBI Supplementary Homicide Reports, county-level homicides 1976-2025
+    publisher: Murder Accountability Project (from FBI SHR plus FOIA records)
+    url: https://www.murderdata.org/p/data-docs.html
+    status: candidate
+    value: 1
+    effort: 3
+    notes: "Survey 2026-10-15: case-level SHR file 1976-2025 with victim age, sex and race (no names); county coding not confirmed; MAP's own terms are only 'Copyright 2019 by Murder Accountability Project', so ask before use. Police-reported, not death certificates, and agency reporting is incomplete, so it cannot fill CDC cells; at most a separate layer."
+  - id: me_case_data_other_counties
+    name: Other county medical examiner / coroner case data (survey 2026-10-15)
+    publisher: various
+    status: parked
+    value: 1
+    effort: 1
+    notes: "Portal-wide search (Socrata catalog and ArcGIS Hub) by the survey agent, metadata read only. Found but low value or not recommended: San Francisco Vision Zero traffic fatalities (dau3-4s8f, PDDL; FARS already covers traffic deaths), Suffolk County NY ME motor-vehicle fatalities by town 2009-2018 (CC BY 3.0, no coordinates), Mesa AZ heat deaths 2020-2023 by census tract (143 records, no licence), Delaware DHSS deaths 2009-2016 by county of residence (public domain, nothing CDC hides is gained), Orange County CA coroner drug deaths 2013-2015 (unofficial upload), St. Joseph County IN coroner points (looks like an accidental public copy; do not use), Laredo TX overdose points (publisher unclear). One-off public-records releases with names (Harris County IFS, San Francisco OCME on MuckRock) are not used. No open case data found for LA County, Hennepin, Louisville, Oakland MI; reports or dashboards only for Harris, King, Denver, Lake IL, Franklin, Hamilton, Montgomery OH, Clark NV, Fulton, Waukesha; Ventura and a Maryland OCME layer need tokens. The UK-IPOP pipeline's nine sources are all already in the map; Milwaukee's own page now offers only a Power BI dashboard (data stop 14 January 2026)."
+  - id: national_leads_rejected_20261015
+    name: National leads checked and set aside (survey 2026-10-15)
+    publisher: various
+    status: rejected
+    value: 0
+    effort: 0
+    notes: "Washington Post homicide database (52,000 homicides in 50 cities 2007-2017: CC BY-NC-SA 4.0), UCLA Law Behind Bars (CC BY-NC-SA 4.0, names in the custodial-deaths file), CAIC avalanche accidents (reproduction needs written permission; robots prohibited), Opportunity Insights life expectancy (all rights reserved), US Mortality Database county life tables (registration; raw deaths not released), NCHS public-use files from 2005 (no geography), BJS deaths in custody (restricted enclave), NPS mortality data (park level only, 2007-2026), USCG boating accidents via the Data Liberation Project (location fields unconfirmed; low), NFIRS fire casualties (USFA says counts from the voluntary system are not an appropriate use). Johns Hopkins CSSE county COVID deaths (CC BY 4.0, to March 2023) are reporting-system counts that would not pass the agreement gate against death certificates; not pursued."

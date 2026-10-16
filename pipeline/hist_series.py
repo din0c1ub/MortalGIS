@@ -16,11 +16,19 @@ SOURCES = {
                    label="Grant Miller, Vital Statistics Deaths, Historical 1900-1936 (NBER Public Use Data Archive; digitized from the Census Bureau and Public Health Service mortality volumes)",
                    url="https://www.nber.org/research/data/vital-statistics-deaths-historical-1900-1936",
                    terms="NBER page: the author encourages use and sharing; no licence or citation format is stated beyond naming the source."),
+    "vsus3738": dict(id="vsus_tables_1937_1938", file="hist_vsus_1937_1938_state.json",
+                     label="Vital Statistics of the United States, 1937 and 1938, Part I (US Bureau of the Census): Table 19, deaths from selected causes by state, and Table 18 for smallpox and legal executions (transcribed by MortalGIS)",
+                     url="https://www.cdc.gov/nchs/products/vsus.htm",
+                     terms="A US federal publication; no terms stated. Transcribed from the CDC/NCHS scans; each value agrees with the table's own sums by sex and by population group."),
     "infant": dict(id="nber_infant_1920_1945", file="hist_infant_deaths_births_1920_1945_state.json",
                    label="Infant Births and Deaths by State, 1920-1945 (workbook by Douglas Norton, from Karen Norberg's transcription of the printed volumes; NBER)",
                    url="https://www.nber.org/research/data",
                    terms="No terms stated in the workbook; it names its author and marks imputed values."),
 }
+
+# Years added after a source's own span: (source key, first year, last year, the source whose series it continues). A series gets them only when
+# its own ledger row for the extending source is approved; the extending source uses the same printed causes (International List, 4th revision).
+EXTENSIONS = [("vsus3738", 1937, 1938, "miller")]
 
 GROUPS = [
     ("graded", "Comparable to today (graded)"),
@@ -85,6 +93,11 @@ PUBLISHER_STATE_NOTES = {
     ("IN", 1920): "The publisher lists Indiana's female ages in 1920 as not agreeing.",
     ("KY", 1920): "The publisher lists Kentucky in 1920 as not agreeing.",
     ("MA", 1935): "The publisher lists Massachusetts in 1935 as having causes that do not sum to the total.",
+}
+EXTENSION_NOTES = {
+    "vsus3738": "1937 and 1938 are not in Miller's file: MortalGIS transcribed them from the printed 1937 and 1938 volumes (Table 19; smallpox and legal "
+                "executions from Table 18). Each value was checked against the table's own totals, and every column adds up across the states to the "
+                "printed United States total.",
 }
 YEAR_NOTES = {
     1902: "In the 1902 volume the printed totals by cause and by age and sex do not agree (the publisher's note).",

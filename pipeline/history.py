@@ -56,6 +56,35 @@ XWALK = "https://data.nber.org/mortality/nchs2fips_county1990.csv"
 # into .cache/ (or the folder in MORTALGIS_NBER_DIR) under the names below. Years already summed in .cache/nber_counts_<year>.json need no file.
 NBER_DIR = Path(os.environ.get("MORTALGIS_NBER_DIR") or CACHE)
 
+# Corrections to NBER's NCHS-to-FIPS crosswalk (1990 geography) for the NCHS county codes of 1959-1981. Found on 2026-10-15 by comparing each
+# county's deaths year by year: the NCHS-coded years against 1982, the first file with FIPS codes, and 1969 against 1970 (Virginia).
+# Without them, history.py put these counties' deaths on a neighbouring county from 1968 to 1981.
+XWALK_FIX = {
+    "11001": "13001",  # Georgia: Appling (NCHS 001) is missing from the crosswalk
+    # Missouri: NCHS sorts St. Francois, St. Louis County, St. Louis city, then Ste. Genevieve; the crosswalk had the four in FIPS order
+    "26094": "29187", "26095": "29189", "26096": "29510", "26097": "29186",
+    # South Dakota: Washabaugh (065; part of Jackson since 1983) comes before Yankton (066) and Ziebach (067)
+    "42065": "46071", "42066": "46135", "42067": "46137",
+}
+# Nevada: Carson City keeps Ormsby County's alphabetical place (013). New Mexico: no Cibola before 1981 (Valencia then included it).
+_NV = ["32001", "32003", "32005", "32007", "32009", "32011", "32013", "32015", "32017", "32019", "32021", "32023", "32510", "32027", "32029",
+       "32031", "32033"]
+_NM = ["35001", "35003", "35005", "35007", "35009", "35011", "35013", "35015", "35017", "35019", "35021", "35023", "35025", "35027", "35028",
+       "35029", "35031", "35033", "35035", "35037", "35039", "35041", "35043", "35045", "35047", "35049", "35051", "35053", "35055", "35057",
+       "35059", "35061"]
+XWALK_FIX.update({f"29{i:03d}": f for i, f in enumerate(_NV, 1)})
+XWALK_FIX.update({f"32{i:03d}": f for i, f in enumerate(_NM, 1)})
+# Virginia's independent cities in 1962-1969: code 297 + 3 x alphabetical index of the 1960 list, Chesapeake (1963) at 307.
+# 1970 onward the files use the scheme in build_crosswalk(). Checked against 1970 and 1975 deaths city by city.
+VA_CITIES_1960S = ["51510", "51520", "51530", "51540", "51560", "51570", "51580", "51590", "51600", "51610", "51620", "51630", "51640", "51650",
+                   "51660", "51670", "51680", "51690", "51700", "51710", "51720", "51730", "51740", "51750", "51760", "51770", "51780",
+                   "51550",  # 378 South Norfolk city, part of Chesapeake since 1963
+                   "51790", "51800", "51810", "51820", "51830", "51840"]
+# Alaska's NCHS areas before 1982 (election and census divisions) do not match today's boroughs: left blank, not guessed.
+ALASKA_BLANK_BEFORE = 1982
+# The 1972 public-use file is a 50% sample of deaths. NCHS weights each record by 2 in its own 1972 statistics; so does this script.
+SAMPLE_WEIGHT = {1972: 2}
+
 
 def nber_local(name: str, url: str) -> Path:
     """Path of a hand-saved NBER file, or stop with the address to save it from. Nothing is downloaded from data.nber.org."""
@@ -81,6 +110,13 @@ SEER_COMBOS = {
     "51918": ["51013", "51510", "51059", "51600", "51610"],
     "36910": ["36005", "36047", "36061", "36081", "36085"],
 }
+# Hawaii: the SEER file lists the whole state as one area (15900) in its early years; once it lists Hawaii, Honolulu and Kauai counties
+# separately, 15900 is Maui + Kalawao only.
+HAWAII = ["15001", "15003", "15005", "15007", "15009"]
+# Virginia cities that the NCHS files code only from a later year: before it, the city's deaths are counted in its county, so the two share
+# one rate (SEER already lists the city's population separately) and the city's own count is blank, not zero.
+UNCODED_CITIES = {"51595": ("51081", 1970), "51678": ("51163", 1970), "51775": ("51161", 1970),
+                  "51683": ("51153", 1982), "51685": ("51153", 1982), "51735": ("51199", 1982)}
 POSTAL = {"AL": "01", "AK": "02", "AZ": "04", "AR": "05", "CA": "06", "CO": "08", "CT": "09", "DE": "10", "DC": "11",
           "FL": "12", "GA": "13", "HI": "15", "ID": "16", "IL": "17", "IN": "18", "IA": "19", "KS": "20", "KY": "21",
           "LA": "22", "ME": "23", "MD": "24", "MA": "25", "MI": "26", "MN": "27", "MS": "28", "MO": "29", "MT": "30",
@@ -195,26 +231,28 @@ def nber_year(y: int, atlas: set, xw: dict):
         resident = df["restatus"].astype(str) != "4"  # 4 = foreign resident
         n_res += int(resident.sum())
         n_res_ok += int(res[resident].notna().sum())
+        w = SAMPLE_WEIGHT.get(y, 1)
         for m in MEASURES:
             f = flags[m].fillna(False)
             for k, v in res[f & resident].value_counts().items():
-                out[(m, "res")][k] += int(v)
+                out[(m, "res")][k] += int(v) * w
             for k, v in occ[f].value_counts().items():
-                out[(m, "occ")][k] += int(v)
+                out[(m, "occ")][k] += int(v) * w
     out = {k: dict(v) for k, v in out.items()}
     matched = n_res_ok / max(n_res, 1)
-    log(f"  {y}: {n_all:,} deaths; residence county identified for {matched:.1%}")
+    log(f"  {y}: {n_all:,} records{' (50% sample, each counted twice)' if y in SAMPLE_WEIGHT else ''}; residence county identified for {matched:.1%}")
     return out, matched
 
 
-def build_crosswalk() -> dict:
+def build_crosswalk(era: str = "1970s") -> dict:
     """NCHS → FIPS county codes for the 1968–1981 files (which predate FIPS fields).
     Base: NBER's NCHS-to-FIPS crosswalk (1982 geography), plus fixes found by testing the files:
     - DC (NCHS 09-001) is missing from the crosswalk.
     - New York City is one NCHS area (33-029) until 1982 → pseudo-code NYC (rate shared by the 5 boroughs).
     - Virginia used an older scheme before 1982: counties = 3 × alphabetical index (003–285),
       independent cities = 300 + 3 × alphabetical index (excluding Manassas, Manassas Park, Poquoson).
-      Verified against 1982 death counts county by county."""
+      Verified against 1982 death counts county by county.
+    - XWALK_FIX (Georgia, Missouri, Nevada, New Mexico, South Dakota), Alaska left blank, and for era "1960s" Virginia's 1962-1969 city codes."""
     path = nber_local("nchs2fips.csv", XWALK)
     rows = list(csv.DictReader(open(path)))
     xw = {r["nchs_state"] + r["nchs_county"]: r["fipsco"].strip().zfill(5) for r in rows if r["fipsco"].strip().isdigit()}
@@ -238,6 +276,15 @@ def build_crosswalk() -> dict:
         xw[f"47{3 * i:03d}"] = f
     for i, f in enumerate(cities):
         xw[f"47{300 + 3 * i:03d}"] = f
+    xw.update(XWALK_FIX)
+    for k in [k for k in xw if k.startswith("02")]:
+        del xw[k]  # Alaska: see ALASKA_BLANK_BEFORE
+    if era == "1960s":  # NCHS codes of 1959-1969 (1959-1961 after conversion to the 1962 codes, see history_icpsr.py)
+        for k in [k for k in xw if k.startswith("47") and int(k[2:]) >= 297]:
+            del xw[k]
+        for i, f in enumerate(VA_CITIES_1960S):
+            xw[f"47{297 + 3 * i:03d}"] = f
+        xw["47307"] = "51550"  # Chesapeake city, created 1963
     return xw
 
 
@@ -256,7 +303,9 @@ def seer_population(atlas: set):
     for y, d in pop.items():
         g = []
         for code, p in d.items():
-            if code in SEER_COMBOS:
+            if code == "15900" and not any(k in d for k in ("15001", "15003", "15007")):
+                members = [m for m in HAWAII if m in atlas]
+            elif code in SEER_COMBOS:
                 members = [m for m in SEER_COMBOS[code] if m in atlas]
             else:
                 c = REMAP.get(code, code)
@@ -392,6 +441,39 @@ def rate_arrays(counts: dict, groups: list, fips_list: list, idx: dict, suppress
     return cnt, rate
 
 
+def merge_uncoded(groups: list, y: int) -> list:
+    """Groups for year y with each not-yet-coded Virginia city joined to its county's group (UNCODED_CITIES)."""
+    groups = [(list(m), p) for m, p in groups]
+    for city, (county, first) in UNCODED_CITIES.items():
+        if y >= first:
+            continue
+        gi = next((i for i, (m, _) in enumerate(groups) if city in m), None)
+        gp = next((i for i, (m, _) in enumerate(groups) if county in m), None)
+        if gi is None or gp is None or gi == gp:
+            continue
+        (mc, pc), (mp, pp) = groups[gi], groups[gp]
+        groups[gp] = (mp + mc, (pp or 0) + (pc or 0))
+        del groups[gi]
+    return groups
+
+
+def blank_uncoded(c: list, r: list, y: int, idx: dict):
+    for city, (_county, first) in UNCODED_CITIES.items():
+        if y < first and city in idx:
+            c[idx[city]] = None
+
+
+def blank_early(c: list, r: list, y: int, fips_list: list, idx: dict):
+    """Cells the NCHS-coded years cannot fill: Alaska before 1982 (count and rate blank); Cibola, NM before 1982 (count blank: its deaths
+    are in Valencia's, and SEER's Valencia+Cibola area gives both the same rate)."""
+    if y < ALASKA_BLANK_BEFORE:
+        for i, f in enumerate(fips_list):
+            if f.startswith("02"):
+                c[i] = r[i] = None
+    if y <= 1981 and "35006" in idx:
+        c[idx["35006"]] = None
+
+
 def main(first=1968, last=2004, skip=(), redo=()):
     OUT.mkdir(parents=True, exist_ok=True)
     fips_list = atlas_counties()
@@ -416,7 +498,7 @@ def main(first=1968, last=2004, skip=(), redo=()):
     report = {}
     if "nber" not in skip:
         log("• NCHS mortality files (NBER) …")
-        xw = build_crosswalk()
+        xws = {"1960s": build_crosswalk("1960s"), "1970s": build_crosswalk("1970s")}
         acc = {(m, p): {} for m in MEASURES for p in ("res", "occ")}
         coverage = {}
         for y in range(first, last + 1):
@@ -426,7 +508,7 @@ def main(first=1968, last=2004, skip=(), redo=()):
                 out = {tuple(k.split("|")): v for k, v in c["out"].items()}
                 matched = c["matched"]
             else:
-                out, matched = nber_year(y, atlas, xw)
+                out, matched = nber_year(y, atlas, xws["1960s" if y <= 1969 else "1970s"])
                 cfile.write_text(json.dumps({"out": {"|".join(k): v for k, v in out.items()}, "matched": matched}))
             coverage[y] = round(matched, 3)
             for k, v in out.items():
@@ -435,9 +517,17 @@ def main(first=1968, last=2004, skip=(), redo=()):
         for (m, p), years in acc.items():
             data = {"count": {}, "rate": {}}
             for y, counts in years.items():
-                c, r = rate_arrays(counts, grp(y), fips_list, idx)
+                gy = merge_uncoded(grp(y), y)
+                c, r = rate_arrays(counts, gy, fips_list, idx)
+                blank_early(c, r, y, fips_list, idx)
+                blank_uncoded(c, r, y, idx)
                 if y >= 1989:  # small counties are not identified in public files: blank, not zero
                     ident = set(acc[("all", p)][y])
+                    for members, _pop in gy:  # a shared rate is only right when every member's deaths are in the count
+                        if len(members) > 1 and any(f not in ident for f in members):
+                            for f in members:
+                                if f in idx:
+                                    r[idx[f]] = None
                     for i, f in enumerate(fips_list):
                         if f not in ident:
                             c[i] = None

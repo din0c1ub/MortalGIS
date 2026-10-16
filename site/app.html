@@ -286,7 +286,7 @@ body[data-mode="hist"] #pts, body[data-mode="hist"] #dotchip, body[data-mode="hi
     </div>
     <section class="county co" id="county" aria-live="polite"></section>
     <details class="about sec co"><summary>About the data &amp; sources</summary><ul class="srcs" id="srcs"></ul>
-      <div class="desc">The site rebuilds every week from these sources; the 1968–2004 history is rebuilt only when NCHS or NBER revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where Michigan, New York, New Mexico and Pennsylvania publish them (outlined with dashes). A few states publish only that a county had 1–4 deaths; the tooltip of a hidden county then says so, and the count and rate stay hidden. The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div></details>
+      <div class="desc">The site rebuilds every week from these sources; the 1959–2004 history is rebuilt only when NCHS, NBER or ICPSR revise their files. Every figure comes from a source table; MortalGIS adds no estimates. Counts of 1–9 deaths are hidden, as CDC does, except where a state health department publishes them (outlined with dashes; the tooltip names the state source). A few states publish only that a county had 1–4 deaths; the tooltip of a hidden county then says so, and the count and rate stay hidden. The 5-year totals switch shows most small counties. Medical examiner cases are grouped into ~1 km squares and ZIP Codes so no single home can be picked out.</div><div class="desc" id="stcred"></div><div class="desc">Alabama counts: These data were provided by the Alabama Department of Public Health. The Department specifically disclaims responsibility for any analyses, interpretations, or conclusions.</div><div class="desc">North Carolina counts: the original source is the N.C. State Center for Health Statistics, shown unaltered.</div></details>
   </aside>
 
   <main>
@@ -330,6 +330,11 @@ const counties = meta.counties; // [fips,name,state]
 const idx = new Map(counties.map((c,i)=>[c[0],i]));
 const M = new Map(meta.measures.map(m=>[m.key,m]));
 const SRC = meta.sources || {};
+// header and mode-switch labels follow the years the county files actually hold
+const coYears = ((M.get("all_deaths")||{}).periods||[]).filter(p=>/^\d{4}$/.test(p)).map(Number);
+const TAGLINE = `US county death rates, ${coYears.length ? d3.min(coYears) : 1968} to today`;
+$("#tagline").textContent = TAGLINE;
+if (coYears.length) $("#modeCo").textContent = `Counties ${d3.min(coYears)}–${d3.max(coYears)}`;
 const stAbbr = {"01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT","10":"DE","11":"DC","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN","19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA","26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE","32":"NV","33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND","39":"OH","40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD","47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV","55":"WI","56":"WY"};
 const label = c => `${c[1]}, ${stAbbr[c[0].slice(0,2)]||c[2]}`;
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -451,7 +456,7 @@ function spanOf(m, p){
   return m.spans.find(sp=>{ const [a,b]=sp.split("-").map(Number); return +p>=a && +p<=b; }) || null;
 }
 const spanLbl = sp => sp.replace("-", "–");
-const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH", "35":"New Mexico DOH", "42":"Pennsylvania DOH", "17":"Illinois DPH", "18":"Indiana Department of Health", "29":"Missouri DHSS", "37":"North Carolina SCHS", "47":"Tennessee Department of Health", "55":"Wisconsin DHS", "01":"Alabama DPH", "12":"Florida DOH", "13":"Georgia DPH", "24":"Maryland VSA", "28":"Mississippi MSDH", "45":"South Carolina DPH", "40":"Oklahoma State Department of Health", "08":"Colorado CDPHE", "34":"New Jersey DOH (NJSHAD)", "27":"Minnesota Department of Health", "54":"West Virginia Health Statistics Center", "51":"Virginia Department of Health", "50":"Vermont Department of Health", "25":"Massachusetts Department of Public Health", "31":"Nebraska DHHS", "20":"Kansas Department of Health and Environment"};  // states that publish counts CDC hides
+const FILLSRC = {"26":"Michigan DHHS", "36":"New York State DOH", "35":"New Mexico DOH", "42":"Pennsylvania DOH", "17":"Illinois DPH", "18":"Indiana Department of Health", "29":"Missouri DHSS", "37":"North Carolina SCHS", "47":"Tennessee Department of Health", "55":"Wisconsin DHS", "01":"Alabama DPH", "12":"Florida DOH", "13":"Georgia DPH", "24":"Maryland VSA", "28":"Mississippi MSDH", "45":"South Carolina DPH", "40":"Oklahoma State Department of Health", "08":"Colorado CDPHE", "34":"New Jersey DOH (NJSHAD)", "27":"Minnesota Department of Health", "54":"West Virginia Health Statistics Center", "51":"Virginia Department of Health", "50":"Vermont Department of Health", "25":"Massachusetts Department of Public Health", "31":"Nebraska DHHS", "20":"Kansas Department of Health and Environment", "16":"Idaho Department of Health and Welfare", "38":"North Dakota HHS Vital Records"};  // states that publish counts CDC hides
 const NCHS_FILL = "NCHS death-certificate files (via NBER)";
 // filled[p][i]: 1 = a state health department's count, 2 = the exact small count from the NCHS files the 1968–98 history is built from
 const fillName = (i, d, p) => (d && d.filled && d.filled[p] && d.filled[p][i]===2) ? NCHS_FILL : (FILLSRC[counties[i][0].slice(0,2)] || "the state health department");
@@ -1031,6 +1036,8 @@ function renderSources(){
   if (meta.monthly) seen.set(meta.monthly.sourceUrl,[meta.monthly.source, meta.monthly.asOf]);
   (meta.incidents||[]).filter(l=>l.kind!=="fars"&&l.kind!=="noaa").forEach(l=>seen.set(l.sourceUrl,[l.source, `through ${l.latest}${l.stale?" (stale)":""}`]));
   const urls = {}; for (const [k,s] of Object.entries(SRC)) urls[s.url+k]=s.url;
+  const stc = Object.values(FILLSRC).sort((a,b)=>a.localeCompare(b));
+  $("#stcred").textContent = `Counts CDC hides are filled from ${stc.length} state sources: ${stc.join("; ")}.`;
   $("#srcs").innerHTML = [...seen].map(([u,[n,a]])=>`<li><a href="${urls[u]||u}" target="_blank" rel="noopener">${n}</a><span>${a||""}</span></li>`).join("") + `<li><span style="font-family:var(--f-body)">Site rebuilt</span><span>${meta.generated.slice(0,10)}</span></li>`;
 }
 
@@ -1049,12 +1056,14 @@ const stCode = new Map();   // state FIPS -> postal code, for the states in the 
 const HMEAS = {
   deaths:{label:"Deaths", unit:"deaths", desc:"Exact counts from the printed volumes. Counts of 1–9 are shown: the people in these tables died more than 70 years ago, and neither source asks for small counts to be hidden."},
   share:{label:"Share of registered deaths", unit:"% of all registered deaths", desc:"Deaths from this cause as a percent of all deaths registered in the same state and year. Needs no population figure. Not shown on fewer than 20 deaths."},
-  per1000:{label:"Per 1,000 births", unit:"infant deaths per 1,000 births", desc:"Infant deaths for every 1,000 births registered in the same state and year. Not shown on fewer than 20 deaths."}};
+  per1000:{label:"Per 1,000 births", unit:"infant deaths per 1,000 births", desc:"Infant deaths for every 1,000 births registered in the same state and year. Not shown on fewer than 20 deaths."},
+  rate:{label:"Per 100,000 people", unit:"deaths per 100,000 people", desc:"Deaths for every 100,000 people living in the state that year (Census Bureau intercensal estimates, July 1, in thousands). Not shown on fewer than 20 deaths."}};
 async function histProbe(){
   try{
     const r = await fetch("data/hist_state/index.json"); if(!r.ok) return;
     HI.idx = await r.json();
     if (HI.idx.registration){ const rr = await fetch("data/hist_state/"+HI.idx.registration); if (rr.ok) HI.reg = await rr.json(); }
+    if (HI.idx.population){ const rp = await fetch("data/hist_state/"+HI.idx.population); if (rp.ok) HI.pop = await rp.json(); }
   }catch(e){ HI.idx = null; return; }
   if (!HI.idx || !(HI.idx.series||[]).length) return;
   for (const s of HI.idx.states) stCode.set(s.fips, s.code);
@@ -1093,6 +1102,12 @@ function hCell(code, yr, key=HI.key, meas=HI.meas){
     if (n < minDeaths()) return {st:"small", n, t};
     return {st:"ok", n, t, v:100*n/t};
   }
+  if (meas==="rate"){
+    const P = HI.pop, p = P && P.v[code] ? P.v[code][yr-P.y0] : null;
+    if (p==null) return {st:"none", n};
+    if (n < minDeaths()) return {st:"small", n, p};
+    return {st:"ok", n, p, v:1e5*n/p};
+  }
   const b = S.births && S.births[code] ? S.births[code][i] : null;
   if (b==null) return {st:"nobirths", n};
   if (n < minDeaths()) return {st:"small", n, b};
@@ -1108,15 +1123,16 @@ function hBreaks(key, meas, yr=null){
   const S = HI.ser[key], vals = [];
   for (let y=(yr||S.y0); y<=(yr||S.y1); y++) for (const code of Object.keys(S.v)){ const c = hCell(code,y,key,meas); if (c.st==="ok" && c.v>0) vals.push(c.v); }
   vals.sort(d3.ascending);
-  const step = meas==="deaths" ? 1 : .1;
+  const big = meas==="rate" && vals.length && d3.quantileSorted(vals,.5) >= 100;   // all-cause rates run in the thousands: round to tens
+  const step = meas==="deaths" ? 1 : big ? 10 : .1;
   const q = [1,2,3,4,5,6].map(i=>vals.length ? d3.quantileSorted(vals,i/7) : 0);
-  const out = []; q.forEach((v,j)=>{ let x = meas==="deaths" ? Math.round(v) : +v.toPrecision(2); if (j && x<=out[j-1]) x = +(out[j-1]+step).toFixed(2); out.push(x); });
+  const out = []; q.forEach((v,j)=>{ let x = meas==="deaths" ? Math.round(v) : big ? Math.round(v/10)*10 : +v.toPrecision(2); if (j && x<=out[j-1]) x = +(out[j-1]+step).toFixed(2); out.push(x); });
   return HI.scales[k] = out;
 }
 const hBrk = () => hBreaks(HI.key, HI.meas, HI.scale==="year" ? HI.year : null);
 // States that have something to draw under the chosen measure (a count, or a share or rate where one is allowed).
 const hHave = c => c.st!=="none" && c.st!=="nobirths";
-const hFmt = (v, meas) => meas==="share" ? v.toFixed(1)+"%" : meas==="per1000" ? d3.format(",.0f")(v) : fmtI(v);
+const hFmt = (v, meas) => meas==="share" ? v.toFixed(1)+"%" : meas==="per1000" ? d3.format(",.0f")(v) : meas==="rate" ? (v>=100 ? d3.format(",.0f")(v) : d3.format(".1f")(v)) : fmtI(v);
 function hBuild(){
   if (HI.built) { hLayout(); return; }
   HI.built = true;
@@ -1202,7 +1218,7 @@ function hAbout(s){
   const links = Object.entries(src).map(([k,v])=>`<li><a href="${v.url}" target="_blank" rel="noopener">${v.label}</a><br><span>${v.terms}</span></li>`).join("");
   return `<p>This is a separate map of <b>states</b> for the years before county data exist. Each cause is the one the printed volumes named, not today's ICD group, and carries a grade (A same meaning today … C no modern equivalent, H historical only).</p>
   <p>${HI.idx.revisionNote}</p>
-  <p>Rates per 100,000 residents need census populations and are not included yet; there is no age adjustment. Shares and rates are not shown on fewer than 20 deaths; the exact count still is. MortalGIS adds no estimates: the dotted outline marks values the workbook's author imputed, and a diamond marks a state-year the publisher flagged or where the age groups do not add to the printed total.</p>
+  <p>${HI.idx.population?`Rates per 100,000 people use the Census Bureau's intercensal estimates of each state's population (July 1 of each year); there is no age adjustment.`:"Rates per 100,000 people need census populations and are not included yet; there is no age adjustment."} Shares and rates are not shown on fewer than 20 deaths; the exact count still is. MortalGIS adds no estimates: the dotted outline marks values the workbook's author imputed, and a diamond marks a state-year the publisher flagged or where the age groups do not add to the printed total.</p>
   <ul class="hlist" style="list-style:none;padding-left:0;display:flex;flex-direction:column;gap:6px">${links}</ul>`;
 }
 function hLegend(s){
@@ -1213,7 +1229,7 @@ function hLegend(s){
   if (HI.meas==="deaths") L.append("text").attr("x",0).attr("y",26).attr("text-anchor","start").text("0");
   b.forEach((v,i)=>L.append("text").attr("x",(i+1)*w-.5).attr("y",26).attr("text-anchor","middle").text(hFmt(v,HI.meas).replace("%","")));
   const noVal = HI.meas==="deaths" ? "Not in these tables (Alaska, Hawaii, DC, territories)"
-    : `No ${HI.meas==="per1000"?"rate":"share"}: fewer than ${minDeaths()} deaths${s.source==="miller"?", a printed total in doubt,":""} or not in these tables`;
+    : `No ${HI.meas==="share"?"share":"rate"}: fewer than ${minDeaths()} deaths${s.source==="miller"?", a printed total in doubt,":""} or not in these tables`;
   const keys = [`<span><i style="background:var(--nodata)"></i>${noVal}</span>`,
                 `<span><i class="hz" style="background-color:var(--nodata)"></i>${s.source==="infant"?"No data this year: not in the registration area, or no births counted yet":"No data: not in the registration area this year"}</span>`];
   const anyImp = Object.values(HI.ser[s.key].imputed||{}).some(o=>Object.keys(o).length);
@@ -1243,7 +1259,7 @@ function hRank(code){
 function hText(code, yr){
   const c = hCell(code, yr), unit = HMEAS[HI.meas];
   if (c.st==="ok") return `${hFmt(c.v, HI.meas)}${HI.meas==="deaths"?" "+(c.v===1?"death":"deaths"):""}`;
-  if (c.st==="small") return `${fmtI(c.n)} ${c.n===1?"death":"deaths"} (no ${HI.meas==="per1000"?"rate":"share"}: fewer than ${minDeaths()})`;
+  if (c.st==="small") return `${fmtI(c.n)} ${c.n===1?"death":"deaths"} (no ${HI.meas==="share"?"share":"rate"}: fewer than ${minDeaths()})`;
   if (c.st==="excluded") return `${fmtI(c.n)} deaths (share not shown: printed total in doubt)`;
   if (c.st==="nobirths") return `${fmtI(c.n)} infant deaths (no births counted yet, so no rate)`;
   return "No data";
@@ -1272,7 +1288,7 @@ function hPanel(){
   const rk = hRank(code), a = s.source==="miller" ? HI.anoms.get(code+"-"+yr) : null, imp = hImputed(code, yr);
   const spanTxt = spans && s.source==="miller" ? spans.map(([a0,a1])=>a0===a1?a0:`${a0}–${a1}`).join(", ") : null;
   $("#hState").innerHTML = `<div><div class="cname">${stName(code)}</div><div class="csub">${spanTxt?`In the registration area: ${spanTxt}`:"State"}</div></div>
-  <div><span class="lbl">${s.label} · ${yr}</span><div class="big"><b>${c.st==="ok"?hFmt(c.v,HI.meas):(c.n!=null?fmtI(c.n):"No data")}</b><small>${c.st==="ok"?HMEAS[HI.meas].unit:(c.n!=null?(c.st==="small"?"deaths (no "+(HI.meas==="per1000"?"rate":"share")+")":"deaths"):"")}</small></div></div>
+  <div><span class="lbl">${s.label} · ${yr}</span><div class="big"><b>${c.st==="ok"?hFmt(c.v,HI.meas):(c.n!=null?fmtI(c.n):"No data")}</b><small>${c.st==="ok"?HMEAS[HI.meas].unit:(c.n!=null?(c.st==="small"?"deaths (no "+(HI.meas==="share"?"share":"rate")+")":"deaths"):"")}</small></div></div>
   <div class="chips">${c.st==="none"?`<span class="chip warn">Not in the registration area</span>`:""}${imp?`<span class="chip warn">Estimated value</span>`:""}${a?`<span class="chip warn">Publisher's note</span>`:""}</div>
   <dl class="facts">
     ${c.n!=null?`<dt>Deaths</dt><dd>${fmtI(c.n)}</dd>`:""}${c.t?`<dt>All registered deaths</dt><dd>${fmtI(c.t)}</dd>`:""}${c.b?`<dt>Births</dt><dd>${fmtI(c.b)}</dd>`:""}
@@ -1342,7 +1358,7 @@ function hExit(){
   if (!HI.on) return;
   hStop(); HI.on = false; delete document.body.dataset.mode;
   $("#modeCo").setAttribute("aria-pressed","true"); $("#modeHi").setAttribute("aria-pressed","false");
-  $("#tagline").textContent = "US county death rates, 1968 to today";
+  $("#tagline").textContent = TAGLINE;
   hG.style("display","none"); cPaths.style("display",null); hatchG.style("display",null); selPath.style("display",null);
   $("#map").setAttribute("aria-label","Map of US counties shaded by death rate. Use the county search to pick a county.");
   $("#tip").hidden = true;

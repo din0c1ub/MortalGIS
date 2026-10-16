@@ -76,8 +76,12 @@ def whole(v):
     return int(round(v))
 
 
-def build(miller: dict | None, infant: dict | None, series: list, generated: str):
-    """Returns ({filename: obj}, report lines). Raises SystemExit on a failed check."""
+def build(miller: dict | None, infant: dict | None, series: list, generated: str, population: dict | None = None, ext: dict | None = None):
+    """Returns ({filename: obj}, report lines). Raises SystemExit on a failed check.
+    population: the Census intercensal state estimates (census_state_population_1900_1949.json); when given, every Miller series also gets a
+    rate per 100,000 people (shown only on 20 or more deaths, like the share).
+    ext: {extension source key: (bundle, set of approved series keys)} for years after a source's own span (hist_series.EXTENSIONS)."""
+    ext = ext or {}
     out, rep = {}, []
     reg_years = list(range(1900, 1937))
     anomalies = []
@@ -116,7 +120,17 @@ def build(miller: dict | None, infant: dict | None, series: list, generated: str
         known = (miller.get("checks") or {}).get("age_sum_differs")   # the exceptions the staging step recorded; a different count means the bundle changed
         if known is not None and len(mism) != len(known):
             raise SystemExit(f"! the staged bundle records {len(known)} age-sum exceptions, this run finds {len(mism)}")
-        gaps = {st: [tuple(r) for r in run] for st, run in spans.items() if len(run) > 1 or run[-1][1] != 1936}
+        for k, (eb, _keys) in ext.items():  # the extension years count as registration years where the extension reports the state
+            for st, ys in eb["data"].items():
+                for y in sorted(int(y) for y in ys):
+                    run = spans.setdefault(st, [])
+                    if run and y == run[-1][1] + 1:
+                        run[-1][1] = y
+                    elif not run or y > run[-1][1]:
+                        run.append([y, y])
+                    n_states[y] = n_states.get(y, 0) + 1
+                    reg_years.append(y) if y not in reg_years else None
+        gaps = {st: [tuple(r) for r in run] for st, run in spans.items() if len(run) > 1 or run[-1][1] != max(reg_years)}
         rep.append(f"registration gaps: {gaps}")
         out["registration_area.json"] = dict(
             years=reg_years, nStates={str(y): n_states.get(y, 0) for y in reg_years},
@@ -136,6 +150,9 @@ def build(miller: dict | None, infant: dict | None, series: list, generated: str
             if not miller:
                 raise SystemExit(f"! series {key} is approved but its bundle {H.SOURCES['miller']['file']} is missing")
             y0, y1 = 1900, 1936
+            exts = [(k, a, b) for k, a, b, base in H.EXTENSIONS if base == "miller" and k in ext and key in ext[k][1]]
+            for k, a, b in exts:
+                y1 = max(y1, b)
             n = y1 - y0 + 1
             v = {}
             for st, ys in miller["data"].items():
@@ -148,7 +165,22 @@ def build(miller: dict | None, infant: dict | None, series: list, generated: str
                         raise SystemExit(f"! {st} {y} {key}: negative or non-numeric value")
                     arr[int(y) - y0] = whole(sum(vals))
                 v[st] = arr
+            for k, a, b in exts:
+                for st, ys in ext[k][0]["data"].items():
+                    if st not in v:
+                        raise SystemExit(f"! {k}: state {st} is not in the Miller panel")
+                    for y, row in ys.items():
+                        if not a <= int(y) <= b:
+                            continue
+                        vals = [row.get(c) for c in s["cols"]]
+                        if any(x is None for x in vals):
+                            continue
+                        if any((not isinstance(x, int)) or x < 0 for x in vals):
+                            raise SystemExit(f"! {k} {st} {y} {key}: negative or non-numeric value")
+                        v[st][int(y) - y0] = sum(vals)
             body = dict(key=key, y0=y0, y1=y1, v=v)
+            if exts:
+                body["ext"] = {k: [a, b] for k, a, b in exts}
         else:
             if not infant:
                 raise SystemExit(f"! series {key} is approved but its bundle {H.SOURCES['infant']['file']} is missing")
@@ -187,23 +219,39 @@ def build(miller: dict | None, infant: dict | None, series: list, generated: str
                     raise SystemExit("! infant deaths disagree with Miller's under-1 column")
         out[f"series_{key}.json"] = body
         cnt = sum(1 for arr in body["v"].values() for x in arr if x is not None)
-        measures = ["deaths"] + (["share"] if s["share"] else []) + (["per1000"] if s["source"] == "infant" else [])
+        measures = ["deaths"] + (["share"] if s["share"] else []) + (["per1000"] if s["source"] == "infant" else []) \
+            + (["rate"] if population and s["source"] == "miller" else [])
         series_out.append(dict(key=key, label=s["label"], group=s["group"], grade=s["grade"], gradeText=H.GRADE_TEXT[s["grade"]], nearest=s["nearest"],
                                years=[body["y0"], body["y1"]], measures=measures, file=f"series_{key}.json", note=s["note"], source=s["source"],
-                               revisionYears=[y for y in H.REVISION_YEARS if body["y0"] < y <= body["y1"]], stateYears=cnt))
+                               revisionYears=[y for y in H.REVISION_YEARS if body["y0"] < y <= body["y1"]], stateYears=cnt,
+                               **({"extendedBy": body["ext"]} if body.get("ext") else {})))
         rep.append(f"series {key}: {body['y0']}-{body['y1']}, {cnt:,} state-year values")
     if not series_out:
         return {}, rep
-    used_src = {s["source"] for s in series}
+    used_src = {s["source"] for s in series} | {k for so in series_out for k in so.get("extendedBy", {})}
+    year_notes = dict(H.YEAR_NOTES)
+    for k, a, b, base in H.EXTENSIONS:
+        if k in used_src:
+            for y in range(a, b + 1):
+                year_notes[y] = H.EXTENSION_NOTES[k]
+    if population:
+        pdata = population["data"]
+        missing = sorted(set(H.STATE_NAMES) - set(pdata))
+        if missing:
+            raise SystemExit(f"! population file lacks states: {missing}")
+        out["population.json"] = dict(y0=1900, y1=1949, v={c: [pdata[c].get(str(y)) for y in range(1900, 1950)] for c in sorted(H.STATE_NAMES)})
+        rep.append(f"population: {len(H.STATE_NAMES)} states 1900-1949 ({population['check']})")
     out["index.json"] = dict(
         version=1, generated=generated, years=[min(s["years"][0] for s in series_out), max(s["years"][1] for s in series_out)],
         states=[dict(code=c, fips=H.STATE_FIPS[c], name=H.STATE_NAMES[c]) for c in sorted(H.STATE_NAMES, key=lambda c: H.STATE_NAMES[c])],
         groups=[dict(key=k, label=lab) for k, lab in H.GROUPS if any(s["group"] == k for s in series_out)],
         series=series_out, revisionYears=H.REVISION_YEARS, revisionNote=H.REVISION_NOTE,
         anomalies=sorted(anomalies, key=lambda a: (a["year"], a["state"])) if "miller" in used_src else [],
-        yearNotes={str(k): v for k, v in H.YEAR_NOTES.items()}, shareMinDeaths=H.SHARE_MIN_DEATHS,
+        yearNotes={str(k): v for k, v in year_notes.items()}, shareMinDeaths=H.SHARE_MIN_DEATHS,
         sources={k: dict(label=H.SOURCES[k]["label"], url=H.SOURCES[k]["url"], terms=H.SOURCES[k]["terms"]) for k in used_src},
-        registration="registration_area.json" if miller else None)
+        registration="registration_area.json" if miller else None,
+        population="population.json" if population else None,
+        populationSource=dict(label=population["source"], url=population["url"]) if population else None)
     return out, rep
 
 
@@ -232,7 +280,23 @@ def main():
     # the infant cross-check wants Miller too when its file is there, even if no Miller series is approved
     if infant and not miller and (BUNDLE_DIR / H.SOURCES["miller"]["file"]).exists():
         miller = json.loads((BUNDLE_DIR / H.SOURCES["miller"]["file"]).read_text())
-    files, rep = build(miller, infant, series, dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d"))
+    pop_path = BUNDLE_DIR / "census_state_population_1900_1949.json"
+    population = json.loads(pop_path.read_text()) if pop_path.exists() else None
+    ext = {}
+    for k, y_from, y_to, base in H.EXTENSIONS:
+        sid = H.SOURCES[k]["id"]
+        keys = {m for (s_, b_, m, pl), r in ledger.items() if s_ == sid and b_ == H.BUNDLE and r["status"] in ("approved", "released")}
+        keys &= {s["key"] for s in series}
+        if keys:
+            p = BUNDLE_DIR / H.SOURCES[k]["file"]
+            if not p.exists():
+                raise SystemExit(f"! ledger approves {sid} but its bundle file is missing: {p}")
+            eb = json.loads(p.read_text())
+            if eb.get("id") != sid:
+                raise SystemExit(f"! {p.name}: bundle id {eb.get('id')!r}, expected {sid!r}")
+            ext[k] = (eb, keys)
+            print(f"extension {sid}: {len(keys)} series get {y_from}-{y_to}")
+    files, rep = build(miller, infant, series, dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d"), population, ext)
     for line in rep:
         print("  " + line)
     out = Path(a.out)

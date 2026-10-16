@@ -183,7 +183,10 @@ STAGED = [(("mi_injury_county_2000-2024.json",), "mi_fatal_injuries", "mi_injury
           (("ne_dhhs_vital_report_county_2008-2016.json",), "ne_dhhs_vital_report", "ne_dhhs_vital_report", "31", "NE"),
           (("ne_dhhs_vital_early_county_2005-2007.json",), "ne_dhhs_vital_report", "ne_dhhs_vital_early", "31", "NE"),
           (("ks_kdhe_d25_county_2016.json",), "ks_kdhe_d25", "ks_kdhe_d25", "20", "KS"),
-          (("ks_kdhe_annual_county_2001-2024.json",), "ks_kdhe_annual", "ks_kdhe_annual", "20", "KS")]
+          (("ks_kdhe_annual_county_2001-2024.json",), "ks_kdhe_annual", "ks_kdhe_annual", "20", "KS"),
+          (("id_dhw_vital_county_2006-2024.json",), "id_dhw_vital", "id_dhw_vital", "16", "ID"),
+          (("nd_hhs_ves_county_1998-2024.json",), "nd_hhs_ves", "nd_hhs_ves", "38", "ND"),
+          (("va_vdh_overdose_county_2018-2024.json",), "va_vdh_overdose", "va_vdh_overdose", "51", "VA")]
 # The publisher's cause label -> the map's measure key. Causes not listed here (accidents, motor vehicle ...) have no map measure.
 MEASURE = {"falls": "falls", "homicide": "homicide", "suicide": "suicide", "cancer": "cancer", "heart": "heart", "stroke": "stroke",
            "alzheimers": "alzheimers", "diabetes": "diabetes", "liver": "liver", "clrd": "clrd", "flu": "flu_pneumonia", "flu_pneumonia": "flu_pneumonia", "kidney": "kidney",
@@ -192,7 +195,7 @@ MEASURE = {"falls": "falls", "homicide": "homicide", "suicide": "suicide", "canc
 LABEL = {"MI": "Michigan DHHS", "NY": "New York State DOH", "NM": "New Mexico DOH", "PA": "Pennsylvania DOH", "IL": "Illinois DPH",
          "IN": "Indiana Department of Health", "MO": "Missouri DHSS", "NC": "North Carolina SCHS", "TN": "Tennessee Department of Health",
          "WI": "Wisconsin DHS", "AL": "Alabama DPH", "FL": "Florida DOH", "GA": "Georgia DPH", "MD": "Maryland VSA", "MS": "Mississippi MSDH",
-         "SC": "South Carolina DPH", "OK": "Oklahoma State Department of Health", "CO": "Colorado CDPHE", "NJ": "New Jersey DOH (NJSHAD)", "MN": "Minnesota Department of Health", "WV": "West Virginia Health Statistics Center", "VA": "Virginia Department of Health", "VT": "Vermont Department of Health", "MA": "Massachusetts Department of Public Health", "NE": "Nebraska DHHS", "KS": "Kansas Department of Health and Environment"}
+         "SC": "South Carolina DPH", "OK": "Oklahoma State Department of Health", "CO": "Colorado CDPHE", "NJ": "New Jersey DOH (NJSHAD)", "MN": "Minnesota Department of Health", "WV": "West Virginia Health Statistics Center", "VA": "Virginia Department of Health", "VT": "Vermont Department of Health", "MA": "Massachusetts Department of Public Health", "NE": "Nebraska DHHS", "KS": "Kansas Department of Health and Environment", "ID": "Idaho Department of Health and Welfare", "ND": "North Dakota HHS Vital Records"}
 
 
 def read_ledger(path=None) -> dict:
@@ -367,6 +370,23 @@ NBER_SMALL = ("nber_small", "nber_small")  # (ledger source_id, ledger bundle)
 NBER_SMALL_FILE = Path(os.environ.get("MORTALGIS_NBER_SMALL") or ROOT / "data_manual" / "nber_exact_small_1968-2004.json")
 NBER_SMALL_LABEL = "NCHS death-certificate files (via NBER)"
 NBER_PLACE = {"res": "residence", "occ": "occurrence"}
+
+
+# ---------------------------------------------------------------- county history 1959-1967 (ICPSR copies of the NCHS files)
+# pipeline/history_icpsr.py writes site/data/hist/icpsr_<cause>_<res|occ>.json from the 1959-1967 public-use files (ICPSR study 20680).
+# build_data.py adds a cause and place to the map only when its ledger row (icpsr_mcd / icpsr_mcd / <measure> / residence|occurrence) is
+# approved or released.
+ICPSR = ("icpsr_mcd", "icpsr_mcd")
+ICPSR_PLACE = {"residence": "res", "occurrence": "occ"}
+
+
+def icpsr_approved(ledger: dict) -> set:
+    """{(cause, 'res'|'occ')} the build may show for 1959-1967."""
+    out = set()
+    for (s, b, m, pl), r in ledger.items():
+        if (s, b) == ICPSR and r["status"] in APPROVED and pl in ICPSR_PLACE:
+            out.add(("all" if m == "all_deaths" else m, ICPSR_PLACE[pl]))
+    return out
 
 
 def nber_small(ledger: dict, path=None):

@@ -1,0 +1,657 @@
+month,lon,lat,dead,system,placed
+1968-05,-97.98,34.36,1,hazardous liquid,town
+1968-06,-83.32,42.29,1,hazardous liquid,town
+1968-09,-90.16,41.87,1,hazardous liquid,town
+1968-12,-96.4,41.24,5,hazardous liquid,town
+1969-06,-94.15,30.08,3,hazardous liquid,town
+1969-08,-117.33,34.05,1,hazardous liquid,town
+1969-09,-95.98,29.82,1,hazardous liquid,town
+1970-02,-92.27,42.47,1,gas distribution,town
+1970-03,-96.97,32.86,1,gas distribution,town
+1970-03,-92.41,31.34,1,gas transmission or gathering,town
+1970-03,-89.48,36.38,1,gas distribution,town
+1970-04,-112.09,33.57,1,gas distribution,town
+1970-04,-75.61,41.41,1,gas distribution,town
+1970-09,-84.51,39.14,1,hazardous liquid,town
+1970-09,-74.07,40.95,1,gas distribution,town
+1970-10,-74.94,40.37,1,gas distribution,town
+1970-11,-123.33,42.43,1,gas distribution,town
+1970-11,-117.86,33.79,1,gas distribution,town
+1970-11,-100.91,32.71,2,hazardous liquid,town
+1970-11,-83.82,42.96,1,gas distribution,town
+1970-12,-117.91,34.06,1,gas distribution,town
+1970-12,-111.86,33.68,1,gas distribution,town
+1970-12,-101.6,35.64,1,gas transmission or gathering,town
+1971-01,-87.35,41.59,1,gas distribution,town
+1971-01,-85.69,40.09,1,gas distribution,town
+1971-01,-75.32,40.07,5,gas distribution,town
+1971-02,-96.96,43.12,1,gas distribution,town
+1971-02,-86.15,39.78,1,gas distribution,town
+1971-02,-81.13,33.31,1,gas distribution,town
+1971-02,-74.94,40.37,8,gas distribution,town
+1971-02,-73.73,42.65,3,gas distribution,town
+1971-03,-89.06,42.26,1,gas distribution,town
+1971-03,-80.15,39.48,1,gas distribution,town
+1971-03,-72.85,41.67,1,gas distribution,town
+1971-04,-88.64,37.07,2,gas distribution,town
+1971-04,-88.48,33.98,1,gas transmission or gathering,town
+1971-07,-80.83,35.21,1,gas distribution,town
+1971-08,-79.98,40.44,1,gas distribution,town
+1971-09,-87.68,41.84,1,gas distribution,town
+1971-10,-104.72,39.71,1,gas transmission or gathering,town
+1971-10,-97.35,32.78,1,gas distribution,town
+1971-10,-93.21,30.2,1,gas distribution,town
+1971-11,-87.68,41.84,1,gas distribution,town
+1971-11,-79.98,40.44,6,gas distribution,town
+1972-01,-97.64,37.43,1,hazardous liquid,town
+1972-02,-122.35,47.62,2,gas distribution,town
+1972-02,-97.75,30.3,1,gas distribution,town
+1972-02,-76.14,43.04,1,gas distribution,town
+1972-02,-75.67,41.4,1,gas distribution,town
+1972-03,-77.75,43.02,2,gas distribution,town
+1972-03,-77.2,38.83,3,gas distribution,town
+1972-04,-98.75,35.1,1,gas transmission or gathering,town
+1972-05,-96.6,30.88,1,hazardous liquid,town
+1972-06,-121.81,37.3,1,gas distribution,town
+1972-06,-88.04,32.2,4,hazardous liquid,town
+1972-06,-72.79,41.28,1,gas distribution,town
+1972-07,-93.89,29.9,1,gas distribution,town
+1972-07,-79.57,40.41,1,gas transmission or gathering,town
+1972-07,-72.92,41.31,1,gas distribution,town
+1972-08,-122.22,38.05,1,gas transmission or gathering,town
+1972-08,-84.42,33.76,1,gas distribution,town
+1972-10,-118.41,34.02,1,gas distribution,town
+1972-10,-97.68,32.97,2,gas transmission or gathering,town
+1972-10,-92.28,44.45,6,gas distribution,town
+1972-10,-84.51,39.14,1,gas distribution,town
+1972-12,-98.57,34.07,1,gas distribution,town
+1972-12,-87.35,41.59,1,gas distribution,town
+1972-12,-80.65,41.1,1,gas distribution,town
+1972-12,-73.65,43.31,1,gas distribution,town
+1973-02,-118.41,34.02,1,gas distribution,town
+1973-02,-97.75,30.3,6,hazardous liquid,town
+1973-02,-75.39,40.51,5,gas distribution,town
+1973-03,-84.51,39.14,7,gas distribution,town
+1973-04,-106.43,31.85,7,gas distribution,town
+1973-04,-79.24,42.1,1,gas distribution,town
+1973-04,-77.44,43.1,1,gas distribution,town
+1973-05,-96.97,32.86,1,gas distribution,town
+1973-05,-94.34,32.15,1,gas transmission or gathering,town
+1973-05,-84.2,39.78,1,hazardous liquid,town
+1973-06,-115.26,36.23,1,gas distribution,town
+1973-06,-104.88,39.76,1,gas distribution,town
+1973-06,-76.74,38.95,3,gas distribution,town
+1973-07,-85.66,40.55,1,gas distribution,town
+1973-09,-103.28,32.62,1,gas transmission or gathering,town
+1973-10,-97.91,38.06,1,gas distribution,town
+1973-12,-81.63,38.35,3,gas distribution,town
+1973-12,-75.0,39.47,4,gas distribution,town
+1974-01,-85.97,37.89,1,gas transmission or gathering,town
+1974-01,-76.73,39.96,1,gas distribution,town
+1974-01,-75.06,39.8,1,gas distribution,town
+1974-05,-84.47,33.67,1,gas distribution,town
+1974-05,-75.13,40.01,2,gas distribution,town
+1974-07,-97.21,27.87,4,hazardous liquid,town
+1974-09,-119.21,34.2,1,gas distribution,town
+1974-09,-88.67,44.28,1,gas distribution,town
+1974-10,-82.07,38.99,2,gas distribution,town
+1974-12,-99.74,32.45,6,hazardous liquid,town
+1975-01,-84.11,40.74,1,hazardous liquid,town
+1975-02,-94.82,39.76,1,gas distribution,town
+1975-05,-94.59,30.03,4,hazardous liquid,town
+1975-10,-102.62,31.98,3,gas transmission or gathering,town
+1975-10,-91.38,30.78,1,gas transmission or gathering,town
+1975-11,-85.51,43.87,1,gas transmission or gathering,town
+1975-12,-76.61,39.3,1,gas distribution,town
+1976-01,-73.78,40.92,2,gas distribution,town
+1976-02,-112.09,33.57,1,gas distribution,town
+1976-02,-112.09,33.57,1,gas distribution,town
+1976-02,-89.8,44.5,1,gas distribution,town
+1976-03,-122.71,38.33,2,gas distribution,town
+1976-03,-91.65,35.7,3,gas distribution,town
+1976-03,-83.14,42.25,2,gas distribution,town
+1976-04,-94.73,43.65,1,gas distribution,town
+1976-04,-93.1,44.95,1,gas distribution,town
+1976-05,-79.97,32.83,2,gas distribution,town
+1976-06,-87.68,41.84,2,gas distribution,town
+1976-06,-76.94,40.29,3,gas distribution,town
+1976-08,-87.88,42.59,2,gas distribution,town
+1976-08,-75.48,40.59,2,gas distribution,town
+1976-08,-75.29,43.07,1,gas distribution,town
+1976-09,-87.68,41.66,1,gas distribution,town
+1976-11,-93.79,32.47,1,gas distribution,town
+1976-12,-76.61,39.3,1,gas distribution,town
+1977-01,-115.49,32.68,1,gas distribution,town
+1977-01,-92.97,32.36,5,gas distribution,town
+1977-01,-79.98,40.44,2,gas distribution,town
+1977-01,-76.64,39.24,2,gas distribution,town
+1977-01,-76.61,39.3,1,gas distribution,town
+1977-01,-74.17,40.72,1,gas distribution,town
+1977-02,-93.79,32.47,1,gas distribution,town
+1977-02,-80.25,40.17,1,gas distribution,town
+1977-03,-79.92,40.19,1,gas distribution,town
+1977-03,-78.86,42.89,2,gas transmission or gathering,town
+1977-07,-147.65,64.84,1,hazardous liquid,town
+1977-07,-94.99,43.63,1,gas distribution,town
+1977-09,-119.61,34.93,2,gas transmission or gathering,town
+1977-09,-80.25,40.69,1,gas distribution,town
+1977-10,-93.79,32.47,1,gas transmission or gathering,town
+1977-10,-87.68,41.84,1,gas distribution,town
+1977-10,-72.92,41.4,2,gas distribution,town
+1977-11,-96.67,40.81,1,gas distribution,town
+1977-11,-86.92,40.44,1,gas distribution,town
+1978-01,-71.1,42.12,1,gas distribution,town
+1978-02,-118.4,34.08,1,gas distribution,town
+1978-02,-103.81,41.94,1,gas distribution,town
+1978-02,-71.64,42.06,1,gas distribution,town
+1978-03,-84.51,39.14,1,gas distribution,town
+1978-05,-84.53,38.26,1,gas distribution,town
+1978-10,-95.32,29.56,6,gas transmission or gathering,town
+1978-11,-97.12,32.7,1,gas distribution,town
+1979-01,-96.97,32.86,2,gas distribution,town
+1979-01,-89.63,40.57,4,gas distribution,town
+1979-01,-83.15,42.51,1,gas distribution,town
+1979-01,-81.63,38.35,1,gas distribution,town
+1979-02,-118.41,34.02,4,gas distribution,town
+1979-02,-112.09,33.57,1,gas distribution,town
+1979-04,-83.58,41.66,2,gas distribution,town
+1979-04,-75.13,40.01,1,gas distribution,town
+1979-05,-75.13,40.01,7,gas distribution,town
+1979-06,-83.1,42.38,1,gas distribution,town
+1979-06,-75.95,40.33,1,gas distribution,town
+1979-07,-89.93,30.05,2,gas transmission or gathering,town
+1979-07,-84.35,34.04,1,gas distribution,town
+1979-07,-80.21,40.51,1,gas distribution,town
+1979-09,-87.45,41.65,1,hazardous liquid,town
+1979-10,-111.92,46.58,1,gas distribution,town
+1979-10,-87.67,39.8,1,gas distribution,town
+1979-10,-76.44,38.36,1,gas transmission or gathering,town
+1979-10,-75.13,40.01,1,gas distribution,town
+1979-12,-106.65,35.1,1,gas distribution,town
+1980-01,-91.19,29.71,1,hazardous liquid,town
+1980-03,-85.38,32.66,8,gas distribution,town
+1980-04,-93.15,45.02,1,hazardous liquid,town
+1980-07,-74.19,40.67,1,gas distribution,town
+1980-10,-87.22,37.36,1,gas transmission or gathering,town
+1981-01,-108.57,39.09,2,gas distribution,town
+1981-01,-83.38,41.92,1,gas distribution,town
+1981-01,-83.21,42.31,1,gas distribution,town
+1981-01,-79.99,40.36,1,gas distribution,town
+1981-02,-104.27,46.36,1,gas distribution,town
+1981-08,-105.5,44.27,1,gas distribution,town
+1981-09,-101.72,32.53,3,hazardous liquid,town
+1981-09,-95.9,36.13,1,gas distribution,town
+1981-09,-82.23,41.41,1,gas distribution,town
+1981-11,-80.65,38.72,1,gas transmission or gathering,town
+1981-12,-81.47,41.63,1,gas distribution,town
+1982-01,-84.23,43.62,1,gas distribution,town
+1982-01,-77.57,43.21,1,gas distribution,town
+1982-05,-97.99,26.16,1,gas distribution,town
+1982-06,-103.36,34.18,5,gas distribution,town
+1982-10,-77.26,38.78,1,gas distribution,town
+1982-12,-95.85,41.24,2,gas distribution,town
+1982-12,-89.38,36.05,2,gas transmission or gathering,town
+1983-01,-100.52,36.82,1,gas transmission or gathering,town
+1983-03,-102.35,31.88,6,hazardous liquid,town
+1983-06,-102.11,32.02,1,gas distribution,town
+1983-08,-94.24,42.03,1,gas distribution,town
+1983-09,-111.32,34.24,1,gas distribution,town
+1983-10,-95.84,29.39,1,gas distribution,town
+1983-10,-77.35,38.95,1,gas transmission or gathering,town
+1983-11,-94.05,42.36,1,gas distribution,town
+1983-12,-96.3,32.73,1,gas distribution,town
+1983-12,-93.27,44.96,1,gas distribution,town
+1983-12,-86.49,33.6,1,gas distribution,town
+1984-01,-79.98,40.44,1,gas distribution,town
+1984-01,-76.89,40.28,2,gas distribution,town
+1984-01,-71.14,42.32,2,gas distribution,town
+1984-02,-96.71,32.97,2,gas distribution,town
+1984-03,-73.94,40.66,1,gas distribution,town
+1984-04,-101.53,35.7,2,gas transmission or gathering,town
+1984-07,-102.04,46.92,1,gas transmission or gathering,zip
+1984-07,-97.35,32.78,1,gas distribution,town
+1984-07,-86.15,39.78,2,gas distribution,town
+1984-08,-122.16,37.7,1,gas distribution,town
+1984-08,-112.09,33.57,1,gas distribution,town
+1984-09,-112.09,33.57,5,gas distribution,town
+1984-11,-91.21,30.83,5,gas transmission or gathering,town
+1984-11,-83.64,41.05,1,gas distribution,town
+1984-12,-97.35,37.69,1,gas distribution,town
+1985-01,-86.95,34.78,1,gas distribution,town
+1985-02,-80.48,41.26,2,gas distribution,town
+1985-04,-85.65,36.86,5,gas transmission or gathering,zip
+1985-04,-80.19,40.4,1,gas distribution,town
+1985-07,-117.43,47.67,1,gas distribution,town
+1985-07,-106.32,42.84,1,hazardous liquid,town
+1985-07,-72.51,44.2,2,gas distribution,town
+1985-08,-89.24,44.18,1,gas distribution,town
+1985-08,-86.15,39.78,3,hazardous liquid,town
+1985-11,-75.13,40.01,3,gas distribution,town
+1985-12,-102.35,31.88,1,gas distribution,town
+1985-12,-101.85,34.07,1,gas distribution,town
+1985-12,-85.82,38.31,1,gas distribution,town
+1985-12,-80.36,25.86,1,gas distribution,town
+1985-12,-73.08,41.33,6,gas distribution,town
+1986-01,-122.65,45.54,1,gas distribution,town
+1986-02,-90.36,31.99,8,gas distribution,town
+1986-03,-87.63,41.51,1,gas distribution,town
+1986-04,-107.96,39.24,1,gas transmission or gathering,town
+1986-05,-121.93,36.62,1,gas distribution,town
+1986-05,-116.46,33.84,1,gas distribution,town
+1986-05,-82.77,27.91,2,gas distribution,town
+1986-07,-97.51,35.47,1,gas transmission or gathering,town
+1986-07,-93.21,45.11,2,hazardous liquid,town
+1986-07,-87.88,42.59,1,gas distribution,town
+1986-09,-98.47,45.46,2,gas distribution,town
+1986-09,-95.94,41.14,1,gas distribution,town
+1986-10,-101.89,33.56,1,gas distribution,town
+1986-10,-89.65,44.96,1,gas distribution,town
+1986-11,-101.51,35.87,1,gas transmission or gathering,zip
+1986-11,-95.96,41.3,1,gas distribution,zip
+1986-12,-121.47,38.57,2,gas distribution,town
+1986-12,-84.54,39.33,1,gas distribution,town
+1986-12,-83.05,42.33,1,gas distribution,zip
+1986-12,-75.18,40.11,3,gas distribution,town
+1986-12,-73.87,40.95,1,gas distribution,town
+1987-02,-123.03,37.73,1,gas distribution,town
+1987-03,-84.1,36.93,1,gas distribution,town
+1987-06,-101.93,34.04,2,gas distribution,zip
+1987-06,-91.14,41.67,1,hazardous liquid,town
+1987-07,-89.52,29.35,2,hazardous liquid,town
+1987-07,-81.58,30.28,1,gas distribution,zip
+1987-08,-77.97,34.29,1,gas distribution,zip
+1987-09,-93.55,41.62,2,gas distribution,zip
+1987-11,-97.12,32.7,1,gas distribution,town
+1987-11,-90.84,30.06,1,gas distribution,zip
+1987-12,-83.11,42.42,1,gas distribution,zip
+1988-02,-102.51,34.9,1,gas distribution,zip
+1988-03,-99.41,36.49,2,gas distribution,zip
+1988-03,-88.02,38.53,1,gas distribution,zip
+1988-03,-87.16,33.75,1,gas distribution,zip
+1988-04,-102.03,35.9,2,gas distribution,zip
+1988-04,-94.94,32.97,1,gas distribution,zip
+1988-05,-98.45,35.12,1,gas transmission or gathering,zip
+1988-06,-75.12,39.98,2,gas distribution,zip
+1988-07,-81.26,40.68,1,gas distribution,zip
+1988-08,-98.71,33.97,1,gas distribution,zip
+1988-08,-88.67,42.66,1,gas distribution,zip
+1988-08,-77.55,43.18,1,gas distribution,zip
+1988-09,-97.26,32.69,3,gas distribution,zip
+1988-09,-96.02,36.05,1,gas distribution,zip
+1988-11,-122.12,37.63,2,gas distribution,zip
+1988-11,-106.65,35.08,1,gas distribution,zip
+1988-11,-73.21,40.85,1,gas distribution,zip
+1989-01,-117.23,32.79,1,gas distribution,zip
+1989-01,-93.28,44.64,1,gas transmission or gathering,zip
+1989-01,-91.98,38.85,2,gas distribution,zip
+1989-01,-87.09,33.47,2,gas distribution,zip
+1989-02,-94.15,39.0,2,gas distribution,zip
+1989-02,-79.84,40.34,1,gas distribution,zip
+1989-03,-102.34,34.5,1,gas distribution,zip
+1989-03,-95.64,39.01,1,gas distribution,zip
+1989-03,-89.9,44.23,1,gas distribution,zip
+1989-03,-88.24,40.11,1,gas transmission or gathering,zip
+1989-07,-119.04,35.35,1,gas distribution,town
+1989-07,-73.94,40.84,1,gas distribution,zip
+1989-09,-92.59,34.49,3,gas distribution,zip
+1989-11,-101.84,35.21,1,gas distribution,zip
+1989-12,-100.93,29.73,1,gas distribution,zip
+1989-12,-88.04,41.5,1,gas distribution,zip
+1989-12,-75.11,39.99,1,gas distribution,zip
+1989-12,-73.92,40.81,2,gas transmission or gathering,zip
+1990-05,-119.92,36.66,2,gas distribution,zip
+1990-07,-94.51,39.14,1,gas distribution,zip
+1990-08,-87.89,44.48,1,gas distribution,zip
+1990-08,-75.48,40.61,1,gas distribution,zip
+1990-11,-95.6,37.05,1,gas distribution,zip
+1991-01,-122.7,45.45,1,gas distribution,zip
+1991-02,-88.0,42.94,3,gas distribution,zip
+1991-03,-95.1,29.39,1,gas distribution,town
+1991-05,-150.0,61.16,1,gas distribution,zip
+1991-05,-83.95,35.97,1,gas distribution,town
+1991-06,-71.12,42.38,1,gas distribution,town
+1991-07,-110.87,32.15,1,gas distribution,town
+1991-07,-84.34,43.58,1,gas distribution,zip
+1991-08,-95.33,46.16,1,gas distribution,zip
+1991-12,-122.71,38.45,2,gas distribution,town
+1991-12,-71.07,42.36,1,gas distribution,zip
+1992-03,-90.96,32.32,1,gas transmission or gathering,town
+1992-03,-75.23,43.08,2,gas distribution,zip
+1992-05,-82.68,42.86,1,gas distribution,zip
+1992-07,-122.0,37.97,1,hazardous liquid,town
+1992-08,-82.61,39.7,2,gas transmission or gathering,zip
+1992-10,-81.66,30.34,1,gas distribution,town
+1992-11,-73.92,42.24,1,gas distribution,zip
+1993-01,-120.02,38.63,2,gas distribution,zip
+1993-01,-87.34,39.78,1,gas distribution,zip
+1993-03,-88.71,37.03,1,gas distribution,zip
+1993-04,-87.25,37.74,1,gas distribution,zip
+1993-06,-86.21,41.67,1,gas distribution,zip
+1993-06,-76.98,38.86,1,gas distribution,zip
+1993-07,-93.05,44.96,3,gas distribution,zip
+1993-08,-112.12,33.51,1,gas distribution,zip
+1993-09,-93.2,43.0,2,gas distribution,zip
+1993-11,-89.08,33.55,1,gas transmission or gathering,town
+1994-01,-90.07,38.86,2,gas distribution,zip
+1994-01,-87.86,42.35,1,gas distribution,zip
+1994-01,-87.61,41.74,1,gas distribution,zip
+1994-01,-79.01,39.6,1,gas distribution,zip
+1994-01,-75.49,40.57,1,gas distribution,zip
+1994-01,-75.13,40.01,1,gas distribution,town
+1994-05,-100.95,46.76,1,gas distribution,zip
+1994-06,-111.89,40.71,1,gas distribution,zip
+1994-06,-75.49,40.57,1,gas distribution,zip
+1994-10,-92.29,42.55,6,gas distribution,zip
+1994-10,-78.99,39.79,1,gas distribution,zip
+1994-11,-97.28,37.67,1,gas distribution,zip
+1994-11,-76.03,36.78,1,gas distribution,town
+1994-12,-74.03,40.15,1,gas distribution,zip
+1994-12,-73.78,42.75,1,gas distribution,zip
+1995-02,-122.41,37.77,1,gas distribution,zip
+1995-02,-110.87,32.15,1,gas distribution,town
+1995-02,-75.07,39.99,1,gas distribution,zip
+1995-04,-89.99,32.63,1,gas distribution,zip
+1995-05,-94.82,34.16,1,gas distribution,zip
+1995-07,-94.01,32.36,1,gas distribution,zip
+1995-11,-121.0,37.64,2,gas distribution,town
+1995-11,-97.92,34.65,2,gas distribution,zip
+1995-11,-84.61,36.33,1,gas distribution,town
+1995-12,-102.22,31.13,3,hazardous liquid,town
+1995-12,-93.8,32.39,1,gas distribution,zip
+1995-12,-87.65,41.92,1,gas distribution,zip
+1995-12,-82.02,41.38,1,gas distribution,zip
+1995-12,-75.33,40.13,2,gas distribution,zip
+1996-02,-94.24,36.91,1,gas distribution,zip
+1996-02,-84.25,42.16,2,gas distribution,zip
+1996-03,-112.01,33.34,1,gas distribution,zip
+1996-03,-96.27,29.2,1,gas distribution,zip
+1996-04,-149.86,61.22,1,gas distribution,zip
+1996-05,-93.98,32.84,1,gas distribution,zip
+1996-05,-82.07,39.31,2,gas distribution,zip
+1996-08,-86.32,34.34,1,gas distribution,zip
+1996-10,-103.58,31.4,1,gas transmission or gathering,zip
+1996-11,-117.31,47.67,1,gas distribution,zip
+1996-11,-88.02,41.81,2,gas distribution,zip
+1996-12,-90.45,36.77,1,gas distribution,zip
+1997-02,-90.22,32.39,1,gas distribution,zip
+1997-02,-83.64,32.84,1,gas distribution,zip
+1997-04,-84.46,39.29,1,gas distribution,zip
+1997-05,-122.42,37.75,1,gas distribution,zip
+1997-06,-96.77,32.79,1,gas distribution,town
+1997-07,-86.06,39.9,1,gas transmission or gathering,zip
+1997-08,-83.16,42.21,1,gas distribution,zip
+1997-10,-90.39,41.52,1,gas distribution,town
+1997-11,-97.35,32.78,1,gas distribution,town
+1998-03,-71.29,41.93,2,gas distribution,zip
+1998-05,-77.45,38.21,1,gas distribution,zip
+1998-07,-97.35,32.78,1,gas transmission or gathering,town
+1998-07,-95.19,29.72,1,gas distribution,zip
+1998-07,-86.76,40.42,1,gas distribution,zip
+1998-07,-77.51,38.91,1,gas distribution,town
+1998-08,-71.02,42.34,1,gas distribution,town
+1998-09,-79.84,40.34,1,gas distribution,zip
+1998-10,-98.29,34.56,1,gas distribution,zip
+1998-10,-80.22,39.29,1,gas distribution,zip
+1998-11,-83.56,30.77,1,gas distribution,zip
+1998-12,-98.78,36.84,1,gas distribution,zip
+1998-12,-94.24,45.49,4,gas distribution,zip
+1998-12,-83.13,42.27,1,gas distribution,zip
+1999-01,-85.78,34.97,4,gas distribution,zip
+1999-01,-83.78,42.41,1,gas distribution,zip
+1999-02,-90.5,38.55,1,gas distribution,zip
+1999-03,-75.94,40.32,1,gas distribution,zip
+1999-06,-122.47,48.75,3,hazardous liquid,town
+1999-08,-84.63,33.83,1,gas distribution,zip
+1999-09,-85.77,38.25,1,gas distribution,zip
+1999-11,-122.26,37.87,1,gas transmission or gathering,zip
+1999-11,-91.94,42.69,1,gas transmission or gathering,zip
+1999-11,-83.66,42.97,5,gas distribution,zip
+1999-12,-98.89,32.8,1,gas distribution,zip
+1999-12,-96.76,32.75,1,gas distribution,zip
+2000-01,-96.62,32.93,3,gas distribution,zip
+2000-01,-90.09,29.98,1,gas distribution,zip
+2000-02,-90.45,38.35,1,gas distribution,zip
+2000-05,-82.16,37.51,1,gas transmission or gathering,town
+2000-05,-81.32,28.43,1,gas distribution,zip
+2000-05,-73.64,40.78,6,gas distribution,zip
+2000-07,-112.13,33.44,1,gas transmission or gathering,zip
+2000-07,-73.94,40.66,3,gas distribution,town
+2000-08,-104.42,32.31,12,gas transmission or gathering,zip
+2000-08,-88.53,30.43,1,gas distribution,zip
+2000-08,-86.24,33.19,1,gas distribution,zip
+2000-08,-83.3,42.42,2,gas distribution,zip
+2000-09,-86.26,34.25,1,gas distribution,zip
+2000-11,-98.85,27.56,1,gas transmission or gathering,zip
+2000-11,-93.39,35.44,1,gas distribution,town
+2000-12,-81.86,41.14,1,gas distribution,zip
+2001-01,-111.24,42.35,1,gas transmission or gathering,zip
+2001-02,-90.73,33.76,1,gas distribution,zip
+2001-02,-88.63,44.32,1,gas distribution,zip
+2001-04,-99.57,36.85,1,gas transmission or gathering,zip
+2001-06,-108.6,44.89,2,gas distribution,zip
+2001-06,-77.42,37.58,1,gas distribution,zip
+2002-02,-97.36,36.32,1,gas transmission or gathering,site
+2002-06,-84.39,39.46,1,hazardous liquid,site
+2002-07,-71.54,42.22,2,gas distribution,zip
+2002-08,-115.56,32.79,1,gas distribution,town
+2002-08,-72.96,41.27,2,gas distribution,zip
+2002-09,-94.36,35.35,1,gas distribution,zip
+2002-09,-79.99,40.41,1,gas distribution,zip
+2002-09,-75.4,38.19,1,gas distribution,zip
+2002-10,-97.65,38.83,1,gas distribution,zip
+2002-12,-83.81,34.32,1,gas distribution,zip
+2003-01,-87.46,41.55,1,gas distribution,zip
+2003-03,-118.14,34.16,1,gas distribution,town
+2003-03,-110.95,32.25,1,gas distribution,zip
+2003-03,-79.53,40.77,1,gas distribution,town
+2003-06,-107.28,32.79,1,gas distribution,zip
+2003-06,-93.29,37.28,1,gas distribution,zip
+2003-08,-120.13,37.02,1,gas transmission or gathering,site
+2003-08,-102.08,31.99,1,gas distribution,zip
+2003-09,-88.14,41.68,1,gas distribution,zip
+2003-12,-79.99,40.41,1,gas distribution,zip
+2003-12,-75.28,40.12,2,gas distribution,zip
+2004-01,-91.14,30.4,1,gas distribution,zip
+2004-01,-86.84,33.52,1,gas distribution,zip
+2004-01,-74.32,40.62,1,gas distribution,town
+2004-03,-87.09,33.47,1,gas distribution,zip
+2004-04,-87.51,37.97,2,gas distribution,site
+2004-05,-93.01,29.38,1,gas distribution,site
+2004-05,-75.48,44.69,1,gas distribution,site
+2004-06,-75.3,40.0,1,gas distribution,zip
+2004-07,-78.99,42.16,1,gas distribution,site
+2004-08,-78.73,41.1,2,gas distribution,site
+2004-09,-122.12,47.61,1,gas distribution,site
+2004-11,-122.05,37.89,5,hazardous liquid,site
+2004-12,-93.43,45.29,3,gas distribution,zip
+2004-12,-83.96,39.85,2,gas distribution,site
+2005-06,-98.94,27.26,1,hazardous liquid,site
+2005-06,-85.58,37.98,2,gas distribution,site
+2005-09,-97.5,35.5,1,gas distribution,site
+2005-09,-96.1,41.37,2,gas distribution,zip
+2005-09,-90.1,30.84,1,gas distribution,zip
+2005-09,-84.4,39.46,1,hazardous liquid,site
+2005-09,-75.15,39.98,1,gas distribution,zip
+2005-09,-71.94,42.05,1,gas distribution,town
+2005-10,-87.0,33.46,3,gas distribution,site
+2005-12,-94.61,29.88,1,gas distribution,site
+2005-12,-74.0,40.93,3,gas distribution,site
+2006-03,-90.56,38.02,1,gas distribution,site
+2006-04,-94.82,30.72,1,gas distribution,zip
+2006-04,-87.29,30.53,1,gas distribution,zip
+2006-04,-79.47,39.0,4,gas distribution,site
+2006-05,-94.63,39.09,1,gas distribution,site
+2006-07,-90.89,32.24,1,gas distribution,zip
+2006-07,-88.69,32.41,1,gas distribution,site
+2006-07,-87.07,45.26,2,gas distribution,site
+2006-09,-97.82,30.51,1,gas distribution,zip
+2006-09,-95.4,37.15,1,gas transmission or gathering,site
+2006-10,-96.53,33.01,2,gas distribution,zip
+2006-11,-105.0,41.02,1,gas transmission or gathering,site
+2006-11,-87.71,41.81,1,gas distribution,zip
+2006-11,-85.5,40.89,2,gas distribution,site
+2006-12,-85.91,41.77,1,gas transmission or gathering,site
+2007-02,-111.94,40.37,2,gas distribution,site
+2007-02,-92.71,44.73,1,gas distribution,zip
+2007-05,-97.33,32.35,2,gas distribution,zip
+2007-07,-92.47,30.87,1,gas transmission or gathering,site
+2007-08,-107.95,34.99,1,gas distribution,site
+2007-11,-95.35,47.67,2,hazardous liquid,site
+2007-11,-88.53,31.92,2,hazardous liquid,site
+2007-11,-73.92,40.74,1,gas distribution,site
+2007-12,-115.13,36.29,1,gas distribution,site
+2007-12,-106.64,35.14,1,gas distribution,site
+2007-12,-91.49,32.45,1,gas transmission or gathering,town
+2008-03,-79.74,40.48,1,gas distribution,zip
+2008-07,-73.82,40.76,1,gas distribution,site
+2008-08,-95.24,29.69,1,gas distribution,site
+2008-09,-95.19,29.72,1,hazardous liquid,zip
+2008-09,-83.28,42.58,1,gas distribution,site
+2008-11,-104.61,38.26,1,gas distribution,site
+2008-12,-121.28,38.6,1,gas distribution,zip
+2008-12,-85.34,41.96,1,hazardous liquid,site
+2009-01,-81.44,41.65,1,gas distribution,zip
+2009-02,-71.09,41.46,1,gas distribution,site
+2009-03,-111.03,45.68,1,gas distribution,site
+2009-03,-90.86,30.01,1,hazardous liquid,site
+2009-03,-87.25,37.74,1,gas distribution,zip
+2009-04,-73.71,40.74,1,gas distribution,site
+2009-05,-91.75,35.13,3,hazardous liquid,site
+2009-09,-122.93,42.32,3,gas distribution,site
+2009-10,-95.23,29.69,1,gas distribution,site
+2010-01,-96.99,32.85,1,gas distribution,site
+2010-03,-87.64,41.88,1,gas distribution,site
+2010-04,-84.28,39.07,1,gas distribution,site
+2010-05,-114.18,48.37,1,gas distribution,site
+2010-06,-122.16,40.07,1,gas distribution,site
+2010-06,-97.61,32.31,1,gas transmission or gathering,site
+2010-07,-118.26,33.99,1,gas distribution,site
+2010-07,-84.34,34.12,1,gas distribution,site
+2010-07,-82.54,33.54,1,hazardous liquid,site
+2010-09,-122.44,37.62,8,gas transmission or gathering,site
+2010-09,-84.13,30.53,1,gas distribution,site
+2010-11,-102.88,48.52,1,gas transmission or gathering,site
+2010-11,-90.25,39.75,1,gas distribution,site
+2010-12,-83.38,42.29,2,gas distribution,site
+2011-01,-76.95,38.95,2,gas distribution,site
+2011-01,-76.49,42.91,1,gas distribution,site
+2011-01,-75.04,40.03,1,gas distribution,site
+2011-02,-75.49,40.61,5,gas distribution,site
+2011-04,-81.23,41.71,1,gas distribution,site
+2011-09,-95.63,30.08,1,gas distribution,site
+2011-10,-82.91,42.41,1,gas distribution,site
+2011-11,-84.18,39.76,1,gas distribution,site
+2012-01,-97.73,30.34,1,gas distribution,site
+2012-01,-95.75,39.03,1,gas distribution,site
+2012-03,-87.92,41.49,2,hazardous liquid,site
+2012-06,-95.13,29.75,1,hazardous liquid,site
+2012-08,-87.29,35.44,1,gas distribution,site
+2012-09,-118.38,34.14,3,gas distribution,site
+2012-09,-98.63,29.47,2,gas distribution,site
+2012-10,-71.5,42.53,1,gas distribution,site
+2013-01,-96.99,33.05,1,gas distribution,site
+2013-01,-84.46,39.09,1,gas distribution,site
+2013-02,-94.6,39.04,1,gas distribution,site
+2013-02,-83.19,42.53,1,gas distribution,site
+2013-03,-90.17,29.63,1,hazardous liquid,site
+2013-07,-83.65,43.18,2,gas distribution,site
+2013-10,-80.97,39.28,1,gas distribution,site
+2013-12,-86.72,33.54,1,gas distribution,site
+2014-02,-76.58,39.3,1,gas distribution,site
+2014-03,-74.83,40.28,1,gas distribution,site
+2014-03,-73.94,40.8,8,gas distribution,site
+2014-05,-120.48,37.32,2,gas distribution,site
+2014-06,-102.1,32.22,1,gas transmission or gathering,site
+2014-07,-97.64,35.5,1,gas distribution,site
+2014-09,-90.01,30.88,1,gas distribution,site
+2014-11,-89.85,35.02,1,gas distribution,site
+2014-12,-96.68,32.73,1,gas distribution,site
+2014-12,-86.07,39.2,1,gas distribution,site
+2014-12,-75.63,41.41,1,gas distribution,site
+2015-01,-87.19,33.76,1,gas distribution,site
+2015-03,-83.15,42.33,1,gas distribution,site
+2015-04,-119.93,36.84,1,gas transmission or gathering,site
+2015-06,-122.03,37.59,1,gas distribution,site
+2015-06,-95.25,29.71,1,hazardous liquid,site
+2015-10,-90.87,29.6,4,gas transmission or gathering,site
+2015-11,-121.3,37.98,1,gas distribution,site
+2015-11,-119.04,35.24,1,gas transmission or gathering,site
+2016-04,-97.28,28.17,2,gas transmission or gathering,site
+2016-04,-89.97,38.74,1,gas transmission or gathering,site
+2016-07,-93.75,32.49,1,gas distribution,site
+2016-08,-77.0,39.0,7,gas distribution,site
+2016-09,-73.91,40.88,1,gas distribution,site
+2016-10,-96.25,41.9,1,hazardous liquid,site
+2016-10,-87.01,33.2,2,hazardous liquid,site
+2016-11,-90.03,40.56,1,gas distribution,site
+2017-02,-90.45,29.86,1,hazardous liquid,site
+2017-07,-76.37,40.0,1,gas distribution,site
+2017-08,-93.21,44.95,2,gas distribution,site
+2017-10,-81.45,40.69,1,gas transmission or gathering,site
+2017-12,-89.39,41.84,2,gas transmission or gathering,site
+2018-02,-96.86,32.87,1,gas distribution,site
+2018-07,-89.21,43.18,1,gas distribution,site
+2018-08,-101.82,31.88,1,gas transmission or gathering,site
+2018-09,-71.18,42.7,1,gas distribution,site
+2018-10,-97.76,30.18,1,gas distribution,site
+2018-11,-104.83,39.67,1,gas distribution,site
+2019-03,-97.04,36.73,1,gas distribution,site
+2019-04,-78.54,35.6,2,gas distribution,site
+2019-07,-117.21,33.6,1,gas distribution,site
+2019-07,-104.51,33.46,1,gas distribution,site
+2019-08,-85.22,35.18,1,gas distribution,site
+2019-08,-84.81,37.54,1,gas transmission or gathering,site
+2019-08,-77.56,43.16,1,gas distribution,site
+2019-11,-88.92,39.86,1,gas distribution,site
+2019-12,-75.16,39.93,2,gas distribution,site
+2020-03,-100.35,37.21,1,gas transmission or gathering,site
+2020-05,-93.22,30.18,1,gas distribution,site
+2020-08,-97.47,27.82,5,hazardous liquid,site
+2020-09,-106.95,39.62,1,gas distribution,site
+2020-10,-90.0,30.67,1,gas transmission or gathering,site
+2020-12,-95.99,41.21,3,gas distribution,site
+2020-12,-82.57,27.47,1,gas distribution,site
+2020-12,-80.04,26.55,1,gas distribution,site
+2020-12,-75.33,41.1,1,gas distribution,site
+2021-02,-92.12,34.85,1,gas distribution,site
+2021-04,-83.06,42.34,1,gas distribution,site
+2021-05,-76.71,39.4,1,gas distribution,site
+2021-06,-96.39,33.21,2,gas transmission or gathering,site
+2021-06,-73.1,41.22,1,gas distribution,site
+2021-08,-111.5,32.92,2,gas transmission or gathering,site
+2021-09,-71.46,42.43,1,gas distribution,site
+2022-03,-97.08,32.52,1,gas transmission or gathering,site
+2022-12,-86.12,42.32,1,gas distribution,site
+2023-01,-100.94,46.87,1,gas distribution,site
+2023-01,-99.01,28.74,1,gas transmission or gathering,site
+2023-02,-103.14,44.07,1,gas distribution,site
+2023-03,-75.94,40.33,7,gas distribution,site
+2023-06,-97.48,32.78,1,gas distribution,site
+2023-07,-87.63,39.98,2,gas distribution,site
+2023-11,-97.25,37.71,1,gas distribution,site
+2023-11,-81.59,41.47,1,gas distribution,site
+2023-12,-97.23,30.93,1,gas distribution,site
+2024-01,-101.71,35.24,1,gas distribution,site
+2024-01,-96.89,32.95,1,gas distribution,site
+2024-01,-90.24,32.29,1,gas distribution,site
+2024-03,-111.79,40.38,1,gas distribution,site
+2024-04,-81.87,31.63,1,gas distribution,site
+2024-05,-80.65,41.1,1,gas distribution,site
+2024-08,-76.33,39.49,2,gas distribution,site
+2024-09,-95.1,29.66,1,hazardous liquid,site
+2024-11,-111.97,40.56,1,gas distribution,site
+2024-11,-97.13,33.05,1,gas distribution,site
+2024-12,-90.21,29.91,1,gas distribution,site
+2025-01,-81.85,26.49,1,gas distribution,site
+2025-01,-80.35,39.27,1,gas distribution,site
+2025-04,-93.87,39.18,1,gas distribution,site
+2025-06,-87.73,41.64,1,gas distribution,site
+2025-06,-81.64,41.47,1,gas distribution,site
+2025-07,-94.94,29.73,1,gas distribution,site
+2025-11,-102.99,41.2,1,gas transmission or gathering,site
+2025-12,-81.68,28.85,1,gas distribution,site
+2025-12,-74.87,40.11,3,gas distribution,site
+2026-01,-92.21,46.83,2,gas distribution,site
+2026-04,-117.21,34.54,1,gas distribution,site
+2026-04,-96.64,28.91,1,gas transmission or gathering,site
+2026-05,-96.82,32.75,3,gas distribution,site

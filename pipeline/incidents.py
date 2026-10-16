@@ -744,7 +744,11 @@ def _live_layers():
     import yaml
     from pathlib import Path
     reg = yaml.safe_load((Path(__file__).parent / "sources.yml").read_text())["sources"]
-    return {r["layer"] for r in reg if r.get("layer") and r.get("status") == "live"}
+    out = set()
+    for r in reg:
+        if r.get("status") == "live" and r.get("layer"):
+            out.update(r["layer"] if isinstance(r["layer"], list) else [r["layer"]])  # an entry may name several layers
+    return out
 
 
 def new_city_jobs():
@@ -768,7 +772,208 @@ def new_city_jobs():
             "https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime", "Denver Police Department via Denver Open Data Catalog",
             only_homicide, color=2, show={"homicide": 3}, report_missing=True,
             note=" — City and County of Denver, 2021 on (the source keeps five years), murder offenses counted per victim; negligent homicide and police shootings left out; no firearm split")),
+        ("kansas_city_homicides", lambda: city_homicides("kansas_city_homicides", "Kansas City, MO (KCPD)", _kansas_city,
+            "https://data.kcmo.org/", "Kansas City, Missouri Police Department via Open Data KC (public domain)",
+            lambda v: [3], color=2, show={"homicide": 3}, report_missing=True,
+            note=" — homicide incidents (one per police report), 2015 on; 2019 and 2021 run well below KCPD's published homicide totals in the source; no firearm split (some years have no weapon field)")),
     ]
+
+
+def _snapshot(name):
+    """Rows of a trimmed point snapshot in data_manual/points (refreshed by hand; see data_manual/points/README.md)."""
+    from pathlib import Path
+    p = Path(__file__).resolve().parents[1] / "data_manual" / "points" / name
+    if not p.exists():
+        raise RuntimeError(f"{name} missing; refresh it by hand (data_manual/points/README.md)")
+    return list(csv.DictReader(p.open()))
+
+
+def ntsb_aviation():
+    """NTSB aviation accident database: US events with at least one death aboard or on the ground, 1982 on.
+    NTSB publishes Access databases, so the build reads a trimmed snapshot (pipeline/trim_ntsb.py): month, ~1 km square, deaths."""
+    log("• Fatal aviation accidents (NTSB) …")
+    acc = Acc()
+    for r in _snapshot("ntsb_fatal_events.csv"):
+        lon, lat = float(r["lon"]), float(r["lat"])
+        if 15 < lat < 72 and -180 < lon < -60:
+            acc.add(int(r["month"][:4]), [0], (lon, lat), None, date=r["month"], w=int(r["dead"]))
+    return layer("ntsb_aviation", "Fatal aviation accidents (NTSB)", "United States", acc, kind="me", what="federal accident records",
+                 show={"all": 0}, color=4, source="NTSB aviation accident database (avall and Pre2008, trimmed snapshot)",
+                 url="https://data.ntsb.gov/avdata",
+                 died_note="aviation accidents where someone died, aboard or on the ground (~1 km squares); events without coordinates, mostly before 2000, are not placed")
+
+
+def ntsb_aviation_early():
+    """NTSB's 1962-1981 file (PRE1982): records carry only the nearest town, so each is placed at that town's Census centroid
+    (pipeline/trim_ntsb_pre1982.py). Few events before 1964."""
+    log("• Fatal aviation accidents 1962-1981 (NTSB, at the nearest town) …")
+    acc = Acc()
+    for r in _snapshot("ntsb_fatal_events_1962_1981.csv"):
+        lon, lat = float(r["lon"]), float(r["lat"])
+        if 15 < lat < 72 and -180 < lon < -60:
+            acc.add(int(r["month"][:4]), [0], (lon, lat), None, date=r["month"], w=int(r["dead"]))
+    return layer("ntsb_aviation_early", "Fatal aviation accidents 1962–1981 (NTSB, nearest town)", "United States", acc, kind="me",
+                 what="federal accident records", show={"all": 0}, color=4,
+                 source="NTSB aviation accident database, 1962-1981 file (PRE1982, trimmed snapshot)", url="https://data.ntsb.gov/avdata",
+                 died_note="aviation accidents where someone died, shown at the town NTSB names, not the crash site; about 1 death in 6 "
+                           "could not be matched to a town and is not placed; few records before 1964")
+
+
+def phmsa_pipeline():
+    """PHMSA pipeline incident reports with at least one death, 1968 on (gas distribution, gas transmission and gathering, hazardous
+    liquid, LNG). The site refuses scripted downloads, so the build reads a trimmed snapshot (pipeline/trim_phmsa.py)."""
+    log("• Pipeline incident deaths (PHMSA) …")
+    acc = Acc()
+    for r in _snapshot("phmsa_pipeline_deaths.csv"):
+        acc.add(int(r["month"][:4]), [0], (float(r["lon"]), float(r["lat"])), None, date=r["month"], w=int(r["dead"]))
+    return layer("phmsa_pipeline", "Pipeline incident deaths (PHMSA)", "United States", acc, kind="me", what="federal incident reports",
+                 show={"all": 0}, color=6, source="PHMSA pipeline incident and accident flat files (trimmed snapshot)",
+                 url="https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data",
+                 died_note="pipeline incidents where someone died: at the reported site (most reports since 2004), else at the ZIP Code or "
+                           "town centroid; about 1 death in 6 could not be placed")
+
+
+def iom_missing_migrants():
+    """IOM Missing Migrants Project: deaths of migrants recorded in the US (mostly the US-Mexico border), 2014 on. CC BY 4.0.
+    The site refuses scripted downloads, so the build reads a trimmed snapshot (pipeline/trim_iom.py): month, ~1 km square, dead."""
+    log("• Migrant deaths (IOM Missing Migrants Project) …")
+    acc = Acc()
+    for r in _snapshot("iom_us_deaths.csv"):
+        acc.add(int(r["month"][:4]), [0], (float(r["lon"]), float(r["lat"])), None, date=r["month"], w=int(r["dead"]))
+    return layer("iom_missing_migrants", "Migrant deaths (IOM Missing Migrants Project)", "United States (mostly the US-Mexico border)", acc,
+                 kind="me", what="humanitarian records", show={"all": 0}, color=5,
+                 source="IOM's Missing Migrants Project (CC BY 4.0; trimmed to US deaths, coordinates rounded to ~1 km, counts per month)",
+                 url="https://missingmigrants.iom.int/downloads",
+                 died_note="where a migrant's death was recorded (~1 km squares; IOM's coordinates are often approximate; the missing are not shown)")
+
+
+def fra_crossings():
+    """FRA highway-rail grade crossing deaths (Form 57), 1975 on, placed at the crossing from the Form 71 inventory.
+    De-duplication: crashes from 2000 on that were also filed as rail equipment accidents (Form 54) are left out, because the rail
+    layer already shows those deaths; crossing deaths of people in motor vehicles are also in FARS, which the map shows only on
+    the traffic measure, while this layer shows only on all deaths."""
+    log("• Highway-rail grade crossing deaths (FRA) …")
+    inv = {}
+    for r in socrata_all("data.transportation.gov", "m2f8-22s6", "crossingid,latitude,longitude", "latitude IS NOT NULL"):
+        inv[(r.get("crossingid") or "").strip()] = (r.get("latitude"), r.get("longitude"))
+    acc, left_out, unplaced = Acc(), 0, 0
+    for r in socrata_all("data.transportation.gov", "7wn6-i5b9", "gradecrossingid,date,totalkilledform57,form54filed", "totalkilledform57 > 0"):
+        k, d = int(float(r.get("totalkilledform57") or 0)), r.get("date") or ""
+        if not d[:4].isdigit():
+            continue
+        y = int(d[:4])
+        if y >= 2000 and (r.get("form54filed") or "").strip().lower().startswith("y"):
+            left_out += k
+            continue
+        try:
+            lat, lon = (float(v) for v in inv[(r.get("gradecrossingid") or "").strip()])
+        except (KeyError, TypeError, ValueError):
+            unplaced += k
+            continue
+        if lon > 0 and 15 < lat < 72:
+            lon = -lon
+        if not (15 < lat < 72 and -180 < lon < -60):
+            unplaced += k
+            continue
+        acc.add(y, [0], (snap(lon), snap(lat)), None, date=d[:10], w=k)
+    log(f"  {left_out:,} deaths left out (also filed on Form 54, shown in the rail layer); {unplaced:,} not placed (crossing not in the current inventory)")
+    return layer("fra_crossings", "Highway-rail grade crossing deaths (FRA)", "United States", acc, kind="me", what="federal accident records",
+                 show={"all": 0}, color=4, source="FRA Highway-Rail Grade Crossing Incident Data (Form 57) and Crossing Inventory (Form 71)",
+                 url="https://data.transportation.gov/d/7wn6-i5b9",
+                 died_note="deaths at highway-rail grade crossings, placed at the crossing (~1 km squares); crashes also in the rail layer are left out")
+
+
+_KC_SETS = {2015: "kbzx-7ehe", 2016: "wbz8-pdv7", 2017: "98is-shjt", 2018: "dmjw-d28i", 2019: "pxaa-ahcm", 2020: "vsgj-uufz",
+            2021: "w795-ffu6", 2022: "x39y-7d3m", 2023: "bfyq-5nh6", 2024: "isbe-v4d8", 2025: "dmnp-9ajg", 2026: "f7wj-ckmw"}
+
+
+def _kansas_city():
+    """Kansas City, Missouri Police (KCPD) homicides from the yearly "KCPD Crime Data <year>" sets on data.kcmo.org, 2015 on
+    (licence: Public Domain; the Board of Police Commissioners' disclaimer is quoted in the registry). The sets hold one row per
+    person involved in each offense, so the unit here is the homicide incident: one per report number with a murder offense
+    ('HOMICIDE/Non Neglige' to 2018, 'Murder' from 2019; justifiable homicide and negligent manslaughter are left out), placed at
+    the first located row, dated by the earliest from_date. Only report number, date and location are requested: no involvement,
+    age, sex or race. A year missing from _KC_SETS is looked up in the Socrata catalog by its exact set name."""
+    import urllib.parse
+    sets = dict(_KC_SETS)
+    for y in range(max(sets) + 1, datetime.now().year + 1):
+        q = urllib.parse.urlencode({"domains": "data.kcmo.org", "q": f"KCPD Crime Data {y}", "only": "datasets", "limit": 20})
+        for r in json.loads(get(f"https://api.us.socrata.com/api/catalog/v1?{q}")).get("results", []):
+            if r["resource"]["name"].strip() == f"KCPD Crime Data {y}":
+                sets[y] = r["resource"]["id"]
+    seen = set()
+    for year, ds in sorted(sets.items()):
+        cols = [c["fieldName"] for c in json.loads(get(f"https://data.kcmo.org/api/views/{ds}.json"))["columns"]]
+        rep = "report" if "report" in cols else "report_no"
+        loc = "location" if "location" in cols else "location_1"
+        inc = {}
+        for r in socrata_all("data.kcmo.org", ds, f"{rep},from_date,{loc}", "description in ('Murder','HOMICIDE/Non Neglige')"):
+            k = r.get(rep)
+            if not k or k in seen:
+                continue
+            d = (r.get("from_date") or "")[:10]
+            e = inc.setdefault(k, [d, None])
+            if d and (not e[0] or d < e[0]):
+                e[0] = d
+            L = r.get(loc)
+            if e[1] is None and isinstance(L, dict):
+                if L.get("coordinates"):
+                    e[1] = L["coordinates"][:2]
+                elif L.get("longitude") and L.get("latitude"):
+                    e[1] = [L["longitude"], L["latitude"]]
+        seen.update(inc)
+        for d, xy in inc.values():
+            y = int(d[:4]) if d[:4].isdigit() else year
+            if y < 2015:
+                continue  # earlier incidents reported later (cold cases); the sets start in 2015
+            lon, lat = (xy or [None, None])
+            yield y, lon, lat, "", d or str(y)
+
+
+def nashville_me_overdose():
+    """Nashville-Davidson County Medical Examiner suspected fatal drug overdoses, 2018-2023 (Metro Public Health ArcGIS table
+    ME_TRIM, "De-identified, Trimmed"; no licence stated). The table's ZIP Codes include many outside Davidson County, so they are
+    read as the person's home ZIP and shown where they lived. Only ZIP and year are requested; records without a ZIP are counted."""
+    log("• Nashville (Davidson County) ME overdoses …")
+    z = zcta_centroids()
+    acc, nozip = Acc(), 0
+    for f in arcgis_all("https://services2.arcgis.com/HdTo6HJqh92wn4D8/arcgis/rest/services/ME_TRIMM/FeatureServer/17",
+                        fields="OBJECTID,zip,MMWR_Year", geometry=False, order="OBJECTID"):
+        a = f.get("attributes", {})
+        y = int(a.get("MMWR_Year") or 0)
+        lived, llab = zip_pt(z, a.get("zip"))
+        if not lived:
+            nozip += 1
+        acc.add(y, [0, 1], None, lived, None, llab, str(y), w=1 if lived else 0)
+    log(f"  {nozip:,} records have no ZIP Code (or one with no ZCTA) and are not on the map")
+    return layer("nashville_me_overdose", "Nashville ME suspected overdose deaths", "Davidson County, TN (Nashville)", acc, kind="zip",
+                 what="medical examiner", show={"overdose": 1}, color=3,
+                 source="Nashville-Davidson County Medical Examiner via Metro Public Health (ArcGIS, de-identified)",
+                 url="https://services2.arcgis.com/HdTo6HJqh92wn4D8/arcgis/rest/services/ME_TRIMM/FeatureServer/17",
+                 died_note="", lived_note=f"where the person lived (ZIP Codes); deaths investigated by the Davidson County ME; {nozip:,} records without a ZIP are not shown")
+
+
+def _cms_nh_ct(which):
+    """CMS COVID-19 Nursing Home file, Connecticut subset (public domain), from the trimmed snapshot data_manual/points/cms_nh_ct.csv
+    (pipeline/trim_cms_nh_ct.py). Deaths of residents, in the home or elsewhere, so they are shown where the person lived."""
+    acc = Acc()
+    col = "covid" if which == "covid" else "all_deaths"
+    for r in _snapshot("cms_nh_ct.csv"):
+        acc.add(int(r["year"]), [0], None, (float(r["lon"]), float(r["lat"])), date=r["year"], w=int(r[col]))
+    label = "COVID-19 deaths" if which == "covid" else "deaths from all causes"
+    return layer(f"cms_nh_{'covid' if which == 'covid' else 'alldeaths'}_ct", f"Nursing-home residents' {label} (CMS, Connecticut)",
+                 "Connecticut", acc, kind="me", what="facility reports", show={which: 0}, color=6,
+                 source="CMS COVID-19 Nursing Home public file (NHSN), Connecticut subset on data.ct.gov (public domain); facility locations from the CMS Provider Information file",
+                 url="https://data.ct.gov/d/w8wc-65i5", died_note="",
+                 lived_note=f"the nursing home where the resident lived (~1 km squares); {label} reported weekly by the facility, May 2020 to 2024; the first report could include deaths back to January 2020; 21 closed facilities are not placed")
+
+
+def new_national_jobs():
+    """National layers added 2026-10-15 (owner choice: NTSB aviation, IOM migrant deaths, FRA grade crossings); built only when live."""
+    return [("ntsb_aviation", ntsb_aviation), ("ntsb_aviation_early", ntsb_aviation_early),
+            ("iom_missing_migrants", iom_missing_migrants), ("fra_crossings", fra_crossings), ("phmsa_pipeline", phmsa_pipeline),
+            ("nashville_me_overdose", nashville_me_overdose),
+            ("cms_nh_covid_ct", lambda: _cms_nh_ct("covid")), ("cms_nh_alldeaths_ct", lambda: _cms_nh_ct("all"))]
 
 
 # Layers that are no longer fetched: the previous file is kept as it is (marked stale) and the reason is logged.
@@ -818,6 +1023,7 @@ def build_incidents(out_dir, status: dict):
             "https://data.lacity.org/d/2nrs-mtv8", "Los Angeles Police Department via City of Los Angeles Open Data", yes, color=2,
             before=2024, note=" — City of Los Angeles only (LAPD area, about 40% of the county's people), 2010–2023; the 2015 count is about 60 below its neighbours in the source")),
         *[(k, f) for k, f in new_city_jobs() if k in _live_layers()],  # a new city layer is built only once its registry entry is `live` (owner approval)
+        *[(k, f) for k, f in new_national_jobs() if k in _live_layers()],  # same rule for the national layers added 2026-10-15
         ("detroit_homicides", lambda: city_homicides("detroit_homicides", "Detroit", _detroit,
             "https://data.detroitmi.gov/", "Detroit Police Department via Detroit Open Data", lambda v: [3], color=2, show={"homicide": 3})),
     ]

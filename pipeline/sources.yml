@@ -1158,7 +1158,199 @@ sources:
     status: live
     notes: "33,810 county-year-cause values (23 reports). Checks on every county row: cancer, heart and major cardiovascular disease equal the sum of their printed parts (100% of rows); the 105 county columns add up to the Kansas row for all 37 columns in every year (except the all-other-causes column in 2008-2010, which is unused); the 2016 report matches the 2016 D25 workbook on all 1,470 cells. Against CDC all 12 causes pass the build gate (97.0-99.8% agree; 13,536 hidden cells fillable). Known gaps: CDC and KDHE disagree for a few counties every year (Kingman counts about half of CDC's from 2017 on, Edwards, Greeley, Rush, Hodgeman and Kiowa run low; in 2020 the all-causes column and the cause columns differ by 1-2 deaths in five counties), and the 2024 report sits below CDC in Wyandotte and Shawnee (flu/pneumonia and liver fail the per-year gate for 2024 and are skipped). Approved by the owner as is on 2026-10-10 (12 USE rows; 12,332 cells for the 21-report version, then 13,536 cells after the 2020 and 2023 reports were added); no county screen was applied."
 
+  - id: id_dhw_vital
+    name: "Idaho Vital Statistics annual reports and Idaho Mortality reports, county-of-residence cause tables (19 reports: 2006-2024)"
+    publisher: Idaho Department of Health and Welfare, Division of Public Health, Bureau of Vital Records and Health Statistics
+    url: https://publicdocuments.dhw.idaho.gov/WebLink/Browse.aspx?id=5649&dbid=0&repo=PUBLIC-DOCUMENTS
+    license: "none stated (the reports carry only a suggested citation; terms status none_stated; cite the Bureau)"
+    access: "read 2026-10-15 in the owner's Chrome from the portal viewer's text layer (no download; the portal rejects scripted requests); extracts with SHA-256 in sources/id_dhw/, parsed by scripts/id_build.py"
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, clrd, alzheimers, diabetes, flu_pneumonia, kidney, liver, suicide, homicide, covid, falls]
+    years: "2006-2024 (flu and pneumonia to 2019, kidney 2006-2016, homicide 2006-2015, COVID-19 2020-2023, falls 2016-2024)"
+    grain: year
+    hidden: "none: every cell is an exact count, '-' for zero (44 counties)"
+    cadence: yearly
+    files: [states/id_dhw_vital_county_2006-2024.json]
+    status: live
+    notes: "15,884 county-year-cause values. In all 47 tables the 44 county rows add exactly to the seven district rows and the state row (2022-2024 state rows include 1-3 residents of unknown county). Against CDC 12 causes pass the gate at 98.6-100% (about 4,048 hidden cells fillable); homicide and kidney SKIP on sample size. Approved by the owner on 2026-10-15 (chat: 'Approve now, don't push'; the 12 USE rows)."
+
   # ------------------------------------------------------------ candidates (the research queue)
+
+  - id: nd_hhs_ves
+    name: "North Dakota Vital Event Summary, 'Leading Causes of Death, Number of Events' by county of residence (27 reports: 1998-2024)"
+    publisher: North Dakota Department of Health and Human Services, Vital Records
+    url: https://www.hhs.nd.gov/sites/www/files/documents/DOH%20Legacy/Vital/2024VES.pdf
+    license: "none stated (terms status none_stated; attribute North Dakota HHS Vital Records)"
+    access: "27 PDFs downloaded 2026-10-15 with the owner's yes (sources/nd_hhs/, SHA-256 in SOURCES.tsv), parsed by scripts/nd_parse.py"
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [all, cancer, heart, stroke, clrd, alzheimers, diabetes, flu_pneumonia, liver, suicide, kidney, covid]
+    years: "1998-2024 (Alzheimer's from 2003, COVID-19 from 2020, kidney some years)"
+    grain: year
+    hidden: "from 2001 the report's own rule: 5 or fewer events print as NR (a 1-5 band, not shown on the map); 1998-2000 print every count; zeros print as 0"
+    cadence: yearly
+    files: [states/nd_hhs_ves_county_1998-2024.json]
+    status: live
+    notes: "13,693 county-year-cause values, 53 counties. Where a column has no NR the counties add exactly to the printed total. Against CDC five causes pass the build gate: all deaths 99.3%, cancer 97.5%, CLRD 96.3%, heart 95.5%, suicide 92.4% (79 checked); exact matches with CDC counts of 10-19 are 41-76%, lower than most states. Stroke, diabetes, COVID-19, liver, flu and pneumonia, kidney and Alzheimer's (ND about 8% above CDC) are SKIP. About 907 hidden cells fill (from 2001 only counts of 6-9). Owner approved the five USE rows 2026-10-15 ('Approve all 5 USE rows')."
+
+  - id: va_vdh_overdose
+    name: Virginia VDH-PUD drug overdose deaths by locality of residence, 2018-2024 (two data.virginia.gov files)
+    publisher: Virginia Department of Health
+    url: https://data.virginia.gov/dataset/vdh-pud-overdose-deaths-by-year-and-geography
+    license: "not specified on the portal (terms status none_stated)"
+    access: "two CSVs saved by the owner from data.virginia.gov on 2026-10-15 (sources/va_vdh/, SHA-256 in SOURCES.tsv); scripted requests get 403"
+    kind: county-counts
+    geography: county
+    place: [lived]
+    causes: [overdose]
+    years: "2018-2024"
+    hidden: "2018-2022 file: none (counts 0-4 printed); 2023-2024 file: '*' = 1-4"
+    files: [states/va_vdh_overdose_county_2018-2024.json]
+    status: live
+    notes: "Bundle va_vdh_overdose_county_2018-2024.json: 2018-2022 exact from the by-FIPS file (its 2023 is preliminary and not used), 2023-2024 from the current file (0 and 5+ exact, 1-4 kept as a band). The files agree on every published locality-year 2019-2022. Pre-check against CDC overdose: 93.6% of 345 checked county-years within max(2, 10%); 431 hidden cells fill, plus 83 band cells (1-4) in 2023-2024. Owner approved 2026-10-15 ('Approve it (Recommended)')."
+  - id: icpsr_mcd
+    name: "NCHS Multiple Cause of Death public-use files 1959-1967 (ICPSR study 20680): county history before 1968"
+    publisher: National Center for Health Statistics (distributed by ICPSR, University of Michigan)
+    url: https://www.icpsr.umich.edu/web/ICPSR/studies/20680
+    license: "ICPSR terms of use: research or statistical purposes only; no redistribution of the data files; cite the data (terms status stated)"
+    access: "owner downloaded the Stata package while signed in to ICPSR on 2026-10-15 (sources/icpsr/, SHA-256 in SOURCES.tsv); the raw files stay off the repo"
+    kind: county-history
+    geography: county
+    place: [lived, died]
+    causes: [all, overdose, suicide, homicide, firearm, heart, stroke]
+    years: "1959-1962, 1964-1967 (1963 is a partial file and is left out)"
+    grain: year
+    hidden: "counts of 1-9 hidden as in the 1968-2004 history"
+    cadence: one-time
+    files: [hist/census_county_population_1960_1970.json, site/data/hist/icpsr_*.json]
+    status: live
+    notes: "ICD-7 causes matched to history.py's ICD-8 definitions (see history_icpsr.py). National totals equal the official 1960/1965/1967 suicide counts and the 1960 heart and stroke counts exactly. County continuity 1959-1969 is as smooth as 1968-1969 in the NBER files. 1959-1961 county codes converted to the 1962 codes by aligning each state's code list. In ICPSR's 1967 file the residence and occurrence columns are swapped (fixed). Baltimore County/city residence 1966-1967 blank (source coding). Alaska blank. Rates: county population on a straight line between the April 1960 and April 1970 census counts (Census Bureau county counts 1900-1990, NBER copy cencounts.dta, saved by the owner 2026-10-15; pipeline/prep_cencounts.py groups counties whose borders changed in the 1960s, e.g. Chesapeake and Virginia Beach, into data_manual/hist/census_county_population_1960_1970.json). Owner approved 2026-10-15 ('Approve; rates from interpolation (Recommended)'); not pushed."
+  - id: ntsb_aviation
+    name: NTSB aviation accident database, US events with deaths aboard or on the ground, 1982 on
+    publisher: National Transportation Safety Board
+    url: https://data.ntsb.gov/avdata
+    license: "none stated (federal work; terms status none_stated)"
+    access: "snapshot: data_manual/points/ntsb_fatal_events.csv, trimmed by hand with pipeline/trim_ntsb.py from avall.zip (2008 on) and Pre2008.zip (1982-2007), Microsoft Access files read with mdbtools; both downloaded 2026-10-15 with the owner's yes (sources/ntsb/)"
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [all]
+    years: 1982-
+    grain: month
+    cadence: manual
+    layer: [ntsb_aviation, ntsb_aviation_early]
+    files: [points/ntsb_fatal_events.csv, points/ntsb_fatal_events_1962_1981.csv]
+    status: live
+    notes: "15,451 US fatal events 1982-2026 with 30,611 deaths (aboard plus on the ground); 13,716 events with decimal coordinates are placed, 1,735 (4,590 deaths, mostly before 2000) are not. Only month, ~1 km square and deaths are kept. Owner approved the layer 2026-10-15. Second layer ntsb_aviation_early (1962-1981, PRE1982.zip downloaded 2026-10-15 with the owner's yes): 12,296 fatal aircraft records with 29,008 deaths; 583 records (2,975 deaths) are outside the 50 states and DC; 9,822 records (21,756 deaths, 84% of the in-state deaths) are placed at the named town's Census place or county-subdivision centroid by pipeline/trim_ntsb_pre1982.py, 1,891 (4,277 deaths) are not. Snapshot data_manual/points/ntsb_fatal_events_1962_1981.csv. Owner chose 'NTSB 1962-1981 at town level' 2026-10-15; final yes at the pre-push review."
+
+  - id: phmsa_pipeline
+    name: PHMSA pipeline incidents and accidents with deaths (gas distribution, gas transmission and gathering, hazardous liquid, LNG), 1968 on
+    publisher: Pipeline and Hazardous Materials Safety Administration (US DOT)
+    url: https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data
+    license: "none stated (federal work; terms status none_stated)"
+    access: "14 zip files (13 incident sets plus Type R regulated gas gathering, May 2022 on) saved by the owner in a browser on 2026-10-15 (the site answers scripts with 403); sources/phmsa/, SHA-256 in SOURCES.tsv; trimmed by pipeline/trim_phmsa.py into data_manual/points/phmsa_pipeline_deaths.csv"
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [all]
+    years: 1968-
+    grain: month
+    cadence: manual
+    layer: phmsa_pipeline
+    files: [points/phmsa_pipeline_deaths.csv]
+    status: live
+    notes: "743 incidents with 1,202 deaths 1968-2026. 1,008 deaths placed: 269 at the reported coordinates (2002/2004 on), 264 at the reported ZIP Code's centroid, 475 at the reported town's centroid; 87 incidents (194 deaths) not placed. Only month, ~1 km square, deaths, system and placement kept. Owner chose 'PHMSA pipeline deaths' 2026-10-15; final yes at the pre-push review."
+
+  - id: iom_missing_migrants
+    name: IOM Missing Migrants Project, deaths recorded in the United States (mostly the US-Mexico border), 2014 on
+    publisher: International Organization for Migration
+    url: https://missingmigrants.iom.int/downloads
+    license: "CC BY 4.0: credit IOM's Missing Migrants Project and say what was changed (US deaths only, coordinates rounded to ~1 km, counts per month)"
+    access: "snapshot: data_manual/points/iom_us_deaths.csv, trimmed by hand with pipeline/trim_iom.py from the workbook saved in the owner's Chrome (the site refuses scripted downloads)"
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [all]
+    years: 2014-
+    grain: month
+    cadence: manual
+    layer: iom_missing_migrants
+    files: [points/iom_us_deaths.csv]
+    status: live
+    notes: "4,733 incidents, 5,625 deaths placed (US incidents with at least one death; the 202 missing are not mapped). IOM says its locations are mostly approximate and its counts a minimum. Five rows with a positive west longitude were flipped; one row (latitude 8) left out. Owner approved the layer 2026-10-15."
+
+  - id: fra_crossings
+    name: FRA highway-rail grade crossing deaths (Form 57), placed at the crossing (Form 71 inventory), 1975 on
+    publisher: Federal Railroad Administration
+    url: https://data.transportation.gov/d/7wn6-i5b9
+    license: "Public Domain (dataset licence; terms status stated)"
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [all]
+    years: 1975-
+    grain: day
+    cadence: weekly
+    layer: fra_crossings
+    status: live
+    notes: "Form 57 incidents with deaths joined by crossing ID to the current Form 71 inventory coordinates. De-duplication: crashes from 2000 on also filed on Form 54 (rail equipment accidents) are left out, because the rail layer shows them; motor-vehicle occupants killed at public crossings are also in FARS, which the map draws only on the traffic measure (this layer draws on all deaths). About 95% of deaths are placed; most unplaced are 1975-1985 crossings no longer in the inventory. Owner approved the layer 2026-10-15."
+
+  - id: kansas_city_homicides
+    name: Kansas City, Missouri Police Department homicide incidents, 2015 on
+    publisher: Kansas City, Missouri Police Department (Board of Police Commissioners), via Open Data KC
+    url: https://data.kcmo.org/
+    license: "Public Domain (dataset licence on each yearly set); the Board's disclaimer: no warranties, not responsible for misinterpretation, users hold the Board harmless (terms status stated_review)"
+    access: api
+    kind: points
+    geography: grid-1km
+    place: [died]
+    causes: [homicide]
+    years: 2015-
+    grain: day
+    cadence: weekly
+    layer: kansas_city_homicides
+    status: live
+    notes: "Yearly 'KCPD Crime Data <year>' sets (kbzx-7ehe ... f7wj-ckmw). One row per person involved per offense, so the unit is the homicide incident: one per report number with a murder offense; only report number, date and location are requested. Incidents per year 2015-2025: 98, 119, 127, 132, 94, 160, 123, 156, 163, 138, 120; 2019 and 2021 are well below KCPD's published totals (the source, not the method; the combined 2019-2024 set gives the same counts). About 75% of CDC's homicide deaths in Jackson, Clay, Platte and Cass counties in most years. Owner chose to add it 2026-10-15 (final yes at the pre-push review)."
+
+  - id: nashville_me_overdose_zip
+    name: Nashville-Davidson County Medical Examiner suspected fatal overdoses by home ZIP, 2018-2023
+    publisher: Metro Nashville Public Health Department (ArcGIS table ME_TRIM)
+    url: https://services2.arcgis.com/HdTo6HJqh92wn4D8/arcgis/rest/services/ME_TRIMM/FeatureServer/17
+    license: "none stated (terms status none_stated)"
+    access: api
+    kind: points
+    geography: zcta
+    place: [lived]
+    causes: [overdose]
+    years: 2018-2023
+    grain: year
+    cadence: static
+    layer: nashville_me_overdose
+    status: live
+    notes: "3,613 de-identified records (2018 346, 2019 466, 2020 629, 2021 722, 2022 750, 2023 700); 369 ZIP Codes, many outside Davidson County, so the ZIP is read as the person's home; 390 records have no ZIP. Only ZIP and year are requested. Owner chose to add it 2026-10-15 (final yes at the pre-push review)."
+
+  - id: cms_nh_covid
+    name: CMS COVID-19 Nursing Home public file, Connecticut subset, resident deaths by facility (COVID-19 and all causes), 2020-2024
+    publisher: Centers for Medicare & Medicaid Services (Connecticut subset published on data.ct.gov)
+    url: https://data.ct.gov/d/w8wc-65i5
+    license: "Public Domain U.S. Government (dataset licence; terms status stated)"
+    access: "snapshot: data_manual/points/cms_nh_ct.csv, trimmed by hand with pipeline/trim_cms_nh_ct.py (the file is final; the national file is no longer on data.cms.gov)"
+    kind: points
+    geography: grid-1km
+    place: [lived]
+    causes: [covid, all]
+    years: 2020-2024
+    grain: year
+    cadence: manual
+    layer: [cms_nh_covid_ct, cms_nh_alldeaths_ct]
+    files: [points/cms_nh_ct.csv]
+    status: live
+    notes: "212 facilities, 191 placed with CMS provider coordinates; 3,264 resident COVID-19 deaths and 24,435 resident deaths from all causes placed (249 and 1,295 at 21 closed facilities are not). Self-reported weekly from May 2020; the first report could include deaths back to January 2020. Resident deaths happen in the home or elsewhere, so the layers show where the person lived. Owner chose a Connecticut layer 2026-10-15."
+
   - id: wonder_ucd_5yr
     name: WONDER UCD 1999-2018, county x 5-year totals
     publisher: CDC NCHS

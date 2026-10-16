@@ -80,6 +80,7 @@ with tempfile.TemporaryDirectory() as d:
 shipped = statefill.read_ledger()
 known = {(sid, bundle) for _f, sid, bundle, _st, _ab in statefill.STAGED}
 known.add(statefill.NBER_SMALL)  # the NCHS-file small counts have their own reader (tests/test_nber_small.py)
+known.add(statefill.ICPSR)  # the 1959-1967 county history has its own reader (pipeline/history_icpsr.py, statefill.icpsr_approved)
 import hist_series  # noqa: E402  the state-level historical series have their own reader too (pipeline/hist_state.py, tests/test_hist_state.py)
 known |= {(src["id"], hist_series.BUNDLE) for src in hist_series.SOURCES.values()}
 for (sid, bundle, _m, _p), r in shipped.items():

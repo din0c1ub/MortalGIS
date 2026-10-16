@@ -118,9 +118,14 @@ def source_rows(reg, meta, manifest):
         r = {k: v for k, v in r.items() if v is not None}
         if s.get("status") == "live":
             newest, why = None, None
-            if s.get("layer") in layers:
-                l = layers[s["layer"]]
-                newest = parse_date(l.get("latest")) or (dt.date(max(l["years"]), 12, 31) if l.get("years") else None)
+            keys = s.get("layer") if isinstance(s.get("layer"), list) else [s.get("layer")]  # an entry may name several layers
+            for key in keys:
+                if key not in layers:
+                    continue
+                l = layers[key]
+                d = parse_date(l.get("latest")) or (dt.date(max(l["years"]), 12, 31) if l.get("years") else None)
+                if d and (newest is None or d > newest):
+                    newest = d
                 if l.get("stale"):
                     why = "the last build could not refresh this layer (kept the previous file)"
             if s.get("files"):

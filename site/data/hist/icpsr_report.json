@@ -1,0 +1,619 @@
+{
+ "years": [
+  1959,
+  1960,
+  1961,
+  1962,
+  1964,
+  1965,
+  1966,
+  1967
+ ],
+ "left_out": {
+  "1963": "ICPSR file holds 508,976 records (about 28% of the year's deaths)"
+ },
+ "conversion_1961_to_1962": {
+  "01": {
+   "codes_1961": 67,
+   "codes_1962": 67,
+   "matched": 67,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "02": {
+   "codes_1961": 23,
+   "codes_1962": 23,
+   "matched": 23,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "03": {
+   "codes_1961": 14,
+   "codes_1962": 14,
+   "matched": 14,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "04": {
+   "codes_1961": 75,
+   "codes_1962": 75,
+   "matched": 75,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "05": {
+   "codes_1961": 58,
+   "codes_1962": 58,
+   "matched": 58,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "06": {
+   "codes_1961": 63,
+   "codes_1962": 63,
+   "matched": 63,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "07": {
+   "codes_1961": 8,
+   "codes_1962": 8,
+   "matched": 8,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "08": {
+   "codes_1961": 3,
+   "codes_1962": 3,
+   "matched": 3,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "09": {
+   "codes_1961": 1,
+   "codes_1962": 1,
+   "matched": 1,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "10": {
+   "codes_1961": 67,
+   "codes_1962": 67,
+   "matched": 67,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "11": {
+   "codes_1961": 159,
+   "codes_1962": 159,
+   "matched": 159,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "12": {
+   "codes_1961": 5,
+   "codes_1962": 5,
+   "matched": 5,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "13": {
+   "codes_1961": 44,
+   "codes_1962": 44,
+   "matched": 44,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "14": {
+   "codes_1961": 102,
+   "codes_1962": 102,
+   "matched": 102,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "15": {
+   "codes_1961": 92,
+   "codes_1962": 92,
+   "matched": 92,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "16": {
+   "codes_1961": 99,
+   "codes_1962": 99,
+   "matched": 99,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "17": {
+   "codes_1961": 105,
+   "codes_1962": 105,
+   "matched": 105,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "18": {
+   "codes_1961": 120,
+   "codes_1962": 120,
+   "matched": 120,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "19": {
+   "codes_1961": 64,
+   "codes_1962": 64,
+   "matched": 64,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "20": {
+   "codes_1961": 16,
+   "codes_1962": 16,
+   "matched": 16,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "21": {
+   "codes_1961": 24,
+   "codes_1962": 24,
+   "matched": 24,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "22": {
+   "codes_1961": 14,
+   "codes_1962": 14,
+   "matched": 14,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "23": {
+   "codes_1961": 83,
+   "codes_1962": 83,
+   "matched": 83,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "24": {
+   "codes_1961": 87,
+   "codes_1962": 87,
+   "matched": 87,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "25": {
+   "codes_1961": 82,
+   "codes_1962": 82,
+   "matched": 82,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "26": {
+   "codes_1961": 115,
+   "codes_1962": 115,
+   "matched": 115,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "27": {
+   "codes_1961": 56,
+   "codes_1962": 56,
+   "matched": 56,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "28": {
+   "codes_1961": 93,
+   "codes_1962": 93,
+   "matched": 93,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "29": {
+   "codes_1961": 17,
+   "codes_1962": 17,
+   "matched": 17,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "30": {
+   "codes_1961": 10,
+   "codes_1962": 10,
+   "matched": 10,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "31": {
+   "codes_1961": 21,
+   "codes_1962": 21,
+   "matched": 21,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "32": {
+   "codes_1961": 32,
+   "codes_1962": 32,
+   "matched": 32,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "33": {
+   "codes_1961": 58,
+   "codes_1962": 58,
+   "matched": 58,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "34": {
+   "codes_1961": 100,
+   "codes_1962": 100,
+   "matched": 100,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "35": {
+   "codes_1961": 53,
+   "codes_1962": 53,
+   "matched": 53,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "36": {
+   "codes_1961": 88,
+   "codes_1962": 88,
+   "matched": 88,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "37": {
+   "codes_1961": 77,
+   "codes_1962": 77,
+   "matched": 77,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "38": {
+   "codes_1961": 36,
+   "codes_1962": 36,
+   "matched": 36,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "39": {
+   "codes_1961": 67,
+   "codes_1962": 67,
+   "matched": 67,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "40": {
+   "codes_1961": 5,
+   "codes_1962": 5,
+   "matched": 5,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "41": {
+   "codes_1961": 46,
+   "codes_1962": 46,
+   "matched": 46,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "42": {
+   "codes_1961": 67,
+   "codes_1962": 67,
+   "matched": 67,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "43": {
+   "codes_1961": 95,
+   "codes_1962": 95,
+   "matched": 95,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "44": {
+   "codes_1961": 254,
+   "codes_1962": 254,
+   "matched": 254,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "45": {
+   "codes_1961": 29,
+   "codes_1962": 29,
+   "matched": 29,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "46": {
+   "codes_1961": 14,
+   "codes_1962": 14,
+   "matched": 14,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "47": {
+   "codes_1961": 130,
+   "codes_1962": 132,
+   "matched": 130,
+   "same_as_rank_order": null,
+   "only_1962": [
+    "47321",
+    "47327"
+   ],
+   "only_1961": []
+  },
+  "48": {
+   "codes_1961": 39,
+   "codes_1962": 39,
+   "matched": 39,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "49": {
+   "codes_1961": 55,
+   "codes_1962": 55,
+   "matched": 55,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  },
+  "50": {
+   "codes_1961": 71,
+   "codes_1962": 72,
+   "matched": 71,
+   "same_as_rank_order": null,
+   "only_1962": [
+    "50040"
+   ],
+   "only_1961": []
+  },
+  "51": {
+   "codes_1961": 24,
+   "codes_1962": 24,
+   "matched": 24,
+   "same_as_rank_order": true,
+   "only_1962": [],
+   "only_1961": []
+  }
+ },
+ "residence_placed": {
+  "1959": 0.9993,
+  "1960": 0.9992,
+  "1961": 0.9993,
+  "1962": 0.9993,
+  "1964": 0.9992,
+  "1965": 0.9993,
+  "1966": 0.9993,
+  "1967": 0.9993
+ },
+ "unplaced_codes_top": {
+  "1959": {
+   "02002": 469,
+   "02003": 243,
+   "02001": 150
+  },
+  "1960": {
+   "02009": 319,
+   "02018": 199,
+   "02001": 117,
+   "02004": 93,
+   "02003": 56,
+   "02022": 51,
+   "02015": 49,
+   "02002": 43,
+   "02012": 40,
+   "02021": 39,
+   "02011": 36,
+   "02023": 35
+  },
+  "1961": {
+   "02009": 287,
+   "02018": 160,
+   "02001": 104,
+   "02004": 86,
+   "02015": 70,
+   "02022": 61,
+   "02003": 58,
+   "02011": 47,
+   "02002": 44,
+   "02012": 44,
+   "02017": 38,
+   "02008": 35
+  },
+  "1962": {
+   "02009": 337,
+   "02018": 167,
+   "02001": 108,
+   "02004": 84,
+   "02015": 64,
+   "02021": 56,
+   "02003": 50,
+   "02002": 39,
+   "02012": 36,
+   "02014": 35,
+   "02008": 34,
+   "02022": 33
+  },
+  "1964": {
+   "02009": 337,
+   "02018": 184,
+   "02001": 108,
+   "02004": 94,
+   "02007": 86,
+   "02012": 54,
+   "02015": 51,
+   "02002": 49,
+   "02022": 48,
+   "02008": 47,
+   "02011": 46,
+   "02003": 42
+  },
+  "1965": {
+   "02009": 381,
+   "02018": 166,
+   "02001": 94,
+   "02004": 80,
+   "02015": 77,
+   "02011": 57,
+   "02012": 50,
+   "02002": 49,
+   "02003": 40,
+   "02005": 38,
+   "02023": 37,
+   "02013": 33
+  },
+  "1966": {
+   "02009": 374,
+   "02018": 161,
+   "02001": 109,
+   "02004": 70,
+   "02012": 53,
+   "02022": 52,
+   "02011": 51,
+   "02015": 48,
+   "02002": 39,
+   "02017": 39,
+   "02008": 38,
+   "02021": 36
+  },
+  "1967": {
+   "02009": 374,
+   "02018": 174,
+   "02001": 87,
+   "02004": 83,
+   "02015": 51,
+   "02011": 48,
+   "02022": 44,
+   "02003": 40,
+   "02012": 36,
+   "02017": 34,
+   "02005": 34,
+   "02021": 30
+  }
+ },
+ "national_totals": {
+  "1959": {
+   "all": 1660172,
+   "overdose": 2109,
+   "suicide": 18677,
+   "homicide": 7901,
+   "firearm": 15521,
+   "heart": 642132,
+   "stroke": 191666
+  },
+  "1960": {
+   "all": 1711982,
+   "overdose": 2452,
+   "suicide": 19041,
+   "homicide": 8163,
+   "firearm": 15978,
+   "heart": 661712,
+   "stroke": 193588
+  },
+  "1961": {
+   "all": 1701522,
+   "overdose": 2580,
+   "suicide": 18999,
+   "homicide": 8300,
+   "firearm": 15994,
+   "heart": 663391,
+   "stroke": 192951
+  },
+  "1962": {
+   "all": 1756720,
+   "overdose": 3340,
+   "suicide": 20207,
+   "homicide": 8779,
+   "firearm": 16533,
+   "heart": 688009,
+   "stroke": 197451
+  },
+  "1964": {
+   "all": 1798051,
+   "overdose": 3881,
+   "suicide": 20588,
+   "homicide": 9521,
+   "firearm": 17555,
+   "heart": 699861,
+   "stroke": 198209
+  },
+  "1965": {
+   "all": 1828136,
+   "overdose": 4176,
+   "suicide": 21507,
+   "homicide": 10434,
+   "firearm": 18400,
+   "heart": 712087,
+   "stroke": 201057
+  },
+  "1966": {
+   "all": 1863149,
+   "overdose": 4189,
+   "suicide": 21281,
+   "homicide": 11307,
+   "firearm": 19820,
+   "heart": 727002,
+   "stroke": 204841
+  },
+  "1967": {
+   "all": 1851323,
+   "overdose": 4549,
+   "suicide": 21325,
+   "homicide": 13036,
+   "firearm": 21778,
+   "heart": 721268,
+   "stroke": 202184
+  }
+ }
+}
