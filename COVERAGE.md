@@ -1,10 +1,12 @@
 # MortalGIS data coverage
 
-Generated 2026-10-12 19:07 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
+Generated 2026-10-16 03:01 UTC by `pipeline/coverage.py` from `pipeline/sources.yml` and the built data. Don't edit by hand.
 
 ## Needs attention
 
-Nothing due.
+- **allegheny_me**: the last build could not refresh this layer (kept the previous file)
+- **cincinnati_homicides**: the last build could not refresh this layer (kept the previous file)
+- **fra_crossings**: newest data is 79 days old for a weekly source
 
 ## County measures
 
@@ -14,37 +16,37 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 
 | Measure | Counted where | Years | Hidden, latest year | Hidden, average | Hidden, 5-year | Gaps |
 |---|---|---|---|---|---|---|
-| All deaths | lived | 1968–2025 | 1% | 1% | – | – |
-| All deaths | died | 1968–2025 | 2% | 0% | – | large counties only 1989–2004; no data 2005–2017 |
-| Drug overdose deaths | lived | 1968–2024 | 48% | 30% | 24% (2021-2025) | – |
-| Drug overdose deaths | died | 1968–2025 | 51% | 8% | 27% (2021-2025) | large counties only 1989–2004; no data 2005–2017 |
-| Suicide deaths | lived | 1968–2024 | 41% | 30% | 21% (2021-2025) | – |
-| Suicide deaths | died | 1968–2025 | 58% | 10% | 21% (2021-2025) | large counties only 1989–2004; no data 2005–2017 |
-| Homicide deaths | lived | 1968–2024 | 38% | 24% | 48% (2021-2025) | – |
-| Homicide deaths | died | 1968–2025 | 46% | 8% | 50% (2021-2025) | large counties only 1989–2004; no data 2005–2017 |
-| Firearm deaths | lived | 1968–2024 | 57% | 38% | 24% (2021-2025) | – |
-| Firearm deaths | died | 1968–2025 | 60% | 11% | 26% (2021-2025) | large counties only 1989–2004; no data 2005–2017 |
-| Heart disease deaths | lived | 1968–2025 | 7% | 3% | 1% (2021-2025) | – |
-| Heart disease deaths | died | 1968–2025 | 9% | 2% | 1% (2021-2025) | large counties only 1989–2004; no data 2005–2017 |
-| Stroke deaths | lived | 1968–2025 | 32% | 16% | 6% (2021-2025) | – |
-| Stroke deaths | died | 1968–2025 | 43% | 8% | 13% (2021-2025) | large counties only 1989–2004; no data 2005–2017 |
+| All deaths | lived | 1959–2025 | 1% | 1% | – | no data 1963 |
+| All deaths | died | 1959–2025 | 2% | 1% | – | large counties only 1989–2004; no data 1963, 2005–2017 |
+| Drug overdose deaths | lived | 1959–2024 | 47% | 29% | 24% (2021-2025) | no data 1963 |
+| Drug overdose deaths | died | 1959–2025 | 51% | 11% | 27% (2021-2025) | large counties only 1989–2004; no data 1963, 2005–2017 |
+| Suicide deaths | lived | 1959–2024 | 40% | 34% | 21% (2021-2025) | no data 1963 |
+| Suicide deaths | died | 1959–2025 | 58% | 20% | 21% (2021-2025) | large counties only 1989–2004; no data 1963, 2005–2017 |
+| Homicide deaths | lived | 1959–2024 | 38% | 27% | 48% (2021-2025) | no data 1963 |
+| Homicide deaths | died | 1959–2025 | 46% | 14% | 50% (2021-2025) | large counties only 1989–2004; no data 1963, 2005–2017 |
+| Firearm deaths | lived | 1959–2024 | 57% | 43% | 24% (2021-2025) | no data 1963 |
+| Firearm deaths | died | 1959–2025 | 60% | 20% | 26% (2021-2025) | large counties only 1989–2004; no data 1963, 2005–2017 |
+| Heart disease deaths | lived | 1959–2025 | 7% | 3% | 1% (2021-2025) | no data 1963 |
+| Heart disease deaths | died | 1959–2025 | 9% | 2% | 1% (2021-2025) | large counties only 1989–2004; no data 1963, 2005–2017 |
+| Stroke deaths | lived | 1959–2025 | 32% | 16% | 6% (2021-2025) | no data 1963 |
+| Stroke deaths | died | 1959–2025 | 43% | 10% | 13% (2021-2025) | large counties only 1989–2004; no data 1963, 2005–2017 |
 | Cancer deaths | lived | 1999–2025 | 8% | 6% | 1% (2021-2025) | – |
 | Cancer deaths | died | 2018–2025 | 11% | 11% | 2% (2021-2025) | – |
-| Alzheimer's disease deaths | lived | 1999–2025 | 39% | 33% | 11% (2021-2025) | – |
+| Alzheimer's disease deaths | lived | 1999–2025 | 39% | 32% | 11% (2021-2025) | – |
 | Alzheimer's disease deaths | died | 2018–2025 | 38% | 38% | 13% (2021-2025) | – |
 | Diabetes deaths | lived | 1999–2025 | 43% | 34% | 10% (2021-2025) | – |
 | Diabetes deaths | died | 2018–2025 | 46% | 46% | 14% (2021-2025) | – |
-| Liver disease & cirrhosis deaths | lived | 1999–2025 | 55% | 46% | 20% (2021-2025) | – |
+| Liver disease & cirrhosis deaths | lived | 1999–2025 | 55% | 45% | 20% (2021-2025) | – |
 | Liver disease & cirrhosis deaths | died | 2018–2025 | 55% | 54% | 33% (2021-2025) | – |
 | Chronic lung disease deaths (COPD, asthma) | lived | 1999–2025 | 27% | 22% | 5% (2021-2025) | – |
 | Chronic lung disease deaths (COPD, asthma) | died | 2018–2025 | 32% | 32% | 7% (2021-2025) | – |
-| Flu & pneumonia deaths | lived | 1999–2025 | 55% | 44% | 21% (2021-2025) | – |
+| Flu & pneumonia deaths | lived | 1999–2025 | 55% | 43% | 21% (2021-2025) | – |
 | Flu & pneumonia deaths | died | 2018–2025 | 48% | 48% | 40% (2021-2025) | – |
 | Kidney disease deaths | lived | 1999–2025 | 54% | 44% | 20% (2021-2025) | – |
 | Kidney disease deaths | died | 2018–2025 | 53% | 54% | 32% (2021-2025) | – |
-| COVID-19 deaths | lived | 2020–2025 | 58% | 34% | 6% (2021-2025) | – |
+| COVID-19 deaths | lived | 2020–2025 | 58% | 33% | 6% (2021-2025) | – |
 | COVID-19 deaths | died | 2020–2025 | 43% | 41% | 21% (2021-2025) | – |
-| Fall deaths (accidental) | lived | 1999–2025 | 57% | 52% | 29% (2021-2025) | – |
+| Fall deaths (accidental) | lived | 1999–2025 | 57% | 51% | 29% (2021-2025) | – |
 | Fall deaths (accidental) | died | 2018–2025 | 48% | 48% | 47% (2021-2025) | – |
 | Alcohol-induced deaths | lived | 1999–2025 | 57% | 57% | 27% (2021-2025) | – |
 | Alcohol-induced deaths | died | 2018–2025 | 55% | 54% | 36% (2021-2025) | – |
@@ -82,8 +84,8 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [CDC occurrence vs residence county tables](https://data.cdc.gov/) (`cdc_occ_res`) | api | yearly | – | – |
 | [SEER county population estimates 1969-2024](https://seer.cancer.gov/popdata/) (`seer_pop`) | download | yearly | – | – |
 | [Census county boundaries (us-atlas TopoJSON) and Gazetteer places/ZCTAs](https://www.census.gov/geographies/reference-files/time-series/geo/gazetteer-files.html) (`geo`) | download | yearly | – | – |
-| [Cook County Medical Examiner case archive](https://datacatalog.cookcountyil.gov/d/cjeq-bs86) (`cook_me`) | api | weekly | 2026-10-12 | – |
-| [Santa Clara County Medical Examiner-Coroner cases](https://data.sccgov.org/d/s3fb-yrjp) (`santa_clara_me`) | api | weekly | 2026-10-11 | – |
+| [Cook County Medical Examiner case archive](https://datacatalog.cookcountyil.gov/d/cjeq-bs86) (`cook_me`) | api | weekly | 2026-10-15 | – |
+| [Santa Clara County Medical Examiner-Coroner cases](https://data.sccgov.org/d/s3fb-yrjp) (`santa_clara_me`) | api | weekly | 2026-10-14 | – |
 | [District Nine Medical Examiner (Orange & Osceola, FL)](https://services1.arcgis.com/0U8EQ1FrumPeIqDb/arcgis/rest/services/Cases_DeathAddress/FeatureServer/0) (`orange_fl_me`) | api | weekly | 2026-10-11 | – |
 | [San Diego County Medical Examiner deaths by ZIP](https://data.sandiegocounty.gov/d/jkvb-n4p7) (`san_diego_me`) | api | monthly | 2026-07-31 | – |
 | [Sacramento County Coroner cases by ZIP](https://data.saccounty.gov/) (`sacramento_coroner`) | api | weekly | 2026-10-09 | – |
@@ -96,11 +98,11 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [Los Angeles Police Department criminal homicide, 2010-2023](https://data.lacity.org/d/2nrs-mtv8) (`lapd_homicides`) | api | static | 2023-12-30 | – |
 | [Cincinnati Police murders, 2011-](https://data.cincinnati-oh.gov/d/k59e-2pvf) (`cincinnati_homicides`) | api | weekly | 2026-09-30 | – |
 | [Charlotte-Mecklenburg Police homicide victims, 2015-](https://gis.charlottenc.gov/arcgis/rest/services/ODP/CMPD_Homicide/MapServer/0) (`charlotte_homicides`) | api | weekly | 2026-10-07 | – |
-| [Atlanta Police Department homicides, 1997-](https://opendata.atlantapd.org/) (`atlanta_homicides`) | api | weekly | 2026-10-07 | – |
+| [Atlanta Police Department homicides, 1997-](https://opendata.atlantapd.org/) (`atlanta_homicides`) | api | weekly | 2026-10-14 | – |
 | [Denver Police murders, 2021-](https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime) (`denver_homicides`) | api | weekly | 2026-09-26 | – |
 | [NYPD shooting incidents (murders)](https://data.cityofnewyork.us/d/833y-fsy8) (`nyc_homicides`) | api | yearly | 2024-12-30 | – |
-| [Philadelphia fatal shooting victims](https://opendataphilly.org/datasets/shooting-victims/) (`philly_homicides`) | api | weekly | 2026-10-05 | – |
-| [Detroit Police RMS crime incidents (homicide)](https://data.detroitmi.gov/) (`detroit_homicides`) | api | weekly | 2026-10-11 | – |
+| [Philadelphia fatal shooting victims](https://opendataphilly.org/datasets/shooting-victims/) (`philly_homicides`) | api | weekly | 2026-10-12 | – |
+| [Detroit Police RMS crime incidents (homicide)](https://data.detroitmi.gov/) (`detroit_homicides`) | api | weekly | 2026-10-13 | – |
 | [NHTSA Fatality Analysis Reporting System](https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars) (`fars`) | download | yearly | 2024-12-31 | – |
 | [NOAA Storm Events Database](https://www.ncdc.noaa.gov/stormevents/) (`noaa`) | download | monthly | 2026-12-31 | – |
 | [Milwaukee County Medical Examiner case data (snapshot)](https://github.com/UK-IPOP/open-data-pipeline/releases/tag/2025-12-01) (`milwaukee_me`) | download | static | 2025-11-30 | – |
@@ -131,6 +133,17 @@ Hidden = share of counties whose count is 1–9 and therefore not published (CDC
 | [Nebraska DHHS annual Vital Statistics Report 2008-2016 (county-of-residence tables of the leading causes of death)](https://dhhs.ne.gov/Pages/vital-Statistics.aspx) (`ne_dhhs_vital_report`) | pdf (nine reports 2008-2016 downloaded 2026-10-10 with the owner's yes, 72.7 MB; 2005-2007 downloaded later the same night, 27.6 MB; SHA-256 in sources/ne_dhhs/SOURCES.tsv) | one-off (the page says the complete report is not available after 2016) | – | – |
 | [Kansas KDHE Table D25, deaths by selected causes of death by county of residence (2016 read; 2013 and 2001-2021 annual summaries exist)](https://kic.kdheks.gov/OHA/reports/pdf/YYYY_D25.pdf) (`ks_kdhe_d25`) | xlsx (the 2016 set of Fast Stats tables D01, D02, D05-D08, D25, D26 saved by the owner from the KIC site on 2026-10-10; the site's robots rules and the Chrome tool block automated reads) | yearly (one year so far) | – | – |
 | [Kansas Annual Summary of Vital Statistics, county table 'Selected Causes of Death by County of Residence' (23 reports: 2001-2015, 2017-2024)](https://www.coronavirus.kdheks.gov/DocumentCenter/ (full-report PDFs; each file's address and SHA-256 in sources/ks_kdhe/SOURCES.tsv)) (`ks_kdhe_annual`) | pdf (24 reports downloaded 2026-10-10 with the owner's yes, 135.7 MB; the county table has a text layer; read by scripts/ks_parse.py, ks_parse2001.py and ks_dump_extra.py) | yearly | – | – |
+| [Idaho Vital Statistics annual reports and Idaho Mortality reports, county-of-residence cause tables (19 reports: 2006-2024)](https://publicdocuments.dhw.idaho.gov/WebLink/Browse.aspx?id=5649&dbid=0&repo=PUBLIC-DOCUMENTS) (`id_dhw_vital`) | read 2026-10-15 in the owner's Chrome from the portal viewer's text layer (no download; the portal rejects scripted requests); extracts with SHA-256 in sources/id_dhw/, parsed by scripts/id_build.py | yearly | – | – |
+| [North Dakota Vital Event Summary, 'Leading Causes of Death, Number of Events' by county of residence (27 reports: 1998-2024)](https://www.hhs.nd.gov/sites/www/files/documents/DOH%20Legacy/Vital/2024VES.pdf) (`nd_hhs_ves`) | 27 PDFs downloaded 2026-10-15 with the owner's yes (sources/nd_hhs/, SHA-256 in SOURCES.tsv), parsed by scripts/nd_parse.py | yearly | – | – |
+| [Virginia VDH-PUD drug overdose deaths by locality of residence, 2018-2024 (two data.virginia.gov files)](https://data.virginia.gov/dataset/vdh-pud-overdose-deaths-by-year-and-geography) (`va_vdh_overdose`) | two CSVs saved by the owner from data.virginia.gov on 2026-10-15 (sources/va_vdh/, SHA-256 in SOURCES.tsv); scripted requests get 403 |  | – | – |
+| [NCHS Multiple Cause of Death public-use files 1959-1967 (ICPSR study 20680): county history before 1968](https://www.icpsr.umich.edu/web/ICPSR/studies/20680) (`icpsr_mcd`) | owner downloaded the Stata package while signed in to ICPSR on 2026-10-15 (sources/icpsr/, SHA-256 in SOURCES.tsv); the raw files stay off the repo | one-time | – | – |
+| [NTSB aviation accident database, US events with deaths aboard or on the ground, 1982 on](https://data.ntsb.gov/avdata) (`ntsb_aviation`) | snapshot: data_manual/points/ntsb_fatal_events.csv, trimmed by hand with pipeline/trim_ntsb.py from avall.zip (2008 on) and Pre2008.zip (1982-2007), Microsoft Access files read with mdbtools; both downloaded 2026-10-15 with the owner's yes (sources/ntsb/) | manual | 2026-09-01 | – |
+| [PHMSA pipeline incidents and accidents with deaths (gas distribution, gas transmission and gathering, hazardous liquid, LNG), 1968 on](https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data) (`phmsa_pipeline`) | 14 zip files (13 incident sets plus Type R regulated gas gathering, May 2022 on) saved by the owner in a browser on 2026-10-15 (the site answers scripts with 403); sources/phmsa/, SHA-256 in SOURCES.tsv; trimmed by pipeline/trim_phmsa.py into data_manual/points/phmsa_pipeline_deaths.csv | manual | 2026-05-01 | – |
+| [IOM Missing Migrants Project, deaths recorded in the United States (mostly the US-Mexico border), 2014 on](https://missingmigrants.iom.int/downloads) (`iom_missing_migrants`) | snapshot: data_manual/points/iom_us_deaths.csv, trimmed by hand with pipeline/trim_iom.py from the workbook saved in the owner's Chrome (the site refuses scripted downloads) | manual | 2026-09-01 | – |
+| [FRA highway-rail grade crossing deaths (Form 57), placed at the crossing (Form 71 inventory), 1975 on](https://data.transportation.gov/d/7wn6-i5b9) (`fra_crossings`) | api | weekly | 2026-07-29 | – |
+| [Kansas City, Missouri Police Department homicide incidents, 2015 on](https://data.kcmo.org/) (`kansas_city_homicides`) | api | weekly | 2026-09-30 | – |
+| [Nashville-Davidson County Medical Examiner suspected fatal overdoses by home ZIP, 2018-2023](https://services2.arcgis.com/HdTo6HJqh92wn4D8/arcgis/rest/services/ME_TRIMM/FeatureServer/17) (`nashville_me_overdose_zip`) | api | static | 2023-12-31 | – |
+| [CMS COVID-19 Nursing Home public file, Connecticut subset, resident deaths by facility (COVID-19 and all causes), 2020-2024](https://data.ct.gov/d/w8wc-65i5) (`cms_nh_covid`) | snapshot: data_manual/points/cms_nh_ct.csv, trimmed by hand with pipeline/trim_cms_nh_ct.py (the file is final; the national file is no longer on data.cms.gov) | manual | 2024-12-31 | – |
 | [WONDER UCD 1999-2018, county x 5-year totals](https://wonder.cdc.gov/ucd-icd10.html) (`wonder_ucd_5yr`) | wonder-manual | static | 2014-2018 | 2026-10-07 |
 | [WONDER Provisional, county x 5-year totals (2019-2023, 2021-2025)](https://wonder.cdc.gov/mcd-icd10-provisional.html) (`wonder_prov_5yr`) | wonder-manual | manual-yearly | 2021-2025 | 2026-10-07 |
 | [New York State vital statistics Table 38 (county deaths by selected cause, no small-number hiding)](https://healthweb-back.health.ny.gov/statistics/vital_statistics/2023/table38.htm) (`ny_vitals`) | download | yearly | – | – |
