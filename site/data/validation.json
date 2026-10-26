@@ -1883,15 +1883,15 @@
  "incident_sources": {
   "cook_county": {
    "ok": true,
-   "latest": "2026-10-19"
+   "latest": "2026-10-26"
   },
   "santa_clara_county": {
    "ok": true,
-   "latest": "2026-10-18"
+   "latest": "2026-10-25"
   },
   "orange_fl": {
    "ok": true,
-   "latest": "2026-10-11"
+   "latest": "2026-10-25"
   },
   "san_diego": {
    "ok": true,
@@ -1899,7 +1899,7 @@
   },
   "sacramento": {
    "ok": true,
-   "latest": "2026-10-18"
+   "latest": "2026-10-26"
   },
   "allegheny": {
    "ok": true,
@@ -1927,7 +1927,7 @@
   },
   "other_accidents": {
    "ok": true,
-   "latest": "2026-10-05"
+   "latest": "2026-10-08"
   },
   "mass_shootings": {
    "ok": true,
@@ -1943,7 +1943,7 @@
   },
   "philly_homicides": {
    "ok": true,
-   "latest": "2026-10-18"
+   "latest": "2026-10-24"
   },
   "lapd_homicides": {
    "ok": true,
@@ -1955,7 +1955,7 @@
   },
   "charlotte_homicides": {
    "ok": true,
-   "latest": "2026-10-07"
+   "latest": "2026-10-24"
   },
   "atlanta_homicides": {
    "ok": true,
@@ -1963,11 +1963,11 @@
   },
   "denver_homicides": {
    "ok": true,
-   "latest": "2026-09-26"
+   "latest": "2026-10-20"
   },
   "kansas_city_homicides": {
    "ok": true,
-   "latest": "2026-09-30"
+   "latest": "2026-10-22"
   },
   "ntsb_aviation": {
    "ok": true,
@@ -2003,7 +2003,7 @@
   },
   "detroit_homicides": {
    "ok": true,
-   "latest": "2026-10-17"
+   "latest": "2026-10-23"
   }
  }
 }
